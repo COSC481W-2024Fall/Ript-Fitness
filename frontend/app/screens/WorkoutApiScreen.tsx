@@ -39,11 +39,18 @@ export default function WorkoutApiScreen() {
         <Ionicons name="barbell-outline" size={30} color="black" />
       </TouchableOpacity>
 
+      {/* My Notes */}
+      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('MyNotesScreen', { })} >
+        <Text style={styles.buttonText}>My Notes</Text>
+        <Ionicons name="document-outline" size={30} color="black" />
+      </TouchableOpacity>
+
       {/* Start Workout */}
       <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('StartWorkoutScreen', { })} >
         <Text style={styles.buttonText}>Start Workout</Text>
         <Ionicons name="chevron-forward-outline" size={30} color="blue" />
       </TouchableOpacity>
+
     </View>
   );
 }

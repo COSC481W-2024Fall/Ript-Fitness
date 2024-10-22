@@ -11,6 +11,7 @@ import AddWorkoutScreen from '../screens/workout/AddWorkoutScreen';
 import StartWorkoutScreen from '../screens/StartWorkoutScreen';
 import { ThemedText } from '@/components/ThemedText';
 import { useNavigation } from '@react-navigation/native';
+import MyNotesScreen from '../screens/MyNotesScreen';
 
 
 
@@ -18,10 +19,12 @@ const Stack = createStackNavigator();
 
 
 export type WorkoutStackParamList = {
+  WorkoutApiScreen: {};
   ApiScreen: {};
   StartWorkoutScreen: {};
   AddWorkoutScreen: {};
   MyWorkoutsScreen: {};
+  MyNotesScreen: {};
 };
 
 export type WorkoutScreenNavigationProp = StackNavigationProp<WorkoutStackParamList>;
@@ -31,36 +34,62 @@ export default function WorkoutStack(props : any) {
   return (
     <WorkoutProvider>
     <Stack.Navigator initialRouteName="WorkoutApiScreen" screenOptions={{ headerShown: true }}>
-      <Stack.Screen name="WorkoutApiScreen" component={WorkoutApiScreen} options={{ headerShown: false }}/>
+      <Stack.Screen name="WorkoutApiScreen" component={WorkoutApiScreen} options={{ headerShown: true }}/>
       <Stack.Screen name="ApiScreen" component={ApiScreen} />
       <Stack.Screen name="StartWorkoutScreen" component={StartWorkoutScreen} />
       <Stack.Screen name="MyWorkoutsScreen" component={MyWorkoutsScreen} />
+      {/* <Stack.Screen name="MyNotesScreen" component={MyNotesScreen} options={{ title: 'My Notes' }} /> */}
 
-      <Stack.Screen name="AddWorkoutScreen" component={AddWorkoutScreen} options={{ headerShown: true,
+      <Stack.Screen name="AddWorkoutScreen" component={AddWorkoutScreen} options={{ title: 'Add Workout',
         headerLeft: () => (
           <TouchableOpacity
-            onPress={() => navigation.goBack()}
+            onPress={() => { navigation.navigate("WorkoutApiScreen", {}) }}
             style={[styles.leftButton, styles.button, styles.buttonSize]}>
-            <TabBarIcon style={styles.leftArrow} name='arrow-down' size={30} color='#bbbbbb' />
+            <TabBarIcon style={styles.leftArrow} name='arrow-down' size={30} color='#454343' />
           </TouchableOpacity>
         ),
-        headerTitle: () => (
-          <View style={styles.headerTitleView}>
-            <ThemedText style={styles.title}>Add Workout</ThemedText>
-          </View>
-        ),
+        // headerTitle: () => (
+        //   <View style={styles.headerTitleView}>
+        //     <ThemedText style={styles.title}>Add Workout</ThemedText>
+        //   </View>
+        // ),
         // <Svg ... /> commented out
         headerRight: () => (
           <TouchableOpacity
             onPress={() => { navigation.navigate("ApiScreen", {}) }}
             style={[styles.rightButton, styles.button, styles.buttonSize]}
           >
-            <TabBarIcon name='add-circle-outline' size={30} color='#bbbbbb' />
+            <TabBarIcon name='add-circle-outline' size={30} color='#454343' />
           </TouchableOpacity>
         ),
         headerTitleAlign: 'center',
         }}
-        />
+      />
+      <Stack.Screen name="MyNotesScreen" component={MyNotesScreen} options={{ title: 'My Notes',
+        headerLeft: () => (
+          <TouchableOpacity
+            onPress={() => { navigation.navigate("WorkoutApiScreen", {}) }}
+            style={[styles.leftButton, styles.button, styles.buttonSize]}>
+            <TabBarIcon style={styles.leftArrow} name='arrow-down' size={30} color='#454343' />
+          </TouchableOpacity>
+        ),
+        // headerTitle: () => (
+        //   <View style={styles.headerTitleView}>
+        //     <ThemedText style={styles.title}>My Notes</ThemedText>
+        //   </View>
+        // ),
+        // <Svg ... /> commented out
+        headerRight: () => (
+          <TouchableOpacity
+            onPress={() => { navigation.navigate("ApiScreen", {}) }}
+            style={[styles.rightButton, styles.button, styles.buttonSize]}
+          >
+            <TabBarIcon name='create-outline' size={30} color='#454343' />
+          </TouchableOpacity>
+        ),
+        headerTitleAlign: 'center',
+        }}
+      />
       {/* Put any additional screens for your tab here. This allows us to use a stack.
         A stack allows us to easily navigate back a page when we're in a secondary screen on a certain tab.
 
