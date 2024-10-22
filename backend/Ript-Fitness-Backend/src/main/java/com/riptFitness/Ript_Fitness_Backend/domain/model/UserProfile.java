@@ -7,7 +7,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.ElementCollection;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 
 @Entity
@@ -33,7 +35,7 @@ public class UserProfile {
 
     //delete (soft delete)
     public boolean isDeleted = false;
-
+    
     public UserProfile() {}
 
     public UserProfile(String firstName, String lastName, String username, List<String> prs) {

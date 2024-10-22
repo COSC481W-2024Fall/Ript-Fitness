@@ -1,11 +1,14 @@
 package com.riptFitness.Ript_Fitness_Backend.domain.model;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.PostPersist;
 import jakarta.persistence.Table;
@@ -34,6 +37,9 @@ public class AccountsModel {
         this.lastLogin = LocalDateTime.now();
     }
 
+    //Represents a List of social posts that the user makes in the social feed
+    @OneToMany(mappedBy = "accountsModel", cascade = CascadeType.ALL, orphanRemoval = true)
+    public List<SocialPost> socialPosts;
 
     // Getters:
     public Long getId() {
