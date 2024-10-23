@@ -1,7 +1,7 @@
 import { StyleSheet } from 'react-native';
 
 
-import { createStackNavigator } from '@react-navigation/stack';
+import { createStackNavigator, HeaderStyleInterpolators } from '@react-navigation/stack';
 import { ProfileProvider } from '@/context/ProfileContext';
 import ApiScreen from '@/app/screens/ApiScreen';
 

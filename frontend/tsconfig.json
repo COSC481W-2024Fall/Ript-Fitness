@@ -3,15 +3,18 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"] // Define '@' alias to refer to the root directory
+      "@/*": ["./*"]
     },
     "target": "esnext",
     "module": "esnext",
+    "moduleResolution": "node",
     "jsx": "react-native",
     "strict": true,
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "typeRoots": ["./node_modules/@types", "./types"] // Make sure to include your types directory
-  }
+    "typeRoots": ["./node_modules/@types", "./types"]
+  },
+  "include": ["types/**/*.d.ts", "**/*"]
 }

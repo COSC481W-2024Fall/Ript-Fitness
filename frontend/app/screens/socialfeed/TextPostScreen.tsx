@@ -1,3 +1,4 @@
+import StreakContext from '@/context/StreakContext';
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 

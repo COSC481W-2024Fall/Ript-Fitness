@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useContext, useLayoutEffect } from 'react';
 import {
   SafeAreaView,
   FlatList,
@@ -10,6 +10,10 @@ import {
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import PostItem from '@/components/socialfeed/PostItem';
+import { useNavigation } from '@react-navigation/native';
+import { useStreak } from '@/context/StreakContext';
+import StreakCounter from '@/components/StreakCounter';
+import StreakHeader from '@/components/StreakHeader';
 
 type PostData = {
   id: string;
@@ -120,6 +124,7 @@ const sortedMockFeedData = MOCK_FEED_DATA.sort(
 );
 
 export default function SocialFeed() {
+
   const [likedPosts, setLikedPosts] = React.useState<string[]>([]);
   const [refreshing, setRefreshing] = React.useState(false);
 
@@ -155,6 +160,7 @@ const renderItem = useCallback(
 
   return (
     <SafeAreaView style={styles.container}>
+      <StreakHeader></StreakHeader>
       <StatusBar barStyle="default" />
       <FlatList
         ListHeaderComponent={() => <View style={{ marginTop: StatusBar.currentHeight || 0 }} />}

@@ -1,43 +1,57 @@
+// ./app/(tabs)/SocialStack.tsx
+
+import React, { useContext } from 'react';
 import { StyleSheet } from 'react-native';
-
-
-import { createStackNavigator } from '@react-navigation/stack';
+import { createStackNavigator, HeaderStyleInterpolators } from '@react-navigation/stack';
 import { SocialProvider } from '@/context/SocialContext';
-import ApiScreen from '@/app/screens/ApiScreen';
 import SocialFeed from '../screens/socialfeed/SocialFeed';
-import CommentsScreen from '../screens/socialfeed/CommentsScreen'
+import CommentsScreen from '../screens/socialfeed/CommentsScreen';
 import TextPostScreen from '../screens/socialfeed/TextPostScreen';
 import ImagePostScreen from '../screens/socialfeed/ImagePostScreen';
-
+import StreakCounter from '@/components/StreakCounter';
+import { StreakProvider} from '@/context/StreakContext';
 
 const Stack = createStackNavigator();
 
-export default function SocialStack(props : any) {
+const SocialStack: React.FC = () => {
   return (
-    <SocialProvider>
-    <Stack.Navigator initialRouteName="SocialFeed" screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="SocialFeed" component={SocialFeed} />
-      <Stack.Screen name="CommentsScreen" component={CommentsScreen} />
-      <Stack.Screen name="TextPostScreen" component={TextPostScreen} />
-      <Stack.Screen name="ImagePostScreen" component={ImagePostScreen} />
-      {/* Put any additional screens for your tab here. This allows us to use a stack.
-        A stack allows us to easily navigate back a page when we're in a secondary screen on a certain tab.
-      */}
-    </Stack.Navigator>
-    </SocialProvider>
+      <SocialProvider>
+        <Stack.Navigator
+          initialRouteName="SocialFeed"
+          screenOptions={{
+            headerShown: true,
+            headerTitleAlign: 'center',
+            headerStyle: {
+              backgroundColor: '#f8f8f8',
+            },
+            headerStyleInterpolator: HeaderStyleInterpolators.forNoAnimation,
+          }}
+        >
+          <Stack.Screen
+            name="SocialFeed"
+            component={SocialFeed}
+            options={{ title: 'Social Feed', headerRight: () => <StreakCounter />, }}
+          />
+          <Stack.Screen
+            name="CommentsScreen"
+            component={CommentsScreen}
+            options={{ title: 'Comments', headerRight: () => <StreakCounter />, }}
+          />
+          <Stack.Screen
+            name="TextPostScreen"
+            component={TextPostScreen}
+            options={{ title: 'New Text Post', headerRight: () => <StreakCounter />, }}
+          />
+          <Stack.Screen
+            name="ImagePostScreen"
+            component={ImagePostScreen}
+            options={{ title: 'New Image Post', headerRight: () => <StreakCounter />, }}
+          />
+          {/* Add any additional screens here */}
+        </Stack.Navigator>
+      </SocialProvider>
   );
-}
-
-/*
-      {contacts.map((contact, index) => (
-                <Tile key={contact.key}
-                index={index}
-                onTileLoad={() => setTilesLoaded(prevTilesLoaded => prevTilesLoaded + 1)}
-                //contactOnPress={() => navigation.navigate(Contact, {key:Tiles.length, contactInfo: contactsList[Tiles.length]})} 
-                navigation={navigation}/>
-            ))}
-
-*/
+};
 
 const styles = StyleSheet.create({
   scrollView: {
@@ -84,3 +98,5 @@ const styles = StyleSheet.create({
         width:40,
       },
     });
+
+    export default SocialStack; // Ensure SocialStack is exported as default

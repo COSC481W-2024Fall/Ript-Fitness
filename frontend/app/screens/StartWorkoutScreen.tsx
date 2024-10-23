@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons'; // libary of icons
+import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import { WorkoutScreenNavigationProp } from '../(tabs)/WorkoutStack';
 
@@ -21,9 +21,9 @@ export default function StartWorkoutScreen() {
 // makes button clickable 
   return (
     <View style={styles.container}>
-      {/* Add excerise */}
+      {/* Add exercise */}
       <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('ApiScreen', { })}  > 
-        <Text style={styles.buttonText}>Add excerises</Text>
+        <Text style={styles.buttonText}>Add exercises</Text>
         <Icon name="heart-outline" size={30} color="red" />
       </TouchableOpacity>
      

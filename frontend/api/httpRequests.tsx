@@ -15,14 +15,14 @@ static async get(endpoint: string, data? : Record<string, any>): Promise<any> {
     // Fetch data from the specified endpoint
 
     const params = httpRequests.jsonToQueryString(data)
-    const response = await fetch(`${BASE_URL}${endpoint}/${params}`); // Use endpoint or replace with BASE_URL if needed
+    const response = await fetch(`${BASE_URL}${endpoint}`); // Use endpoint or replace with BASE_URL if needed
     console.log(`${BASE_URL}${endpoint}/${params}`)
     if (!response.ok) {
       throw new Error(`Error: ${response.status}`);
     }
-    const json = await response.json() //.json(); // Parse the response as JSON
-    console.log(json)
-    return json; // Return the JSON data directly
+    //const json = await response.json() //.json(); // Parse the response as JSON
+    //console.log(json)
+    return response; // Return the JSON data directly
   } catch (error) {
 
     // If access denied
