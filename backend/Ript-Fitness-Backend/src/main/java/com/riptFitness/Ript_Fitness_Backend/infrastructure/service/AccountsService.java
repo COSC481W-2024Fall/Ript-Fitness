@@ -4,10 +4,13 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.riptFitness.Ript_Fitness_Backend.config.JwtUtil;
 import com.riptFitness.Ript_Fitness_Backend.domain.mapper.AccountsMapper;
 import com.riptFitness.Ript_Fitness_Backend.domain.model.AccountsModel;
 import com.riptFitness.Ript_Fitness_Backend.domain.model.Streak;
@@ -15,6 +18,7 @@ import com.riptFitness.Ript_Fitness_Backend.domain.repository.AccountsRepository
 import com.riptFitness.Ript_Fitness_Backend.domain.repository.StreakRepository;
 import com.riptFitness.Ript_Fitness_Backend.web.dto.AccountsDto;
 import com.riptFitness.Ript_Fitness_Backend.web.dto.LoginRequestDto;
+
 
 @Service
 public class AccountsService {
@@ -47,6 +51,26 @@ public class AccountsService {
 	// - If the password does not match, display a error message.
 	// - If user name does not exist, display a message that it does not exist. Ask
 	// if they would like to create an account with that user name
+	
+	
+	// Method to retrieve the logged-in user's ID
+    public Long getLoggedInUserId() {
+        // Get the principal (logged-in user) from the security context
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (principal instanceof UserDetails) {
+            String username = ((UserDetails) principal).getUsername(); // Get the logged-in user's username
+
+            // Query the AccountsRepository to get the user based on the username
+            AccountsModel account = accountsRepository.findByUsername(username)
+                    .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
+
+            // Return the ID of the logged-in user
+            return account.getId();
+        } else {
+            throw new RuntimeException("No authenticated user found.");
+        }
+    }
 
 	// Below is the logic for creating an account:
 	public AccountsDto createNewAccount(AccountsDto accountsDto) {
@@ -92,10 +116,13 @@ public class AccountsService {
 		}
 		return AccountsMapper.INSTANCE.convertToDto(accountsModel);
 	}
+	
+	@Autowired
+	private JwtUtil jwtUtil; // Inject JWT utility
 
 	// Method to get account details:
 	@Transactional
-	public AccountsDto logIntoAccount(LoginRequestDto loginRequest) {
+	public String logIntoAccount(LoginRequestDto loginRequest) {
 		// Extract username and password from the request body
 		String username = loginRequest.getUsername();
 		String password = loginRequest.getPassword();
@@ -121,9 +148,12 @@ public class AccountsService {
 	        if (passwordMatches) {
 	        	// Update the login date:
 	        	accountsRepository.updateLoginDate(username, lastLogin);
-	        	// Convert to DTO:
+	        	
+	        	// Generate a JWT token and return it
+	            String token = jwtUtil.generateToken(username);
 	            System.out.println("Login successful for user: " + username);
-	            return AccountsMapper.INSTANCE.convertToDto(possibleAccount);
+	            return token;
+	            
 	        } else {
 	            System.out.println("Incorrect password for user: " + username);
 	            throw new RuntimeException("Incorrect password.");

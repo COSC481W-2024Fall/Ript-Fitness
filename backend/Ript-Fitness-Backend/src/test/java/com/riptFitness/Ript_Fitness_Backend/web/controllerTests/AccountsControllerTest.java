@@ -79,19 +79,23 @@ public class AccountsControllerTest {
 	// Test for login - successful login
 	@Test
 	public void testLogin_Success() throws Exception {
-		LoginRequestDto loginRequest = new LoginRequestDto();
-		loginRequest.setUsername("testUser");
-		loginRequest.setPassword("password123");
-		loginRequest.setlastLogin(LocalDateTime.now());
+	    LoginRequestDto loginRequest = new LoginRequestDto();
+	    loginRequest.setUsername("testUser");
+	    loginRequest.setPassword("password123");
+	    loginRequest.setlastLogin(LocalDateTime.now());
 
-		when(accountsService.logIntoAccount(any(LoginRequestDto.class))).thenReturn(accountsDto);
+	    // Mock the JWT token returned by the login method
+	    String jwtToken = "mocked-jwt-token";
+	    when(accountsService.logIntoAccount(any(LoginRequestDto.class))).thenReturn(jwtToken);
 
-		// Use put method to match the controller's method
-		mockMvc.perform(put("/accounts/login").contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(loginRequest))) // Include content in put request
-				.andExpect(status().isOk()).andExpect(jsonPath("$.username").value("testUser"))
-				.andExpect(jsonPath("$.email").value("test@example.com"));
+	    // Use put method to match the controller's method
+	    mockMvc.perform(put("/accounts/login")
+	            .contentType(MediaType.APPLICATION_JSON)
+	            .content(objectMapper.writeValueAsString(loginRequest))) // Include content in put request
+	            .andExpect(status().isOk())
+	            .andExpect(content().string(jwtToken));  // Expect the token as the response content
 	}
+
 
 	// Test for login - incorrect password
 	@Test

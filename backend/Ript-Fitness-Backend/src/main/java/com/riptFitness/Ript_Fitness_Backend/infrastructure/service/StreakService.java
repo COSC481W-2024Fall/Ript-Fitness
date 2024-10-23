@@ -11,7 +11,6 @@ import com.riptFitness.Ript_Fitness_Backend.domain.model.Streak;
 import com.riptFitness.Ript_Fitness_Backend.domain.repository.StreakRepository;
 import com.riptFitness.Ript_Fitness_Backend.web.dto.StreakDto;
 
-import java.time.Clock;
 
 @Service
 public class StreakService {

@@ -1,6 +1,5 @@
 package com.riptFitness.Ript_Fitness_Backend.domain.repository;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.riptFitness.Ript_Fitness_Backend.domain.model.Streak;
-import com.riptFitness.Ript_Fitness_Backend.domain.model.UserProfile;
+
 
 public interface StreakRepository extends JpaRepository <Streak, Long> {
 	

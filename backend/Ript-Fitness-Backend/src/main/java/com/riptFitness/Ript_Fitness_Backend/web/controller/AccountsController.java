@@ -32,11 +32,11 @@ public class AccountsController {
 	
 	// Below is a Get for verifying login details
 	@PutMapping("/login")
-    public ResponseEntity<AccountsDto> login(@RequestBody LoginRequestDto loginRequest) {
-        // Attempt to log into the specified account
-        AccountsDto accountToLogin = accountsService.logIntoAccount(loginRequest);
-        return new ResponseEntity<>(accountToLogin, HttpStatus.OK);
-    }
+	public ResponseEntity<String> login(@RequestBody LoginRequestDto loginRequest) {
+	    String token = accountsService.logIntoAccount(loginRequest);
+	    return new ResponseEntity<>(token, HttpStatus.OK);
+	}
+
 	
 	
 	

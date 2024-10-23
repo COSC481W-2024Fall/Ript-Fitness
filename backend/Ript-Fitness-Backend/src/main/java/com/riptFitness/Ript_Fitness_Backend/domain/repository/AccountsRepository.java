@@ -34,4 +34,6 @@ public interface AccountsRepository extends JpaRepository <AccountsModel, Long> 
     @Query(value = "UPDATE accounts_model SET last_login = :lastLogin WHERE username = :username", nativeQuery = true)
     void updateLoginDate(@Param("username") String username, @Param("lastLogin") LocalDateTime lastLogin);
     
+    Optional<AccountsModel> findByUsername(String username);  // Method to find account by username
+    
 }
