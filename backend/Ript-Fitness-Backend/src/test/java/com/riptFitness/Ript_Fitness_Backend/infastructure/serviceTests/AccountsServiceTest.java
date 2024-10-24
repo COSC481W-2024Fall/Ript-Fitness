@@ -21,6 +21,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.riptFitness.Ript_Fitness_Backend.config.JwtUtil;
 import com.riptFitness.Ript_Fitness_Backend.domain.mapper.AccountsMapper;
 import com.riptFitness.Ript_Fitness_Backend.domain.model.AccountsModel;
 import com.riptFitness.Ript_Fitness_Backend.domain.repository.AccountsRepository;
@@ -40,6 +41,9 @@ public class AccountsServiceTest {
 
 	@Mock
 	private PasswordEncoder passwordEncoder; // Add PasswordEncoder mock
+	
+	@Mock
+    private JwtUtil jwtUtil; // Mock the JwtUtil class
 
 	@InjectMocks
 	private AccountsService accountsService;
@@ -125,35 +129,41 @@ public class AccountsServiceTest {
 	// Test for logIntoAccount with successful login
 	@Test
 	public void testLogIntoAccount_Success() {
-		String username = "testUser";
-		String password = "password123";
-		LocalDateTime lastLogin = LocalDateTime.now();
-		Long id = 1L;
+	    String username = "testUser";
+	    String password = "password123";
+	    LocalDateTime lastLogin = LocalDateTime.now();
+	    Long id = 1L;
 
-		AccountsModel existingAccount = new AccountsModel();
-		existingAccount.setId(id);
-		existingAccount.setUsername(username);
-		existingAccount.setPassword("encodedPassword123"); // Assume this is the encoded password
-		existingAccount.setEmail("test@example.com");
+	    AccountsModel existingAccount = new AccountsModel();
+	    existingAccount.setId(id);
+	    existingAccount.setUsername(username);
+	    existingAccount.setPassword("encodedPassword123"); // Assume this is the encoded password
+	    existingAccount.setEmail("test@example.com");
 
-		// Mocking
-		when(accountsRepository.findIdByUsername(username)).thenReturn(Optional.of(id));
-		when(accountsRepository.findById(id)).thenReturn(Optional.of(existingAccount));
-		when(passwordEncoder.matches(password, "encodedPassword123")).thenReturn(true); // Mock password comparison
+	    // Mocking
+	    when(accountsRepository.findIdByUsername(username)).thenReturn(Optional.of(id));
+	    when(accountsRepository.findById(id)).thenReturn(Optional.of(existingAccount));
+	    when(passwordEncoder.matches(password, "encodedPassword123")).thenReturn(true); // Mock password comparison
+	    when(jwtUtil.generateToken(username)).thenReturn("mocked-jwt-token"); // Mock the token generation
 
-		// Execute
-		LoginRequestDto loginRequest = new LoginRequestDto();
-		loginRequest.setUsername(username);
-		loginRequest.setPassword(password);
-		loginRequest.setlastLogin(lastLogin);
-		AccountsDto result = accountsService.logIntoAccount(loginRequest);
+	    // Execute
+	    LoginRequestDto loginRequest = new LoginRequestDto();
+	    loginRequest.setUsername(username);
+	    loginRequest.setPassword(password);
+	    loginRequest.setlastLogin(lastLogin);
+	    String token = accountsService.logIntoAccount(loginRequest); // Now it returns a token (String)
 
-		// Verify
-		assertNotNull(result);
-		assertEquals(username, result.getUsername());
+	    // Verify the returned token
+	    assertNotNull(token);
+	    assertEquals("mocked-jwt-token", token); // Verify the token is the mocked one
 
-		verify(accountsRepository).updateLoginDate(username, lastLogin);
+	    // Verify the repository calls
+	    verify(accountsRepository).updateLoginDate(username, lastLogin);
+	    verify(accountsRepository).findIdByUsername(username);
+	    verify(accountsRepository).findById(id);
+	    verify(passwordEncoder).matches(password, "encodedPassword123");
 	}
+
 
 	// Test for logIntoAccount with incorrect password
 	@Test
