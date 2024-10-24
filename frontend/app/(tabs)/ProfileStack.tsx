@@ -4,6 +4,8 @@ import { StyleSheet } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { ProfileProvider } from '@/context/ProfileContext';
 import ApiScreen from '@/app/screens/ApiScreen';
+import foodLog from '@/app/screens/foodlog/FoodLog';
+import foodLogAdd from '@/app/screens/foodlog/FoodLogAdd';
 
 
 
@@ -13,7 +15,7 @@ export default function ProfileStack(props : any) {
   return (
     <ProfileProvider>
     <Stack.Navigator initialRouteName="MyHomeScreen123" screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="MyHomeScreen123" component={ApiScreen} />
+      <Stack.Screen name="MyHomeScreen123" component={foodLog} />
       {/* Put any additional screens for your tab here. This allows us to use a stack.
         A stack allows us to easily navigate back a page when we're in a secondary screen on a certain tab.
       */}
