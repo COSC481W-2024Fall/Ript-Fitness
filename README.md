@@ -21,7 +21,7 @@ Ript Fitness is a fitness application that will help people track their workouts
 <h3 style="font-size:20px; font-weight:bold;">Christopher Martus - Team Member - Backend</h3>
 <p style="font-size:16px;">Hi, my Name is Christopher. This is my last class to finish my bachelors degree in computer science. I current work at a tim hortons but am looking for other work in either IT or software engineering. I am married and we have a cute little australian shepherd named Bond. In my free time I enjoy playing disc golf, video games and messing around with soldiering and 3d printing.</p>
 
-<h3 style="font-size:20px; font-weight:bold;">Michael Shahine - Team Member - Backend</h3>
+<h3 style="font-size:20px; font-weight:bold;">Michael Shahine - Team Member - Frontend</h3>
 <p style="font-size:16px;">I am in my senior year at Eastern Michigan University I will be getting my bachelors degree in Computer science. I plan to continue my education after EMU in a masters program and higher education. Outside of school I love to play basketball, and spend time by the water.</p>
 
 <h3 style="font-size:20px; font-weight:bold;">Rob Hewison - Team Member - Frontend</h3>
