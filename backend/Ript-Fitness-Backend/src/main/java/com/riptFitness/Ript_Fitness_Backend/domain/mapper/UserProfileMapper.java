@@ -19,4 +19,3 @@ public interface UserProfileMapper {
     @Mapping(target = "id", ignore = true)
     void updateUserFromDto(UserDto userDto, @MappingTarget UserProfile user);
 }
-
