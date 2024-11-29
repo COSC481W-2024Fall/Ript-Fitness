@@ -7,13 +7,28 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "USE_LOCAL": "false",
+        "LOCAL_IP": "192.168.56.1",
+        "AZURE_API_URL": "https://ript-fitness-app.azurewebsites.net"
+      }
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "USE_LOCAL": "false",
+        "LOCAL_IP": "192.168.56.1",
+        "AZURE_API_URL": "https://ript-fitness-app.azurewebsites.net"
+      }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "USE_LOCAL": "false",
+        "LOCAL_IP": "192.168.56.1",
+        "AZURE_API_URL": "https://ript-fitness-app.azurewebsites.net"
+      }
     }
   },
   "submit": {
