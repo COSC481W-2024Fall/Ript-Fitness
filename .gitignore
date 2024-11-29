@@ -85,3 +85,4 @@ build/
 backend/Ript-Fitness-Backend/src/test/resources/application-test.properties
 
 .metadata/
+node_modules

@@ -8,6 +8,7 @@ module.exports = function (api) {
         {
           moduleName: "@env",
           path: ".env",
+          allowlist: ['USE_LOCAL', 'LOCAL_IP', 'AZURE_API_URL'], // Ensure these are listed
         },
       ],
       [

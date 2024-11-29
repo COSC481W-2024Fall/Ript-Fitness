@@ -1,13 +1,13 @@
 import { GlobalContext } from "@/context/GlobalContext";
-import { USE_LOCAL, LOCAL_IP } from "@env";
+import { USE_LOCAL, LOCAL_IP, AZURE_API_URL } from "@env";
 import { useContext } from "react";
 
-const Azure_URL = "https://ript-fitness-app.azurewebsites.net";
-const BASE_URL = USE_LOCAL === "true" ? `http://${LOCAL_IP}` : Azure_URL;
+//const AZURE_API_URL = "https://ript-fitness-app.azurewebsites.net";
+const BASE_URL = USE_LOCAL === "true" ? `http://${LOCAL_IP}` : AZURE_API_URL;
 
 export class httpRequests {
   static getBaseURL() {
-    return USE_LOCAL === "true" ? `http://${LOCAL_IP}` : Azure_URL;
+    return USE_LOCAL === "true" ? `http://${LOCAL_IP}` : AZURE_API_URL;
   }
 
   // Method to handle GET requests and return JSON

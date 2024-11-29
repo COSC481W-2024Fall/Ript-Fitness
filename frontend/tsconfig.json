@@ -16,5 +16,5 @@
     "forceConsistentCasingInFileNames": true,
     "typeRoots": ["./node_modules/@types", "./types"]
   },
-  "include": ["types/**/*.d.ts", "**/*"]
+  "include": ["types/**/*.d.ts", "**/*", "env.d.ts"]
 }
