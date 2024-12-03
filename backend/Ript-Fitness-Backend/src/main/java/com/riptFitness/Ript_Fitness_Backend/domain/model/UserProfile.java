@@ -1,6 +1,7 @@
 package com.riptFitness.Ript_Fitness_Backend.domain.model;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -60,6 +61,8 @@ public class UserProfile {
     
     @Column(name = "profile_picture", columnDefinition = "LONGBLOB")
     private byte[] profilePicture;
+    
+    private ZonedDateTime dateTimeAccountWasCreated;
     
     // Default Constructor
     public UserProfile() {
@@ -235,4 +238,10 @@ public class UserProfile {
     public void setProfilePicture(byte[] profilePicture) {
         this.profilePicture = profilePicture;
     }
+	public ZonedDateTime getDateTimeAccountWasCreated() {
+		return dateTimeAccountWasCreated;
+	}
+	public void setDateTimeAccountWasCreated(ZonedDateTime dateTimeAccountWasCreated) {
+		this.dateTimeAccountWasCreated = dateTimeAccountWasCreated;
+	}
 }

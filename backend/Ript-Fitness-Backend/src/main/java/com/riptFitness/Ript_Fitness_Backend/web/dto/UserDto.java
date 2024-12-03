@@ -1,6 +1,7 @@
 package com.riptFitness.Ript_Fitness_Backend.web.dto;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 
 public class UserDto {
     public Long id;
@@ -15,6 +16,7 @@ public class UserDto {
     public LocalDate restResetDate;
     public Integer restResetDayOfWeek;
     public byte[] profilePicture; // Added field for profile picture
+    public ZonedDateTime dateTimeAccountWasCreated;
 
     // Getters and Setters
     public Long getId() {

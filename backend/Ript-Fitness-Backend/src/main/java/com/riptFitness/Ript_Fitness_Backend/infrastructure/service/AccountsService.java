@@ -1,6 +1,8 @@
 package com.riptFitness.Ript_Fitness_Backend.infrastructure.service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -182,6 +184,7 @@ public class AccountsService {
 		user.setDisplayname(username);
 		user.setFirstName("");
 		user.setLastName("");
+		user.setDateTimeAccountWasCreated(ZonedDateTime.now(ZoneId.of("America/New_York")));
 		userProfileRepository.save(user);
 
 		accountsModel.setUserProfile(user);
