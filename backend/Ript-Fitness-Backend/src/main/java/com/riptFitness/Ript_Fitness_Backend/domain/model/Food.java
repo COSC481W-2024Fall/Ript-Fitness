@@ -1,11 +1,15 @@
 package com.riptFitness.Ript_Fitness_Backend.domain.model;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 
 @Entity		//Tells database to create a table in the database called "Food" with column defined below
 public class Food {
@@ -26,4 +30,11 @@ public class Food {
 	public double fat;
 	public double multiplier = 1.0;
 	public boolean isDeleted = false;
+	
+	public ZonedDateTime dateCreated;
+	
+	@PrePersist
+	protected void onCreate() {
+    	dateCreated = ZonedDateTime.now(ZoneId.of("America/New_York"));
+	}
 }
