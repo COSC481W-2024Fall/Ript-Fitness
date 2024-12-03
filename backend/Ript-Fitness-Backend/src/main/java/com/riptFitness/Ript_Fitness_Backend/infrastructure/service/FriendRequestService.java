@@ -1,6 +1,7 @@
 package com.riptFitness.Ript_Fitness_Backend.infrastructure.service;
 
-import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -58,9 +59,9 @@ public class FriendRequestService {
 		String fromUsername = currentlyLoggedInUser.getUsername();
 		String toUsername = toAccountUser.getUsername();
 		
-		//FriendRequest constructor order: fromAccount, toAccount, accountIdOfFromAccount, accountIdOfToAccount, RequestStatus, fromUsername, toUsername, LocalDateTime
-		FriendRequest fromRequest = new FriendRequest(currentlyLoggedInUser, toAccountUser, currentlyLoggedInUser.getId(), toAccountUser.getId(), RequestStatus.SENT, fromUsername, toUsername, LocalDateTime.now());
-		FriendRequest toRequest = new FriendRequest(toAccountUser, currentlyLoggedInUser, toAccountUser.getId(), currentlyLoggedInUser.getId(), RequestStatus.PENDING, toUsername, fromUsername, LocalDateTime.now());
+		//FriendRequest constructor order: fromAccount, toAccount, accountIdOfFromAccount, accountIdOfToAccount, RequestStatus, fromUsername, toUsername, ZonedDateTime
+		FriendRequest fromRequest = new FriendRequest(currentlyLoggedInUser, toAccountUser, currentlyLoggedInUser.getId(), toAccountUser.getId(), RequestStatus.SENT, fromUsername, toUsername, ZonedDateTime.now(ZoneId.of("America/New_York")));
+		FriendRequest toRequest = new FriendRequest(toAccountUser, currentlyLoggedInUser, toAccountUser.getId(), currentlyLoggedInUser.getId(), RequestStatus.PENDING, toUsername, fromUsername, ZonedDateTime.now(ZoneId.of("America/New_York")));
 		
 		friendRequestRepository.save(fromRequest);
 		friendRequestRepository.save(toRequest);
@@ -139,8 +140,8 @@ public class FriendRequestService {
 		fromRequest.status = friendRequestDto.status;
 		changeToRequestBasedOnStatus(toRequest, friendRequestDto.status);
 		
-		fromRequest.dateTimeOfMostRecentChangeToStatus = LocalDateTime.now();
-		toRequest.dateTimeOfMostRecentChangeToStatus = LocalDateTime.now();
+		fromRequest.dateTimeOfMostRecentChangeToStatus = ZonedDateTime.now(ZoneId.of("America/New_York"));
+		toRequest.dateTimeOfMostRecentChangeToStatus = ZonedDateTime.now(ZoneId.of("America/New_York"));
 		
 		friendRequestRepository.save(fromRequest);
 		friendRequestRepository.save(toRequest);
@@ -159,7 +160,7 @@ public class FriendRequestService {
 		//The toAccount was sent a friend request from the fromAccount
 		if(requestStatus.equals(RequestStatus.SENT)) {
 			
-			//FriendRequest constructor order: fromAccount, toAccount, RequestStatus, fromUsername, toUsername, LocalDateTime
+			//FriendRequest constructor order: fromAccount, toAccount, RequestStatus, fromUsername, toUsername, ZonedDateTime
 			toRequest.status = RequestStatus.PENDING;
 			return;
 		}

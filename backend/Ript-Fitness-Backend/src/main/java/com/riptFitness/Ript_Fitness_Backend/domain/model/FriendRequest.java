@@ -1,6 +1,6 @@
 package com.riptFitness.Ript_Fitness_Backend.domain.model;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -41,12 +41,12 @@ public class FriendRequest {
 	
 	public String toUsername;	//Username of toAccount's userProfile
 	
-	public LocalDateTime dateTimeOfMostRecentChangeToStatus;
+	public ZonedDateTime dateTimeOfMostRecentChangeToStatus;
 	
 	public FriendRequest() {}	//Required for database interactions to work
 
 	public FriendRequest(AccountsModel fromAccount, AccountsModel toAccount, Long accountIdOfFromAccount, Long accountIdOfToAccount, RequestStatus status, String fromUsername,
-			String toUsername, LocalDateTime dateTimeOfMostRecentChangeToStatus) {
+			String toUsername, ZonedDateTime dateTimeOfMostRecentChangeToStatus) {
 		super();
 		this.fromAccount = fromAccount;
 		this.toAccount = toAccount;
