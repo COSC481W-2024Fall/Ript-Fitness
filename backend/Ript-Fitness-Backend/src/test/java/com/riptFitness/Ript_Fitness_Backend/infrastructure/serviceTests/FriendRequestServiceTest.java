@@ -6,7 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -208,8 +209,8 @@ public class FriendRequestServiceTest {
 	@Test
 	void testSendRequestValidDtoStatusIsSent() {
 		//FriendRequest constructor order: fromAccount, toAccount, accountIdOfFromAccount, accountIdOfToAccount, RequestStatus, fromUsername, toUsername, LocalDateTime
-		fromRequest = new FriendRequest(fromAccount, toAccount, fromAccount.getId(), toAccount.getId(), RequestStatus.DECLINED, "cpichle1", "nHalash", LocalDateTime.now());
-		toRequest = new FriendRequest(toAccount, fromAccount, toAccount.getId(), fromAccount.getId(), RequestStatus.SENT, "nHalash", "cpichle1", LocalDateTime.now());
+		fromRequest = new FriendRequest(fromAccount, toAccount, fromAccount.getId(), toAccount.getId(), RequestStatus.DECLINED, "cpichle1", "nHalash", ZonedDateTime.now(ZoneId.of("America/New_York")));
+		toRequest = new FriendRequest(toAccount, fromAccount, toAccount.getId(), fromAccount.getId(), RequestStatus.SENT, "nHalash", "cpichle1", ZonedDateTime.now(ZoneId.of("America/New_York")));
 		
 		when(accountsService.getLoggedInUserId()).thenReturn(1L);
 		when(accountsRepository.findById(2L)).thenReturn(Optional.of(toAccount));
@@ -228,8 +229,8 @@ public class FriendRequestServiceTest {
 	@Test
 	void testSendRequestValidDtoStatusIsAccepted() {
 		//FriendRequest constructor order: fromAccount, toAccount, accountIdOfFromAccount, accountIdOfToAccount, RequestStatus, fromUsername, toUsername, LocalDateTime
-		fromRequest = new FriendRequest(fromAccount, toAccount, fromAccount.getId(), toAccount.getId(), RequestStatus.PENDING, "cpichle1", "nHalash", LocalDateTime.now());
-		toRequest = new FriendRequest(toAccount, fromAccount, toAccount.getId(), fromAccount.getId(), RequestStatus.SENT, "nHalash", "cpichle1", LocalDateTime.now());
+		fromRequest = new FriendRequest(fromAccount, toAccount, fromAccount.getId(), toAccount.getId(), RequestStatus.PENDING, "cpichle1", "nHalash", ZonedDateTime.now(ZoneId.of("America/New_York")));
+		toRequest = new FriendRequest(toAccount, fromAccount, toAccount.getId(), fromAccount.getId(), RequestStatus.SENT, "nHalash", "cpichle1", ZonedDateTime.now(ZoneId.of("America/New_York")));
 		friendRequestDto.status = RequestStatus.ACCEPTED;
 		
 		when(accountsService.getLoggedInUserId()).thenReturn(1L);
@@ -250,8 +251,8 @@ public class FriendRequestServiceTest {
 	@Test
 	void testSendRequestValidDtoStatusIsDeclined() {
 		//FriendRequest constructor order: fromAccount, toAccount, accountIdOfFromAccount, accountIdOfToAccount, RequestStatus, fromUsername, toUsername, LocalDateTime
-		fromRequest = new FriendRequest(fromAccount, toAccount, fromAccount.getId(), toAccount.getId(), RequestStatus.PENDING, "cpichle1", "nHalash", LocalDateTime.now());
-		toRequest = new FriendRequest(toAccount, fromAccount, toAccount.getId(), fromAccount.getId(), RequestStatus.SENT, "nHalash", "cpichle1", LocalDateTime.now());
+		fromRequest = new FriendRequest(fromAccount, toAccount, fromAccount.getId(), toAccount.getId(), RequestStatus.PENDING, "cpichle1", "nHalash", ZonedDateTime.now(ZoneId.of("America/New_York")));
+		toRequest = new FriendRequest(toAccount, fromAccount, toAccount.getId(), fromAccount.getId(), RequestStatus.SENT, "nHalash", "cpichle1", ZonedDateTime.now(ZoneId.of("America/New_York")));
 		friendRequestDto.status = RequestStatus.DECLINED;
 		
 		when(accountsService.getLoggedInUserId()).thenReturn(1L);
@@ -271,8 +272,8 @@ public class FriendRequestServiceTest {
 	@Test
 	void testSendRequestInvalidStatusIsPending() {
 		//FriendRequest constructor order: fromAccount, toAccount, accountIdOfFromAccount, accountIdOfToAccount, RequestStatus, fromUsername, toUsername, LocalDateTime
-		fromRequest = new FriendRequest(fromAccount, toAccount, fromAccount.getId(), toAccount.getId(), RequestStatus.PENDING, "cpichle1", "nHalash", LocalDateTime.now());
-		toRequest = new FriendRequest(toAccount, fromAccount, toAccount.getId(), fromAccount.getId(), RequestStatus.SENT, "nHalash", "cpichle1", LocalDateTime.now());
+		fromRequest = new FriendRequest(fromAccount, toAccount, fromAccount.getId(), toAccount.getId(), RequestStatus.PENDING, "cpichle1", "nHalash", ZonedDateTime.now(ZoneId.of("America/New_York")));
+		toRequest = new FriendRequest(toAccount, fromAccount, toAccount.getId(), fromAccount.getId(), RequestStatus.SENT, "nHalash", "cpichle1", ZonedDateTime.now(ZoneId.of("America/New_York")));
 		friendRequestDto.status = RequestStatus.PENDING;
 		
 		when(accountsService.getLoggedInUserId()).thenReturn(1L);

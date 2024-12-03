@@ -3,10 +3,10 @@ package com.riptFitness.Ript_Fitness_Backend.infrastructure.serviceTests;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -20,7 +20,6 @@ import org.mockito.MockitoAnnotations;
 import com.riptFitness.Ript_Fitness_Backend.domain.model.AccountsModel;
 import com.riptFitness.Ript_Fitness_Backend.domain.model.FriendRequest;
 import com.riptFitness.Ript_Fitness_Backend.domain.model.RequestStatus;
-import com.riptFitness.Ript_Fitness_Backend.domain.model.UserProfile;
 import com.riptFitness.Ript_Fitness_Backend.domain.repository.AccountsRepository;
 import com.riptFitness.Ript_Fitness_Backend.domain.repository.FriendRequestRepository;
 import com.riptFitness.Ript_Fitness_Backend.infrastructure.service.AccountsService;
@@ -155,8 +154,8 @@ public class FriendsServiceTest {
 		currentlyLoggedInUser.setFriends(currentlyLoggedInUsersFriends);
 		friendOfCurrentlyLoggedInUser.setFriends(friendsOfTheOtherUser);
 		
-		fromRequest = new FriendRequest(currentlyLoggedInUser, friendOfCurrentlyLoggedInUser, 1L, 2L, RequestStatus.ACCEPTED, "cpichle1", "nHalash", LocalDateTime.now());
-		toRequest = new FriendRequest(friendOfCurrentlyLoggedInUser, currentlyLoggedInUser, 2L, 1L, RequestStatus.ACCEPTED, "nHalash", "cpichle1", LocalDateTime.now());
+		fromRequest = new FriendRequest(currentlyLoggedInUser, friendOfCurrentlyLoggedInUser, 1L, 2L, RequestStatus.ACCEPTED, "cpichle1", "nHalash", ZonedDateTime.now(ZoneId.of("America/New_York")));
+		toRequest = new FriendRequest(friendOfCurrentlyLoggedInUser, currentlyLoggedInUser, 2L, 1L, RequestStatus.ACCEPTED, "nHalash", "cpichle1", ZonedDateTime.now(ZoneId.of("America/New_York")));
 		
 		when(accountsService.getLoggedInUserId()).thenReturn(1L);
 		when(accountsRepository.findById(1L)).thenReturn(Optional.of(currentlyLoggedInUser));
