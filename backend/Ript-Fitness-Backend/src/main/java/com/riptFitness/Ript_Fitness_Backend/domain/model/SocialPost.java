@@ -1,6 +1,7 @@
 package com.riptFitness.Ript_Fitness_Backend.domain.model;
 
-import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +14,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 
 @Entity
@@ -44,10 +44,10 @@ public class SocialPost {
     public boolean isDeleted = false;
     
     @Column(name = "created_date", updatable = false)
-    public LocalDateTime dateTimeCreated;
+    public ZonedDateTime dateTimeCreated;
     
     @PrePersist
     protected void onCreate() {
-    	dateTimeCreated = LocalDateTime.now();
+    	dateTimeCreated = ZonedDateTime.now(ZoneId.of("America/New_York"));
     }
 }
