@@ -1,5 +1,6 @@
 package com.riptFitness.Ript_Fitness_Backend.web.dto;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,4 +18,5 @@ public class DayDto {
 	public double totalFat;
 	public int totalWaterConsumed;
 	public boolean isDeleted = false;
+	public ZonedDateTime dateCreated;
 }

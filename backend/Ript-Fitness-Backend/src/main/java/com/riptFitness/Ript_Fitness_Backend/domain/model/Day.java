@@ -1,12 +1,9 @@
 package com.riptFitness.Ript_Fitness_Backend.domain.model;
 
-import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -39,7 +36,7 @@ public class Day {
     @JoinColumn(name = "account_id", nullable = false)
     public AccountsModel account;
 	
-	public LocalDate date;
+	public ZonedDateTime dateCreated;
 
 	public double calories;
 	public double totalCarbs;
@@ -50,6 +47,6 @@ public class Day {
 	
     @PrePersist
     protected void onCreate() {
-    	date = LocalDate.now();
+    	dateCreated = ZonedDateTime.now(ZoneId.of("America/New_York"));
     }
 }
