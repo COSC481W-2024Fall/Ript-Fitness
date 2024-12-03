@@ -1,6 +1,6 @@
 package com.riptFitness.Ript_Fitness_Backend.web.dto;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 public class SocialPostCommentDto {
 
@@ -12,7 +12,7 @@ public class SocialPostCommentDto {
 	
     public Long postId;
     
-    public LocalDateTime dateTimeCreated;
+    public ZonedDateTime dateTimeCreated;
     
     public boolean isDeleted;
 }

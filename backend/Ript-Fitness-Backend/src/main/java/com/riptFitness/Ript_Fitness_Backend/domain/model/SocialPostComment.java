@@ -1,6 +1,7 @@
 package com.riptFitness.Ript_Fitness_Backend.domain.model;
 
-import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -32,12 +33,12 @@ public class SocialPostComment {
     public Long postId;
     
     @Column(name = "created_date", updatable = false)
-    public LocalDateTime dateTimeCreated;
+    public ZonedDateTime dateTimeCreated;
     
     public boolean isDeleted = false;
     
     @PrePersist
     protected void onCreate() {
-    	dateTimeCreated = LocalDateTime.now();
+    	dateTimeCreated = ZonedDateTime.now(ZoneId.of("America/New_York"));
     }
 }
