@@ -16,6 +16,7 @@ import ApiScreen from '../screens/ApiScreen';
 import EditNoteScreen from '../screens/notes/EditNoteScreen';
 import { Note } from '@/components/MyNotes/NotesContext';
 import ImageFullScreen from '../screens/profile/ImageFullScreen';
+import VisitFriendsScreen from '../screens/profile/VisitFriendsScreen';
 
 
 
@@ -26,6 +27,7 @@ export type ProfileStackParamList = {
   FindFriendsScreen: undefined;
   FullBioScreen: { userProfile: ProfileObject };
   VisitProfileScreen: any;
+  VisitFriendsScreen: any;
   ApiScreen: undefined;
   ImageFullScreen: {};
 };
@@ -46,6 +48,7 @@ export default function ProfileStack(props : any) {
       <Stack.Screen name="FindFriendsScreen" component={FindFriendsScreen} options={{headerShown:false}}/>
       <Stack.Screen name="FullBioScreen" component={FullBioScreen as any} options={{headerShown:false}}/>
       <Stack.Screen name="VisitProfileScreen" component={VisitProfileScreen} options={{headerShown:false}}/>
+      <Stack.Screen name="VisitFriendsScreen" component={VisitFriendsScreen} options={{headerShown:false}}/>
       <Stack.Screen name="ImageFullScreen" component={ImageFullScreen} options={{headerShown:false}}/>
       <Stack.Screen name="ApiScreen" component={ApiScreen} options={{headerShown:false}}/>
       {/* Put any additional screens for your tab here. This allows us to use a stack.

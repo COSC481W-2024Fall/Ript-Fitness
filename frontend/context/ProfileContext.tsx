@@ -17,6 +17,8 @@ export interface RequestingFriend {
   restDaysLeft: number,
   restResetDate: string,
   restRestDayOfWeek: number,
+  accountCreatedDate: string,
+  timeZone: string,
 }
 
 interface ProfileContextType {
@@ -66,6 +68,8 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children }) =>
     restDaysLeft: 0,
     restResetDate: '',
     restRestDayOfWeek: 0,
+    accountCreatedDate: '',
+    timeZone: '',
   };
 
 

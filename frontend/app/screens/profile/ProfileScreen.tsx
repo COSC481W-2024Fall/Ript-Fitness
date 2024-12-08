@@ -1,4 +1,4 @@
-import React, { Component, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
+import React, { Component, ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import {
   Alert,
   Platform,
 } from 'react-native';
+import * as Haptics from "expo-haptics";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ScrollView } from 'react-native-gesture-handler';
 import { DrawerActions, NavigationContainer, useFocusEffect, useNavigation } from '@react-navigation/native';
@@ -28,6 +29,9 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import * as FileSystem from 'expo-file-system';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DEFAULT_PROFILE_PICTURE from '@/assets/base64/defaultPicture';
+import timeZone from '@/api/timeZone'
+import TimeZone from '@/api/timeZone';
+import { Timer } from 'victory';
 
 const Tab = createMaterialTopTabNavigator();
 const Drawer = createDrawerNavigator();
@@ -195,7 +199,7 @@ function PhotosScreen() {
 
   const [loadingMore, setLoadingMore] = useState(false);
 
-  const [photosPerLoad, setPhotosPerLoad] = useState(9);
+  const [photosPerLoad, setPhotosPerLoad] = useState(14);
 
   const [allPhotosLoaded, setAllPhotosLoaded] = useState(false);
 
@@ -215,6 +219,7 @@ function PhotosScreen() {
 
 
   const fetchPhotosList = async (startIndex: number, endIndex: number, clear: boolean = true) => {
+    console.log(startIndex, " ", endIndex)
     try {
       const response = await fetch(
         `${httpRequests.getBaseURL()}/userProfile/photos?startIndex=${startIndex}&endIndex=${endIndex}`,
@@ -234,19 +239,21 @@ function PhotosScreen() {
       if (clear) {
         setPhotos(json);
       } else {
-        setPhotos((prevPosts) => [...prevPosts, ...json]);
+        console.log(json.length())
+        setPhotos((prevPhotos) => [...prevPhotos, ...json]);
       }
-      setReturned(true);
       return json; // Return the JSON data directly
     } catch (error) {
-      setReturned(true);
-      setLoadingMore(false);
       setAllPhotosLoaded(true);
       // If access denied
       // Send to login page
 
       //console.error('GET request failed:', error);
       //throw error; // Throw the error for further handling if needed
+    } finally {
+      setReturned(true);
+      setLoadingMore(false);
+      
     }
   };
 
@@ -261,8 +268,8 @@ function PhotosScreen() {
     if (formData) {
       try {
         setPhotos((prevPhotos) => [
-          ...prevPhotos,
           "Loading",
+          ...prevPhotos,
         ]);
         console.log(`${httpRequests.getBaseURL()}/userProfile/photo`);
         const response = await fetch(`${httpRequests.getBaseURL()}/userProfile/photo`, {
@@ -279,14 +286,13 @@ function PhotosScreen() {
         }
         const json = await response.text();
         await refreshPhotos();
-        console.log(json);
+        //console.log(json);
       } catch (error) {
         console.error(error);
       }
       // setSelectedImage(base64Image);
     }
   };
-  console.log(photos)
 
   const handleDeleteImage = async (uri : any) => {
     // Find the photo to delete
@@ -322,22 +328,31 @@ function PhotosScreen() {
       console.error('Error deleting photo:', error);
     }
   };
+  const renderFooter = () => {
+    if (!returned || loadingMore) {
+      return (
+        <View style={{ paddingVertical: 20 }}>
+          <ActivityIndicator size="large" color="#0000ff" />
+        </View>
+      );
+    } else {
+      return null;
+    }
 
-  const photosWithAddButton = [
-    ...photos.map((uri) => ({ uri })), // Convert each URI to an object
-    { isAddButton: true },             // Add button placeholder
-  ];
+  };
+
+  const handleLoadMore = async () => {
+    if (returned && !loadingMore && !allPhotosLoaded) {
+      setLoadingMore(true);
+      let start = currentEndIndex + 1;
+      await fetchPhotosList(start, currentEndIndex + photosPerLoad, false);
+      setCurrentEndIndex(currentEndIndex + photosPerLoad);
+      // Fetch or load more data here
+    }
+  };
 
   const renderItem = ({ item } : any) => {
-    if (item.isAddButton) {
-      // Render the add button
-      return (
-        <TouchableOpacity style={styles.addPhotoButton} onPress={handlePhoto}>
-          <Ionicons name="add" size={48} color="#BFBFBF" />
-        </TouchableOpacity>
-      );
-
-    } else if (item.uri == 'Loading') {
+    if (item == 'Loading') {
       // Render the loading indicator
       return (
         <View style={[styles.photo, {justifyContent:'center'}]}>
@@ -348,21 +363,24 @@ function PhotosScreen() {
       // Render the photo
       return <TouchableOpacity onPress={() =>
         navigation.navigate('ImageFullScreen', {
-          imageUri: item.uri,
-          onDelete: () => handleDeleteImage(item.uri),
+          imageUri: item,
+          onDelete: () => handleDeleteImage(item),
         })
-      }><Image source={{ uri: item.uri }} style={styles.photo} /></TouchableOpacity>;
+      }><Image source={{ uri: item }} style={styles.photo} /></TouchableOpacity>;
     }
   };
 
   
-
   return (
 
     <View style={{width:'100%', flex:1, backgroundColor:'#fff'}}>
+      <TouchableOpacity style={styles.addPhotoButton} onPress={handlePhoto}>
+          <Ionicons name="add" size={24} color="white" />
+        </TouchableOpacity>
 <View style={styles.photosContainer}>
+  {photos.length > 0 ? <></>: <View style={{width:'100%', height:'80%', justifyContent:'center'}}><Text style={{textAlign:'center'}}>Add your first photo! These photos are private.</Text></View>}
 <FlatList
-  data={photosWithAddButton}
+  data={photos}
   keyExtractor={(item, index) => index.toString()}
   numColumns={3} // Adjust the number of columns as needed
   renderItem={renderItem}
@@ -373,6 +391,9 @@ function PhotosScreen() {
     backgroundColor: '#fff',
   }}
   showsVerticalScrollIndicator={true}
+  onEndReached={handleLoadMore}
+  onEndReachedThreshold={0.5}
+  ListFooterComponent={renderFooter}
 />
 </View>
 </View>
@@ -402,30 +423,20 @@ function PostsScreen() {
   interface Post {
     numberOfLikes: number;
     dateTimeCreated: string;
-    id: number;
+    id: string;
     content: string;
     userProfile: ProfileObject;
-    userIdsOfLikes: number[];
+    userIDsOfLikes: number[];
   }
-  const refreshPosts = async () => {
-    console.log("refreshing")
-    setRefreshing(true);
-    setLoadingMore(false);
-    setAllPostsLoaded(false);
-    await setCurrentEndIndex(postsPerLoad);
-    await fetchPostList(0, postsPerLoad);
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 0);
-  }
-  const onRefresh = React.useCallback(refreshPosts, []);
 
-  useFocusEffect(
-    useCallback(() => {
-      refreshPosts()
-      return () => {};
-    }, [])
-  );
+
+  interface likeHandler {
+    PostId: string,
+    PendingAction: Number,
+    PendingTimer: NodeJS.Timeout,
+    OriginalState: Number,
+  }
+  const likeHandlers = useRef<likeHandler[]>([])
 
   const fetchPostList = async (startIndex: number, endIndex: number, clear: boolean = true) => {
     try {
@@ -468,17 +479,180 @@ function PostsScreen() {
     //fetchPostList(0, currentEndIndex);
   }
 
-  const formatTimestamp = (timestamp: string): string => {
-    const date = new Date(timestamp);
-    return date.toLocaleString(undefined, {
-      year: 'numeric',
-      month: 'numeric',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: 'numeric',
-      hour12: true, // converts to 12 hour format
+  const pushLikeAction = async (handler: likeHandler)  => {
+    let success = true;
+    try {
+    if (handler.PendingAction == 1) {
+      //        /socialPost/addLike/122
+        const response = await fetch(
+          `${httpRequests.getBaseURL()}/socialPost/addLike/${handler.PostId}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${context?.data.token}`,
+            },
+            body: ``,
+          }
+        );
+        if (!response.ok) {
+          //console.error("Failed to update profile.");
+          console.log(await response.text())
+        }
+
+
+
+
+    } else if (handler.PendingAction == -1) {
+      //      /socialPost/deleteLike/122
+        const response = await fetch(
+          `${httpRequests.getBaseURL()}/socialPost/deleteLike/${handler.PostId}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${context?.data.token}`,
+            },
+            body: ``,
+          }
+        );
+        if (!response.ok) {
+          console.error("Failed to update profile.");
+        }
+    }
+  } catch (error) {
+    success = false
+  } finally {
+    console.log("now")
+    let likeOrDislike = handler.PendingAction
+    if (!success) {
+      likeOrDislike = handler.OriginalState
+    }
+    const post = posts.find(p => p.id === handler.PostId);
+    if (post && context) {
+      const index = post.userIDsOfLikes.indexOf(Number(context.userProfile.id));
+      if (!success && likeOrDislike == -1 && index !== -1) {
+        // If userId is found, remove it
+        post.userIDsOfLikes.splice(index, 1);
+      } else if (!success && likeOrDislike == 1 && index == -1){
+        // If userId is not found, add it back in
+        post.userIDsOfLikes.push(Number(context.userProfile.id));
+      }
+      likeHandlers.current = likeHandlers.current.filter(h => h !== handler);
+  }
+}
+  }
+
+
+
+  const [refreshKey, setRefreshKey] = useState(0)
+  function createTimer(duration: number, callback: () => void): NodeJS.Timeout {
+    // duration is in milliseconds
+    // callback will run after the timer finishes
+    const timer = setTimeout(() => {
+      callback();
+    }, duration);
+  
+    return timer; // You can store or clear this timeout later if needed
+  }
+
+  React.useEffect(() => {
+    if (refreshKey != 0)
+      setRefreshKey(0)
+  }, [refreshKey, likeHandlers]);
+
+  const toggleLike = async (post: Post) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid);
+
+    if (context) {
+      const userId = Number(context.userProfile.id);
+      const action = post.userIDsOfLikes.includes(userId) ? -1 : 1;
+      const originalAction = post.userIDsOfLikes.includes(Number(context.userProfile.id)) ? 1 : -1
+        if (post.userIDsOfLikes.includes(userId)) {
+          console.log("unlike")
+          const index = post.userIDsOfLikes.indexOf(userId);
+          if (index !== -1) {
+            post.userIDsOfLikes.splice(index, 1);
+          }
+        } else {
+          console.log("like")
+          post.userIDsOfLikes.push(userId);
+        }
+        console.log("Is Liked: " , post.userIDsOfLikes.includes(userId))
+      const foundHandler = likeHandlers.current.find(handler => handler.PostId === post.id);
+      if (foundHandler) {
+        console.log("found handler")
+        if (foundHandler.PendingAction == 1) {
+          foundHandler.PendingAction = -1
+          
+
+          clearTimeout(foundHandler.PendingTimer);
+
+          // Now create a fresh timer with a new duration and callback
+          foundHandler.PendingTimer = createTimer(2000, () => pushLikeAction(foundHandler));
+        } else if (foundHandler.PendingAction == -1) {
+          foundHandler.PendingAction = 1
+
+          clearTimeout(foundHandler.PendingTimer);
+
+          // Now create a fresh timer with a new duration and callback
+          foundHandler.PendingTimer = createTimer(2000, () => pushLikeAction(foundHandler));
+        }
+      } else {
+        console.log("no handler")
+        const newHandler: likeHandler = {
+          PostId: post.id,            // Replace with your desired post ID
+          PendingAction: action,       // Replace with the initial PendingAction
+          PendingTimer: createTimer(2000, () => pushLikeAction(newHandler)), // Replace with the timer object or reference
+          OriginalState: originalAction,
+        } as likeHandler;
+        
+        likeHandlers.current = [...likeHandlers.current, newHandler];
+      }
+      setRefreshKey(1)
+    }
+  }
+
+  const waitForLikeHandlersEmpty = async (): Promise<void> =>  {
+    return new Promise((resolve) => {
+      const checkIfEmpty = () => {
+        // Check if likeHandlers is empty
+        console.log(likeHandlers.current.length)
+        if (likeHandlers.current.length === 0) {
+          console.log("empty now")
+          resolve();
+        } else {
+          // If not empty, check again after a short delay
+          setTimeout(checkIfEmpty, 50);
+        }
+      };
+  
+      checkIfEmpty();
     });
-  };
+  }
+
+  const refreshPosts = async () => {
+    setRefreshing(true);
+    await waitForLikeHandlersEmpty()
+    setLoadingMore(false);
+    setAllPostsLoaded(false);
+    //setLikeHandlers([])
+    await setCurrentEndIndex(postsPerLoad);
+    await fetchPostList(0, postsPerLoad, true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 0);
+  }
+  const onRefresh = React.useCallback(refreshPosts, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshPosts()
+      context?.reloadFriends();
+      return () => {};
+    }, [])
+  );
+
   const renderPostItem = ({ item: post }: { item: Post }) => (
     <View style={styles.postItem}>
       <Image
@@ -494,11 +668,11 @@ function PostsScreen() {
       <View style={styles.postContent}>
         <Text style={styles.postText}>{post.content}</Text>
         <View style={styles.postFooter}>
-          <View style={styles.likeCommentContainer}>
-            <Ionicons name="heart" size={24} color="#FF3B30" />
-            <Text style={styles.likeCounter}>{post.numberOfLikes}</Text>
-          </View>
-          <Text style={styles.dateText}>{formatTimestamp(post.dateTimeCreated)}</Text>
+          <TouchableOpacity style={styles.likeCommentContainer} onPress={() => {toggleLike(post)}}>
+            <Ionicons name="heart" size={24} color={post.userIDsOfLikes.includes(Number(context?.userProfile.id)) ? "#FF3B30" : "#B1B6C0"} />
+            <Text style={styles.likeCounter}>{post.userIDsOfLikes.length}</Text>
+          </TouchableOpacity>
+          <Text style={styles.dateText}>{TimeZone.convertToTimeZone(post.dateTimeCreated, TimeZone.get())}</Text>
         </View>
       </View>
     </View>
@@ -547,6 +721,14 @@ function PostsScreen() {
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.5}
           ListFooterComponent={renderFooter}
+          ListEmptyComponent={
+            returned ? (
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>No posts available</Text>
+                <Text style={styles.emptyEmoji}>😔</Text>
+              </View>
+            ) : null
+          }
           //columnWrapperStyle={{ padding: 0, margin: 0 }}
         />
       ) : (
@@ -561,11 +743,22 @@ function ProgressScreen() {
   const context = useContext(GlobalContext);
   const [loadingDates, setLoadingDates] = useState<Date[]>([]);
 
+
+  useFocusEffect(
+    useCallback(() => {
+      const dateRange = getDateRange();
+      //context?.clearCalendar();
+      context?.loadCalendarDays(dateRange, true);
+      // Optionally, return a cleanup function if needed
+      return () => {};
+    }, [])
+  );
+
   const formatDate = (date: Date): string => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
     const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    return `${month}/${day}/${year}`;
   };
 
   let spacerKey = 100;
@@ -601,6 +794,9 @@ function ProgressScreen() {
     if (context && context.calendar[formatDate(myDate)]) {
       // If date is in context, use the context date
       return context.calendar[formatDate(myDate)];
+    } else if (new Date(myDate) < new Date() && context && new Date(myDate) <= new Date(context.userProfile.accountCreatedDate)) {
+      return 4;
+
     } else if (new Date(myDate) < new Date()) {
       // If date is not in context and is before today, return 3
       return 3;
@@ -626,6 +822,7 @@ function ProgressScreen() {
     };
   };
   const [refreshKey, setRefreshKey] = useState(0); // State to trigger re-render
+  
   const Calendar = () => {
     const daysInMonth = new Date(myDate.getFullYear(), myDate.getMonth(), 0).getDate(); // Directly calculate days
 
@@ -735,7 +932,7 @@ function ProgressScreen() {
       const today = new Date().toISOString().split('T')[0]; // Get today's date in yyyy-MM-dd format
 
       try {
-        const response = await fetch(`${httpRequests.getBaseURL()}/calendar/logRestDay?date=${today}`, {
+        const response = await fetch(`${httpRequests.getBaseURL()}/calendar/logRestDay?timeZone=${TimeZone.get()}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json', // Set content type to JSON
@@ -907,7 +1104,6 @@ const MainScreen = () => {
           throw new Error(`Error: ${response.status}`);
         }
         const json = await response.text(); //.json(); // Parse the response as JSON
-        console.log(json);
         // return json; // Return the JSON data directly
       } catch (error) {
         console.error('00012 GET request failed:', error);
@@ -1329,6 +1525,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingBottom: 10,
   },
+  emptyContainer: {
+    alignItems: "center",
+    marginTop: 50,
+    flex:1
+  },
+  emptyText: {
+    fontSize: 20,
+    color: "#999",
+    margin: 7,
+  },
+  emptyEmoji: {
+    fontSize: 48,
+    color: "#999",
+    margin: 7,
+  },
   textView: {
     justifyContent: 'center',
     alignContent: 'center',
@@ -1367,23 +1578,29 @@ const styles = StyleSheet.create({
     // alignItems:'left',
   },
   addPhotoButton: {
-    width: 128, // Adjust as needed for your layout
-    height: 128,
-    // borderRadius: 10,
-    margin:1,
-    backgroundColor: '#ededed', // gray
-    justifyContent: 'center',
-    alignItems: 'center',
-    // shadowColor: '#000',
-    // shadowOffset: { width: 0, height: 4 },
-    // shadowOpacity: 0.3,
-    // shadowRadius: 4,
-    // elevation: 5, // Adds shadow on Android
+    position: "absolute",
+    right: 20,
+    bottom: 15,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: "#21BFBF",
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 5,
+    shadowColor: "#000",
+    zIndex:10,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   photo: {
     width: 128, // Adjust as needed for your layout
     height: 128,
-    // borderRadius: 10,
+    borderRadius: 10,
     margin:1,
   },
   bg: {
@@ -1484,7 +1701,7 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
   },
   postView: {
-    backgroundColor: '#eee',
+    backgroundColor: '#fff',
     flex: 1, // Allows FlatList to take up full height and be scrollable
     padding: 0,
     margin: 0,

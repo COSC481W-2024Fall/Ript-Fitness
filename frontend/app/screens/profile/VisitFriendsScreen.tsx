@@ -3,50 +3,68 @@ import { View, Text, TextInput, FlatList, Image, TouchableOpacity, StyleSheet, P
 import { Ionicons } from '@expo/vector-icons';
 import { GlobalContext } from '@/context/GlobalContext';
 import { httpRequests } from '@/api/httpRequests';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
+import { ProfileScreenNavigationProp } from '@/app/(tabs)/ProfileStack';
+import { ProfileContext } from '@/context/ProfileContext';
 
 
-const FriendsScreen = ({ navigation }: any) => {
+const VisitFriendsScreen: React.FC = () => {
+    const route = useRoute();
+    const navigation = useNavigation<ProfileScreenNavigationProp>();
+const { friends } = route.params as any;
+
+const profContext = useContext(ProfileContext)
 const context = useContext(GlobalContext)
   const [search, setSearch] = useState('');
+  const [adding, setAdding] = useState<number[]>([])
 
-  const filteredFriends = context?.friends.filter((friend: any) =>
+  const filteredFriends = friends.filter((friend: any) =>
     friend.username.toLowerCase().includes(search.toLowerCase())
   );
 
-
-  useFocusEffect(
-    useCallback(() => {
-      context?.reloadFriends();
-      return () => {};
-    }, [])
-  );
-  const deleteFriend = async (id: string) => {
-    try {
-        context?.removeFriend(id)
-        const response = await fetch(`${httpRequests.getBaseURL()}/friends/deleteFriend/${id}`, {
-          method: 'DELETE', // Set method to POST
-          headers: {
-            'Content-Type': 'application/json', // Set content type to JSON
-            "Authorization": `Bearer ${context?.data.token}`,
-          },
-          body: "", // Convert the data to a JSON string
-        }); // Use endpoint or replace with BASE_URL if needed
-        if (!response.ok) {
-            console.log("that's bad")
-        }
-        const json = await response.text() //.json(); // Parse the response as JSON;
-        //return json; // Return the JSON data directly
-      } catch (error) {
-      
-        console.error('0001 GET request failed:', error);
-        throw error; // Throw the error for further handling if needed
-      }
+  const sendFriendRequest = async (id: number, username: string) => {
+    //Get Account ID
+    console.log(id)
+    //Send Request to Account ID
+   const request = {
+      "accountIdOfToAccount": id,
+      "status": "SENT"
   }
+  if (adding.indexOf(id) == -1 && !profContext?.sentFriendRequests.includes(username)) {
+    setAdding((prevNumbers) => [...prevNumbers, id]);
+  try {
+    const response = await fetch(`${httpRequests.getBaseURL()}/friendRequest/sendNewRequest`, {
+      method: 'POST', // Set method to POST
+      headers: {
+        'Content-Type': 'application/json', // Set content type to JSON
+        "Authorization": `Bearer ${context?.data.token}`,
+      },
+      body: JSON.stringify(request), // Convert the data to a JSON string
+    }); // Use endpoint or replace with BASE_URL if needed
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status}`);
+    }
+    const json = await response.json() //.json(); // Parse the response as JSON
+    profContext?.handleAddSentFriendRequest(username)
+    //return json; // Return the JSON data directly
+  } catch (error) {
+    console.error('GET request failed:', error);
+    throw error; // Throw the error for further handling if needed
+  } finally {
+  setAdding((prev) => {
+    const updated = [...prev];
+    updated.splice(prev.indexOf(id), 1); // Remove the item
+    return updated; // Return the updated array
+  });
+}
+  }
+}
 
 
+console.log("FEE: " , profContext)
   const renderItem = ({ item }: any) => { 
     return (
+
     <View style={styles.friendItem}>
       <TouchableOpacity style={{flex:1, flexDirection:'row', alignItems: 'center'}} onPress={() => {navigation.navigate("VisitProfileScreen", {item})}}>
         <Image source={{ uri: `data:image/png;base64,${item.profilePicture}` }} style={styles.profileImage} />
@@ -55,11 +73,36 @@ const context = useContext(GlobalContext)
         <Text style={styles.friendUserName}>@{item.username}</Text>
       </View>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.removeButton} onPress={() => {deleteFriend(item.id)}}>
-        <Text style={styles.removeButtonText}>Remove</Text>
-      </TouchableOpacity>
+
+      <TouchableOpacity
+  style={[
+    styles.addButton,
+    (adding.includes(item.id) || 
+    context?.friends.some((friend : any) => friend.id === item.id) || 
+     profContext?.sentFriendRequests.includes(item.username)) && styles.disabledButton
+  ]}
+  onPress={() => sendFriendRequest(item.id, item.username)}
+  disabled={
+    adding.includes(item.id) ||
+    context?.friends.some((friend : any) => friend.id === item.id) ||
+    profContext?.sentFriendRequests.includes(item.username)
+  }
+>
+  <Text style={styles.addButtonText}>
+    {adding.includes(item.id)
+      ? "Sending..."
+      : context?.friends.some((friend : any) => friend.id === item.id)
+      ? "Already Friends"
+      : profContext?.sentFriendRequests.includes(item.username)
+      ? "Request Sent"
+      : "Send Request"}
+  </Text>
+</TouchableOpacity>
+
+
     </View>
-  )};
+  );}
+
 
   return (
     <View style={[styles.container, {paddingTop: Platform.OS === "ios" ? 30 : 0, // Add paddingTop for iOS
@@ -71,9 +114,7 @@ const context = useContext(GlobalContext)
           <Ionicons name="arrow-back" size={24} color="black" />
         </TouchableOpacity>
         <Text style={styles.title}>Friends</Text>
-        <TouchableOpacity onPress={() => navigation.navigate('FindFriendsScreen')}>
-          <Ionicons name="add" size={30} color="black" style={styles.addButton} />
-        </TouchableOpacity>
+        <View style={{paddingRight:20}}></View>
       </View>
 
       {/* Search Bar */}
@@ -85,7 +126,7 @@ const context = useContext(GlobalContext)
       />
 
       {/* Friend List or Empty Message */}
-      {context?.friends.length === 0 ? (
+      {friends.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyMessage}>Press + to add a friend</Text>
         </View>
@@ -112,7 +153,12 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ddd',
   },
   title: { fontSize: 20, fontWeight: 'bold' },
-  addButton: { marginRight: 10 },
+  addButton: {
+    backgroundColor: '#21BFBF',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
   searchBar: {
     backgroundColor: '#f2f2f2',
     padding: 10,
@@ -158,6 +204,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingHorizontal: 16,
   },
+  addButtonText: { color: '#fff', fontWeight: 'bold' },
+  disabledButton: {
+    backgroundColor: "#EDEDED", // Light grey
+  },
 });
 
-export default FriendsScreen;
+export default VisitFriendsScreen;

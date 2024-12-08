@@ -10,7 +10,24 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import * as FileSystem from 'expo-file-system';
 import { useNavigation } from '@react-navigation/native';
 import { ProfileScreenNavigationProp } from '@/app/(tabs)/ProfileStack';
+import { Picker } from '@react-native-picker/picker'; // <-- ADDED
+import { Dropdown } from 'react-native-element-dropdown';
 
+// We add a static list of some common time zones.
+// DO NOT REMOVE ANYTHING ELSE, ONLY ADD WHAT'S NEEDED.
+const timeZones: string[] = [
+  "Pacific/Honolulu",
+  "America/Anchorage",
+  "America/Los_Angeles",
+  "America/Denver",
+  "America/Chicago",
+  "America/New_York",
+  "Europe/London",
+  "Europe/Berlin",
+  "Europe/Moscow",
+  "Asia/Tokyo",
+  "Australia/Sydney",
+];
 
 const uploadPhoto = async () => {
   try {
@@ -69,7 +86,10 @@ const SettingsScreen = ({ navigation }: any) => {
   const [restDays, setRestDays] = useState<string>("");
   const [bio, setBio] = useState<string>("");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  
+
+// ADDING STATE FOR TIMEZONE, NO REMOVALS
+  const [selectedTimeZone, setSelectedTimeZone] = useState<string>("America/New_York");
+
   useEffect(() => {
     if (context?.userProfile) {
       setDisplayName(context.userProfile.displayname);
@@ -77,15 +97,14 @@ const SettingsScreen = ({ navigation }: any) => {
       setLastName(context.userProfile.lastName);
       setRestDays(context.userProfile.restDays.toString());
       setBio(context.userProfile.bio);
+      // SET TIMEZONE IF AVAILABLE, OTHERWISE KEEP DEFAULT
+      setSelectedTimeZone(context.userProfile.timeZone || "America/New_York");
     }
   }, [context?.userProfile]);
 
   useEffect(() => {
     setSelectedImage(context?.userProfile.profilePicture || null);
   }, [context?.userProfile.profilePicture]);
-  
-
-
 
   const [email, setEmail] = useState("placeholder");
   const [error, setError] = useState("");
@@ -107,7 +126,6 @@ const SettingsScreen = ({ navigation }: any) => {
       setSelectedImage(base64Image);
     }
   };
-  
 
   const saveSettings = async () => {
     console.log(displayName)
@@ -118,7 +136,9 @@ const SettingsScreen = ({ navigation }: any) => {
       context?.userProfile.firstName !== firstName ||
       context?.userProfile.lastName !== lastName ||
       context?.userProfile.restDays.toString() !== restDays ||
-      context?.userProfile.profilePicture !== selectedImage
+      context?.userProfile.profilePicture !== selectedImage ||
+      // ADD CHECK FOR TIMEZONE
+      context?.userProfile.timeZone !== selectedTimeZone
     ) {
       const newProfile: any = {
         ...context?.userProfile,
@@ -128,6 +148,8 @@ const SettingsScreen = ({ navigation }: any) => {
         restDays: parseInt(restDays ?? "") ?? context?.userProfile.restDays,
         bio: bio ?? context?.userProfile.bio,
         profilePicture: selectedImage ?? context?.userProfile.profilePicture,
+        // INCLUDE TIMEZONE IN PROFILE
+        timeZone: selectedTimeZone ?? context?.userProfile.timeZone,
       };
       try {
         await context?.updateUserProfile(newProfile);
@@ -152,11 +174,15 @@ const SettingsScreen = ({ navigation }: any) => {
       }
     }
   };
-
+  const [selection, setSelection] = useState<{ start: number; end: number } | undefined>(undefined);
+  const [lastFocus, setLastFocus] = useState(-1)
+  const [isFocus, setIsFocus] = useState(false);
   return (
     <KeyboardAwareScrollView
       style={styles.container}
       contentContainerStyle={styles.scrollContainer}
+      keyboardShouldPersistTaps="handled"
+      enableResetScrollToCoords={false}
       enableOnAndroid={true}
       extraScrollHeight={80}
     >
@@ -193,7 +219,26 @@ const SettingsScreen = ({ navigation }: any) => {
           <TextInput
             style={styles.input}
             value={firstName}
-            onChangeText={setFirstName}
+            onChangeText={(text) => {
+              setFirstName(text);
+              // Once the user has typed something, stop controlling the selection
+            }}
+            onSelectionChange={() => {
+              if (selection !== undefined) {
+                setSelection(undefined);
+              }
+
+
+            }}
+            onFocus={() => {
+              // When the user taps on the TextInput, move the cursor to the end
+              if (lastFocus != 0) {
+              const length = firstName.length;
+              setSelection({ start: length, end: length });
+              setLastFocus(0)
+              }
+            }}
+            selection={selection}
           />
         </View>
         <View style={styles.infoRow}>
@@ -201,7 +246,26 @@ const SettingsScreen = ({ navigation }: any) => {
           <TextInput
             style={styles.input}
             value={lastName}
-            onChangeText={setLastName}
+            onChangeText={(text) => {
+              setLastName(text);
+              // Once the user has typed something, stop controlling the selection
+            }}
+            onSelectionChange={() => {
+              if (selection !== undefined) {
+                setSelection(undefined);
+              }
+
+
+            }}
+            onFocus={() => {
+              // When the user taps on the TextInput, move the cursor to the end
+              if (lastFocus != 1) {
+                const length = lastName.length;
+                setSelection({ start: length, end: length });
+                setLastFocus(1)
+                }
+            }}
+            selection={selection}
           />
         </View>
         <View style={styles.infoRow}>
@@ -209,7 +273,27 @@ const SettingsScreen = ({ navigation }: any) => {
           <TextInput
             style={styles.input}
             value={displayName}
-            onChangeText={setDisplayName}
+            onChangeText={(text) => {
+              setDisplayName(text);
+              // Once the user has typed something, stop controlling the selection
+            }}
+            onFocus={() => {
+              console.log(lastFocus)
+              // When the user taps on the TextInput, move the cursor to the end
+              if (lastFocus != 2) {
+                const length = displayName.length;
+                setSelection({ start: length, end: length });
+                setLastFocus(2);
+                }
+            }}
+            onSelectionChange={() => {
+              if (selection !== undefined) {
+                setSelection(undefined);
+              }
+
+
+            }}
+            selection={selection}
           />
         </View>
         <View style={styles.infoRow}>
@@ -217,8 +301,27 @@ const SettingsScreen = ({ navigation }: any) => {
           <TextInput
             style={styles.input}
             value={restDays}
-            onChangeText={setRestDays}
+            onChangeText={(text) => {
+              setRestDays(text);
+              // Once the user has typed something, stop controlling the selection
+            }}
             keyboardType="numeric"
+            onFocus={() => {
+              // When the user taps on the TextInput, move the cursor to the end
+              if (lastFocus != 3) {
+                const length = restDays.length;
+                setSelection({ start: length, end: length });
+                setLastFocus(3)
+                }
+            }}
+            onSelectionChange={() => {
+              if (selection !== undefined) {
+                setSelection(undefined);
+              }
+
+
+            }}
+            selection={selection}
           />
         </View>
         <View style={styles.infoRow}>
@@ -226,10 +329,55 @@ const SettingsScreen = ({ navigation }: any) => {
           <TextInput
             style={styles.input}
             value={bio}
-            onChangeText={setBio}
+            onChangeText={(text) => {
+              setBio(text);
+              // Once the user has typed something, stop controlling the selection
+            }}
             multiline
+            onSelectionChange={() => {
+              if (selection !== undefined) {
+                setSelection(undefined);
+              }
+
+
+            }}
+            onFocus={() => {
+              // When the user taps on the TextInput, move the cursor to the end
+              if (lastFocus != 4) {
+                const length = bio ? bio.length : 0;
+                setSelection({ start: length, end: length });
+                setLastFocus(4)
+                }
+            }}
+            selection={selection}
           />
         </View>
+        {/* ADD TIME ZONE DROPDOWN HERE WITHOUT REMOVING ANYTHING */}
+        <View style={[styles.infoRow]}>
+          <Text style={[styles.label, {flex:1}]}>Time Zone</Text>
+          <View style={{flex:2, justifyContent:'center'}}>
+          <Dropdown
+        data={timeZones.map(tz => ({ label: tz, value: tz }))}
+        labelField="label"
+        valueField="value"
+        value={selectedTimeZone}
+        placeholder={context && context.userProfile.timeZone ? context.userProfile.timeZone : ""}
+        placeholderStyle={{marginLeft:10}}
+        style={{ flex:2,borderWidth: 1, borderColor: '#ccc', borderRadius:10, minHeight:30 }}
+        containerStyle={{ maxHeight: 200 }} // optional, limit dropdown height
+        onFocus={() => setIsFocus(true)}
+        onBlur={() => setIsFocus(false)}
+        selectedTextStyle={{ marginLeft: 10 }}
+        onChange={item => {
+          setSelectedTimeZone(item.value);
+          setIsFocus(false);
+        }}
+        // Control whether the dropdown is open
+        //visible={isFocus}
+      />
+</View>
+        </View>
+
         {/*<View style={styles.infoRow}>
           <Text style={styles.label}>Email</Text>
           <TextInput
@@ -303,7 +451,8 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ddd',
   },
   label: { fontSize: 16, fontWeight: '500', color: '#333' },
-  input: { fontSize: 16, color: '#333', flex: 1, textAlign: 'right' },
+  input: { fontSize: 16, color: '#333', flex: 1, textAlign: 'right', minWidth:30, marginRight:10 },
+  dropdown: { fontSize: 16, color: '#333', flex: 2, textAlign: 'right', minWidth:50, backgroundColor:'grey' },
 });
 
 export default SettingsScreen;

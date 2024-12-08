@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { View, Text, TextInput, FlatList, Image, TouchableOpacity, StyleSheet, ActivityIndicator, Platform } from 'react-native';
+import { View, Text, TextInput, FlatList, Image, TouchableOpacity, StyleSheet, ActivityIndicator, Platform, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { GlobalContext } from '@/context/GlobalContext';
 import { httpRequests } from '@/api/httpRequests';
@@ -168,14 +168,17 @@ const updatePotentialFriends = (newFriends: FriendObject[]) => {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={[styles.header, {marginTop: Platform.OS === "ios" ? '10%' : 0, // Add paddingTop for iOS
-            // height: Platform.OS === "ios" ? 80 : 60,    // Adjust header height if necessary
-            backgroundColor: 'white', }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+      <SafeAreaView style={styles.safeArea}>
+      <View style={styles.header}>
+        {/* Back Button */}
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color="black" />
         </TouchableOpacity>
+
+        {/* Title */}
         <Text style={styles.title}>Find Friends</Text>
       </View>
+    </SafeAreaView>
 
       {/* Search Bar */}
       <TextInput
@@ -215,27 +218,54 @@ const updatePotentialFriends = (newFriends: FriendObject[]) => {
 };
 
 const styles = StyleSheet.create({
+
+
   emptyStateContainer: {
-    flex: 1, // Make the container fill the entire available space
-    justifyContent: "center", // Center the content vertically
-    alignItems: "center", // Center the content horizontally
-    marginBottom:'25%'
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   emptyStateText: {
-    textAlign: "center",
+    fontSize: 16,
+    color: '#888',
+    textAlign: 'center',
+    paddingHorizontal: 16,
   },
   container: { flex: 1, backgroundColor: '#fff' },
   header: {
+    marginTop: Platform.OS === 'ios' ? 10 : 0,
+    height: 60, // Fixed height for consistency
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    justifyContent: 'space-between', // Distributes space between children
+    paddingHorizontal: 15, // Horizontal padding
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
   },
   loader: {
     marginTop: 20,
   },
-  title: { fontSize: 20, fontWeight: 'bold', marginLeft: 8 },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    alignContent:'center',
+    alignSelf:'center',
+    width:'100%',
+  },
+  leftContainer: {
+    flex: 1,
+    alignItems: 'flex-start',
+  },
+  centerContainer: {
+    flex: 2, // Takes up more space to center the title
+    alignItems: 'center',
+  },
+  rightContainer: {
+    flex: 1,
+    alignItems: 'flex-end',
+    // Optional: Add justifyContent: 'center' if adding elements
+  },
   searchBar: {
     backgroundColor: '#f2f2f2',
     padding: 10,
@@ -255,12 +285,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold', 
 },
-
+safeArea: {
+  backgroundColor: 'white',
+},
   friendUserName: {     
     fontSize: 14,
     color: '#888', 
 },
-
+backButton: {
+  position: 'absolute',
+  zIndex:10,
+  elevation:10,
+  left: 15,
+  top: Platform.OS === 'ios' ? 15 : 18, // Adjust vertical position as needed
+},
 disabledButton: {
   backgroundColor: "#d3d3d3", // Light grey
 },
