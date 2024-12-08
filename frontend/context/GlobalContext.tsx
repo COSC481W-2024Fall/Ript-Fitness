@@ -67,7 +67,7 @@ export interface Workout {
 
 
 export interface Exercise {
-  exerciseId: number;
+  exerciseId: number | null ;
   nameOfExercise: string;
   sets: number;
   reps: number[];
@@ -283,7 +283,7 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
       console.log("Fetching workouts with token:", data.token);
 
 
-      const response = await fetch(`${httpRequests.getBaseURL()}/workouts/getUsersWorkouts`, {
+      const response = await fetch(`${httpRequests.getBaseURL()}/workouts/getUsersWorkouts/0/10000`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${data.token}`,

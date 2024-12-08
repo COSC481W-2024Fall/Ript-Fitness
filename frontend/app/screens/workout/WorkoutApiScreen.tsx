@@ -12,7 +12,7 @@ import { GlobalContext } from '@/context/GlobalContext';
 // https://www.youtube.com/watch?v=q2s6VTHl2kE went off this video 
 // https://reactnativeelements.com/docs/1.2.0/icon
  
- 
+
 export default function WorkoutApiScreen() { 
   
   const navigation = useNavigation<WorkoutScreenNavigationProp >();
