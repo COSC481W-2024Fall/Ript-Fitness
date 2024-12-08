@@ -1,10 +1,11 @@
 import React, { useState, useContext  } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, TextInput, Modal, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, TextInput, Modal, Alert, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Swipeable } from 'react-native-gesture-handler';
 import { GlobalContext } from "@/context/GlobalContext"; // Access global context
 import { useNavigation } from "@react-navigation/native"; // Navigation
 import { WorkoutScreenNavigationProp } from '@/app/(tabs)/WorkoutStack';
+import StreakHeader from '@/components/StreakHeader';
 
 
 
@@ -292,11 +293,11 @@ const confirmDeleteExercise = (exerciseIndex: number) => {
   const renderExercise = ({ item, index }: { item: Exercise; index: number }) => (
     <Swipeable
       renderLeftActions={() => (
-        <View style={styles.swipeDeleteButton}>
+        <TouchableOpacity style={styles.swipeDeleteButton} onPress={() => confirmDeleteExercise(index)}>
           <Text style={styles.deleteText}>Delete</Text>
-        </View>
+        </TouchableOpacity>
       )}
-      onSwipeableOpen={() => confirmDeleteExercise(index)} // Pass the index to delete the exercise
+      // onSwipeableOpen={} // Pass the index to delete the exercise
     >
       <View style={styles.exerciseItem}>
         {/* Render exercise name and edit input if in edit mode */}
@@ -311,42 +312,30 @@ const confirmDeleteExercise = (exerciseIndex: number) => {
               autoFocus
             />
           ) : (
-            <TouchableOpacity onPress={() => handleEditName(index)}>
-              <Text style={styles.exerciseTitleText}>{item.nameOfExercise}</Text>
-            </TouchableOpacity>
+            <View>
+              <TouchableOpacity onPress={() => handleEditName(index)}>
+                <Text style={styles.exerciseTitleText}>{item.nameOfExercise}</Text>
+              </TouchableOpacity>
+            </View>
+            
           )}
         </View>
  
         {/* Render each set for the exercise */}
+        <View style={styles.inputRow}>
+          <Text style={[styles.exerciseSets, styles.leftColumn]}>Set</Text>
+          <Text style={[styles.exerciseSets, styles.leftColumn]}>    Reps</Text>
+          <Text style={[styles.exerciseSets, styles.leftColumn]}>Weight</Text>
+        </View>
+        
         {Array.from({ length: item.sets }).map((_, setIndex) => (
           <View key={setIndex} style={styles.setContainer}>
-            <Text style={styles.setLabel}>Set {setIndex + 1}</Text>
             <View style={styles.inputRow}>
-              {/* Input for weight */}
-              <View style={styles.setInputContainer}>
-                <Text style={styles.inputLabel}>Weight</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="lbs"
-                  value={item.weight[setIndex]?.toString() || ""}
-                  onChangeText={(text) => {
-                    const updatedWeight = [...item.weight];
-                    updatedWeight[setIndex] = parseFloat(text) || 0;
-                    setExercises(
-                      exercises.map((exercise, i) =>
-                        i === index
-                          ? { ...exercise, weight: updatedWeight }
-                          : exercise
-                      )
-                    );
-                  }}
-                  keyboardType="numeric"
-                />
-              </View>
- 
-              {/* Input for reps */}
-              <View style={styles.setInputContainer}>
-                <Text style={styles.inputLabel}>Reps</Text>
+            <Text style={[styles.setLabel, styles.leftColumn]}>{setIndex + 1}</Text>
+
+             {/* Input for reps */}
+             <View style={[styles.setInputContainer, styles.rightColumn]}>
+                {/* <Text style={[styles.inputLabel, styles.rightColumn]}>Reps</Text> */}
                 <TextInput
                   style={styles.input}
                   placeholder="reps"
@@ -365,7 +354,29 @@ const confirmDeleteExercise = (exerciseIndex: number) => {
                   keyboardType="numeric"
                 />
               </View>
- 
+
+              {/* Input for weight */}
+              <View style={[styles.setInputContainer, styles.rightColumn]}>
+                {/* <Text style={[styles.inputLabel, styles.rightColumn]}>Weight</Text> */}
+                <TextInput
+                  style={styles.input}
+                  placeholder="lbs"
+                  value={item.weight[setIndex]?.toString() || ""}
+                  onChangeText={(text) => {
+                    const updatedWeight = [...item.weight];
+                    updatedWeight[setIndex] = parseFloat(text) || 0;
+                    setExercises(
+                      exercises.map((exercise, i) =>
+                        i === index
+                          ? { ...exercise, weight: updatedWeight }
+                          : exercise
+                      )
+                    );
+                  }}
+                  keyboardType="numeric"
+                />
+              </View>
+
               {/* Delete set button */}
               <TouchableOpacity
                 onPress={() => confirmDeleteSet(index, setIndex)} // Pass both exercise index and set index
@@ -382,7 +393,7 @@ const confirmDeleteExercise = (exerciseIndex: number) => {
           onPress={() => addSetToExercise(index)} // Pass the index to add a set
           style={styles.addSetButton}
         >
-          <Ionicons name="add-circle-outline" size={20} color="black" />
+          <Ionicons name="add-circle-outline" size={20} color="#21BFBF" />
           <Text style={styles.addSetButtonText}>Add Set</Text>
         </TouchableOpacity>
       </View>
@@ -403,7 +414,10 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: '#F0F0F0',
     borderRadius: 8,
-    marginBottom: 20,
+    marginBottom: 10,
+    width: '35%',
+    marginLeft: -30,
+    maxHeight: 90,
   },
   notesButtonText: {
     fontSize: 16,
@@ -417,10 +431,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginBottom: 10,
     borderRadius: 8,
+    width: '80%',
   },
   // Add exercise button styling
   addButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#21BFBF',
     padding: 10,
     borderRadius: 10,
     alignItems: 'center',
@@ -451,6 +466,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     flex: 1,
   },
+  exerciseSets: {
+    fontSize: 15,
+    fontWeight: 'bold', 
+    flex: 1,
+  },
   setContainer: {
     flexDirection: 'column',
     paddingTop: 5,
@@ -463,23 +483,39 @@ const styles = StyleSheet.create({
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 5,
+    marginBottom: 2,
   },
   setInputContainer: {
     flex: 1,
-    marginHorizontal: 5,
+    marginHorizontal: 1,
   },
   inputLabel: {
     fontSize: 12,
-    color: 'gray',
+    color: 'black',
+  },
+
+  leftColumn: {
+    flex: 1, // Take up a smaller portion of the row
+    alignItems: "flex-start",
+    justifyContent: "center",
+    marginLeft: 10,
+  },
+
+  rightColumn: {
+    flex: 1, // Take up more space
+    flexDirection: "row",
+    justifyContent: "center",
+    margin: 5,
+
   },
   input: {
-    borderColor: 'gray',
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    height: 30,
-    marginTop: 3,
+    backgroundColor: '#D9D9D9',
+    width: '40%',
+    borderRadius: 5,
+    textAlign: 'center',
+    color: 'black',
+    maxHeight: 30,
+    textAlignVertical: 'center',
   },
   deleteSetButton: {
     padding: 5,
@@ -489,7 +525,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     width: 80,
-    height: '100%',
+    height: '96%',
     borderRadius: 10,
   },
   deleteText: {
@@ -503,7 +539,7 @@ const styles = StyleSheet.create({
   },
   addSetButtonText: {
     marginLeft: 5,
-    color: 'black',
+    color: '#21BFBF',
   },
   submitButton: {
     backgroundColor: '#302c2c',
@@ -527,6 +563,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     padding: 20,
     borderRadius: 10,
+    // maxHeight: '100%',
   },
   modalTitle: {
     fontSize: 18,
@@ -534,50 +571,98 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   notesInput: {
-    height: 150,
+    height: 300,
+    maxHeight: '300%',
     borderColor: 'gray',
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 10,
     marginBottom: 10,
     textAlignVertical: 'top',
+    width: 272,
+    // maxHeight: '100%',
+    flexGrow:1,
   },
   workoutNameInput: {
     height: 40,
-    borderColor: "gray",
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    marginBottom: 20,
+    // borderColor: "gray",
+    // borderWidth: 1,
+    // paddingHorizontal: 10,
+    marginBottom: 2,
     borderRadius: 8,
+    width: '80%',
+    fontWeight: 'bold',
+    fontSize: 18,
   },
  
   closeButton: {
-    backgroundColor: '#FF6347',
+    backgroundColor: '#21BFBF',
     padding: 10,
     borderRadius: 10,
     alignItems: 'center',
+    width: 272,
   },
   closeButtonText: {
     color: 'white',
     fontSize: 16,
   },
+  topRow: {
+    flexDirection: 'row',
+  }, 
+  namesRow: {
+    flex: 1,
+  },
+  notesRow: {
+    flexDirection: 'row',
+  },
+  keyboardAvoid: {
+    width: '80%',
+    backgroundColor: 'white',
+    padding: 0,
+    borderRadius: 10,
+  }, 
+  workoutTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    flex: 1,
+  }
 });
  
 return (
   <View style={styles.container}>
+    <StreakHeader></StreakHeader>
     {/* Notes button */}
-    <TouchableOpacity style={styles.notesButton} onPress={() => setNoteModalVisible(true)}>
-      <Text style={styles.notesButtonText}>
-        Notes: {noteText ? noteText.slice(0, 20) + "..." : "Add notes here"}
-      </Text>
-    </TouchableOpacity>
-   
+    <View style={styles.topRow}>
+    <View style={styles.namesRow}>
     <TextInput
       style={styles.workoutNameInput}
       placeholder="Enter Workout Name"
+      placeholderTextColor={"grey"}
       value={workoutName}
       onChangeText={setWorkoutName}
     />
+     {/* Input for new exercise name */}
+     <TextInput
+      style={styles.exerciseNameInput}
+      placeholder="Enter Exercise Name"
+      value={newExerciseName}
+      onChangeText={setNewExerciseName}
+    />
+    </View>
+    
+    <TouchableOpacity style={styles.notesButton} onPress={() => setNoteModalVisible(true)}>
+      {noteText ?
+        <Text style={styles.notesButtonText}>
+            {noteText.slice(0, 35) + "..." }
+        </Text>
+      : 
+        <View style={styles.notesRow}>
+          <Text  style={styles.notesButtonText}>Add notes </Text>
+          <Ionicons name="create-outline" size={18}/>
+        </View>
+      }
+    </TouchableOpacity>
+   
 
 
     {/* Notes modal */}
@@ -587,12 +672,18 @@ return (
       animationType="slide"
       onRequestClose={() => setNoteModalVisible(false)}
     >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.modalOverlay}>
+      <KeyboardAvoidingView
+              behavior={Platform.OS === "ios" ? "padding" : "height"}
+              style={styles.keyboardAvoid}
+            >
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>Workout Notes</Text>
           <TextInput
-            style={styles.notesInput}
+            style={[styles.notesInput]}
             placeholder="Type your notes here"
+            placeholderTextColor={"grey"}
             value={noteText}
             onChangeText={setNoteText}
             multiline
@@ -601,17 +692,14 @@ return (
             <Text style={styles.closeButtonText}>Save Notes</Text>
           </TouchableOpacity>
         </View>
+      </KeyboardAvoidingView>
       </View>
+      </TouchableWithoutFeedback>
     </Modal>
+    
 
 
-    {/* Input for new exercise name */}
-    <TextInput
-      style={styles.exerciseNameInput}
-      placeholder="Enter Exercise Name"
-      value={newExerciseName}
-      onChangeText={setNewExerciseName}
-    />
+    </View>
     {/* Add exercise button */}
     <TouchableOpacity style={styles.addButton} onPress={addExercise}>
       <Text style={styles.addButtonText}>Add Exercise</Text>
@@ -620,11 +708,11 @@ return (
 
 
     {/* Exercise list */}
-    <FlatList
-      data={exercises}
-      keyExtractor={(_, index) => index.toString()} // Use the index as the unique key
-      renderItem={renderExercise} // Use the updated renderExercise function
-    />
+      <FlatList
+        data={exercises}
+        keyExtractor={(_, index) => index.toString()} // Use the index as the unique key
+        renderItem={renderExercise} // Use the updated renderExercise function
+      />
 
 
     {/* Submit button */}

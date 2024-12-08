@@ -26,11 +26,20 @@ const FoodLogAddPage = () => {
     const [day, setDay] = useState();
     const context = useContext(GlobalContext);
 
+     // Prefix all keys with user ID (assuming it's stored in context)
+     const userID = context?.data.token; 
+     if (!userID) throw new Error("User ID not found");
+
+     const foodTodayKey = `${userID}_foodTodayDetails`;
+     const foodKey = `${userID}_foodDetails`;
+     const dayKey = `${userID}_day`;
+
+
 
 
     const setTotalForDay = async () => {
         console.log("the day is: ", day);
-        const thisDay = await AsyncStorage.getItem('day');
+        const thisDay = await AsyncStorage.getItem(dayKey);
         if (thisDay) {
             setDay(JSON.parse(thisDay));
         } else {
@@ -147,7 +156,7 @@ const FoodLogAddPage = () => {
         };
 
         console.log("the day is: ", day);
-        const thisDay = await AsyncStorage.getItem('day');
+        const thisDay = await AsyncStorage.getItem(dayKey);
         if (thisDay) {
             setDay(JSON.parse(thisDay));
         } else {
@@ -203,7 +212,7 @@ const FoodLogAddPage = () => {
 
     useEffect(() => {
         const fetchDayID = async () => {
-            const dayID = await AsyncStorage.getItem('day');
+            const dayID = await AsyncStorage.getItem(dayKey);
             console.log(dayID); // Should print the stored ID
             if(dayID) {
                 setDay(JSON.parse(dayID));
@@ -289,52 +298,56 @@ const FoodLogAddPage = () => {
 
     const validateAllFields = () => {
         const isNameValid = foodName.trim().length > 0;
-        const isCalsValid = /^\d*\.?\d*$/.test(foodCalories) && parseFloat(foodCalories) >= 0;
-        const isFatValid = /^\d*\.?\d*$/.test(foodFat) && parseFloat(foodFat) >= 0;
-        const isCarbsValid = /^\d*\.?\d*$/.test(foodCarbs) && parseFloat(foodCarbs) >= 0;
-        const isProteinValid = /^\d*\.?\d*$/.test(foodProtein) && parseFloat(foodProtein) >= 0;
-        const isServingsValid = /^\d*\.?\d*$/.test(foodServings) && parseFloat(foodServings) >= 0;
+    //     const isCalsValid = /^\d*\.?\d*$/.test(foodCalories) && parseFloat(foodCalories) >= 0;
+    //     const isFatValid = /^\d*\.?\d*$/.test(foodFat) && parseFloat(foodFat) >= 0;
+    //     const isCarbsValid = /^\d*\.?\d*$/.test(foodCarbs) && parseFloat(foodCarbs) >= 0;
+    //     const isProteinValid = /^\d*\.?\d*$/.test(foodProtein) && parseFloat(foodProtein) >= 0;
+    //     const isServingsValid = /^\d*\.?\d*$/.test(foodServings) && parseFloat(foodServings) >= 0;
 
         setValidName(isNameValid);
-        setValidCals(isCalsValid);
-        setValidFat(isFatValid);
-        setValidCarbs(isCarbsValid);
-        setValidProtein(isProteinValid);
-        setValidServings(isServingsValid);
+    //     setValidCals(isCalsValid);
+    //     setValidFat(isFatValid);
+    //     setValidCarbs(isCarbsValid);
+    //     setValidProtein(isProteinValid);
+    //     setValidServings(isServingsValid);
         
-        return (
-            validName &&
-            validCals &&
-            validFat &&
-            validCarbs &&
-            validProtein &&
-            validServings
-        );
+    //     return (
+    //         validName &&
+    //         validCals &&
+    //         validFat &&
+    //         validCarbs &&
+    //         validProtein &&
+    //         validServings
+    //     );
+        return (validName);
     };
 
     const handleBlur = (field: string, value: string) => {
-        switch (field) {
-            case 'foodName':
-                setValidName(value.trim().length > 0);
-                break;
-            case 'calories':
-                setValidCals(/^\d*\.?\d*$/.test(value) && parseFloat(value) >= 0);
-                break;
-            case 'fat':
-                setValidFat(/^\d*\.?\d*$/.test(value) && parseFloat(value) >= 0);
-                break;
-            case 'carbs':
-                setValidCarbs(/^\d*\.?\d*$/.test(value) && parseFloat(value) >= 0);
-                break;
-            case 'protein':
-                setValidProtein(/^\d*\.?\d*$/.test(value) && parseFloat(value) >= 0);
-                break;
-            case 'servings':
-                setValidServings(/^\d*\.?\d*$/.test(value) && parseFloat(value) >= 0);
-                break;
-            default:
-                break;
+        if (field == 'foodName') {
+            setValidName(value.trim().length > 0);
         }
+        // switch (field) {
+        //     case 'foodName':
+        //         setValidName(value.trim().length > 0);
+        //         break;
+        //     case 'calories':
+        //         setValidCals(/^\d*\.?\d*$/.test(value) && parseFloat(value) >= 0);
+        //         break;
+        //     case 'fat':
+        //         setValidFat(/^\d*\.?\d*$/.test(value) && parseFloat(value) >= 0);
+        //         break;
+        //     case 'carbs':
+        //         setValidCarbs(/^\d*\.?\d*$/.test(value) && parseFloat(value) >= 0);
+        //         break;
+        //     case 'protein':
+        //         setValidProtein(/^\d*\.?\d*$/.test(value) && parseFloat(value) >= 0);
+        //         break;
+        //     case 'servings':
+        //         setValidServings(/^\d*\.?\d*$/.test(value) && parseFloat(value) >= 0);
+        //         break;
+        //     default:
+        //         break;
+        // }
     };
 
     return(
@@ -367,9 +380,9 @@ const FoodLogAddPage = () => {
                 keyboardType="numeric"
                 value={foodCalories}
                 onChangeText={handleCaloriesChange}
-                placeholder={!validCals ? "Required" : "Add Calories"}
-                placeholderTextColor={!validCals ? 'red' : '#999'}
-                onBlur={() => handleBlur('calories', foodCalories)}
+                placeholder={"Add Calories"}
+                placeholderTextColor={'#999'}
+                // onBlur={() => handleBlur('calories', foodCalories)}
             /></View>
 
             <View style = {styles.row}>
@@ -379,9 +392,9 @@ const FoodLogAddPage = () => {
                 keyboardType="numeric"
                 value={foodFat}
                 onChangeText={handleFatChange}
-                placeholder={!validFat ? "Required" : "Add Grams"}
-                placeholderTextColor={!validFat ? 'red' : '#999'}
-                onBlur={() => handleBlur('fat', foodFat)}
+                placeholder={"Add Grams"}
+                placeholderTextColor={'#999'}
+                // onBlur={() => handleBlur('fat', foodFat)}
             /></View>
 
             <View style = {styles.row}>
@@ -391,9 +404,9 @@ const FoodLogAddPage = () => {
                 keyboardType="numeric"
                 value={foodCarbs}
                 onChangeText={handleCarbsChange}
-                placeholder={!validCarbs ? "Required" : "Add Grams"}
-                placeholderTextColor={!validCarbs ? 'red' : '#999'}
-                onBlur={() => handleBlur('carbs', foodCarbs)}
+                placeholder={"Add Grams"}
+                placeholderTextColor={'#999'}
+                // onBlur={() => handleBlur('carbs', foodCarbs)}
             /></View>
 
             <View style = {styles.row}>
@@ -403,9 +416,9 @@ const FoodLogAddPage = () => {
                keyboardType="numeric"
                value={foodProtein}
                onChangeText={handleProteinChange}
-               placeholder={!validProtein ? "Required" : "Add Grams"}
-               placeholderTextColor={!validProtein ? 'red' : '#999'}
-               onBlur={() => handleBlur('protein', foodProtein)}
+               placeholder={"Add Grams"}
+               placeholderTextColor={'#999'}
+            //    onBlur={() => handleBlur('protein', foodProtein)}
             /></View>
 
             <View style = {styles.row}>
@@ -415,9 +428,9 @@ const FoodLogAddPage = () => {
                 keyboardType="numeric"
                 value={foodServings}
                 onChangeText={handleServingsChange}
-                placeholder={!validServings ? "Required" : "Add Servings"}
-                placeholderTextColor={!validServings ? 'red' : '#999'}
-                onBlur={() => handleBlur('servings', foodServings)}
+                placeholder={"Add Servings"}
+                placeholderTextColor={'#999'}
+                // onBlur={() => handleBlur('servings', foodServings)}
             /></View>
 
             {/* Save button */}
@@ -431,10 +444,10 @@ const FoodLogAddPage = () => {
                         fontSize={16}
                         width={150}
                         onPress={() => {
-                            if (validateAllFields()) {
+                            if ((validateAllFields())) {
                                 handleFoodDataSaveOnly();
                             } else {
-                                alert("Please fill out all fields correctly.");
+                                alert("A food name is required.");
                             }
                         }} />
                 <AddFoodButton   
@@ -449,7 +462,7 @@ const FoodLogAddPage = () => {
                             if (validateAllFields()) {
                                 handleFoodDataSaveAddDay();
                             } else {
-                                alert("Please fill out all fields correctly.");
+                                alert("A food name is required.");
                             }
                         }} />
             </View>

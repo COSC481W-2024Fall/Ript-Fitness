@@ -50,11 +50,19 @@ const FoodLogLoggedPage = () => {
     const [dayIndex, setDayIndex] = useState(0);
     const context = useContext(GlobalContext);
 
+     // Prefix all keys with user ID (assuming it's stored in context)
+     const userID = context?.data.token; 
+     if (!userID) throw new Error("User ID not found");
+
+     const foodTodayKey = `${userID}_foodTodayDetails`;
+     const dayKey = `${userID}_day`;
+
+
 
     // Function to fetch food details
     const fetchFoods = async () => {
         try {
-            const cachedFoodTodayDetails = await AsyncStorage.getItem('foodTodayDetails');
+            const cachedFoodTodayDetails = await AsyncStorage.getItem(foodTodayKey);
             
             if (cachedFoodTodayDetails) {
                 console.log("Using cached food details", cachedFoodTodayDetails);
@@ -67,7 +75,7 @@ const FoodLogLoggedPage = () => {
             }
 
             // console.log("the day is: ", day);
-            const thisDay = await AsyncStorage.getItem('day');
+            const thisDay = await AsyncStorage.getItem(dayKey);
             if (thisDay) {
                 setDay(JSON.parse(thisDay));
             } else {
@@ -93,8 +101,8 @@ const FoodLogLoggedPage = () => {
                 const dayID = dayData.id;
                 // console.log("Foods today: ", foodArray);
                 
-                await AsyncStorage.setItem('foodTodayDetails', JSON.stringify(foodArray));
-                await AsyncStorage.setItem('day', JSON.stringify(dayID));
+                await AsyncStorage.setItem(foodTodayKey, JSON.stringify(foodArray));
+                await AsyncStorage.setItem(dayKey, JSON.stringify(dayID));
 
                 // console.log("cached", cached);
                 // console.log("loading", loading);
@@ -113,7 +121,7 @@ const FoodLogLoggedPage = () => {
 
 
 const saveFoodChanges = async (updatedFood: Food) => {
-    // console.log("UPdated food: ", updatedFood);
+    // console.log("Updated food: ", updatedFood);
     
     function customJSONStringify(obj: any, keysOrder: string[]): string {
         const orderedObj: any = {};
@@ -204,7 +212,7 @@ const logFoodToDay = async (food: Food) => {
 
     useEffect(() => {
         const fetchDayID = async () => {
-            const dayID = await AsyncStorage.getItem('day');
+            const dayID = await AsyncStorage.getItem(dayKey);
             console.log(dayID); // Should print the stored ID
             if(dayID) {
                 setDay(JSON.parse(dayID));
@@ -271,7 +279,7 @@ const logFoodToDay = async (food: Food) => {
     );
 
 
-    return cached ? (
+    return cached && foodDetails.length > 0 ? (
         <View style={styles.bottomContainer}>
             <FlatList<Food>
                 data={foodDetails}
@@ -342,7 +350,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         width: 80,
         height: '100%',
-        borderRadius: 10,
+        // borderRadius: 10,
       },
       deleteText: {
         color: 'white',

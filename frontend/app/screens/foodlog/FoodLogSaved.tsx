@@ -7,6 +7,8 @@ import LogFoodButton from "@/components/foodlog/FoodLogButton";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Swipeable } from 'react-native-gesture-handler';
 import CustomSearchBar from '@/components/custom/CustomSearchBar';
+import { Ionicons } from "@expo/vector-icons";
+import CustomTextInput from "@/components/custom/CustomTextInput";
 
 interface Food {
     id: number;
@@ -43,21 +45,32 @@ const FoodItem: React.FC<{ food: Food; saveFoodChanges: (food: Food) => void; lo
 
 const FoodLogSavedPage = () => { 
     const [foodDetails, setFoodDetails] = useState<Food[]>([]);
+    const [filteredFoodDetails, setFilteredFoodDetails] = useState<Food[]>([]); // For filtered data
+    const [searchText, setSearchText] = useState("");
     const [loading, setLoading] = useState(true);
     const [cached, setCached] = useState(false);
     const [refreshing, setRefreshing] = useState(false); 
     const [day, setDay] = useState();
     const context = useContext(GlobalContext);
+
+     // Prefix all keys with user ID (assuming it's stored in context)
+     const userID = context?.data.token; 
+     if (!userID) throw new Error("User ID not found");
+
+     const foodKey = `${userID}_foodDetails`;
+     const dayKey = `${userID}_day`;
+
     
     const fetchFoods = async () => {
         try {
             console.log("Fetching food details...");
-            const cachedFoodDetails = await AsyncStorage.getItem('foodDetails');
+            const cachedFoodDetails = await AsyncStorage.getItem(foodKey);
             
             if (cachedFoodDetails) {
                 console.log("Using cached food details");
                 setCached(true);
                 setFoodDetails(JSON.parse(cachedFoodDetails));
+                setFilteredFoodDetails(JSON.parse(cachedFoodDetails)); // Initialize filtered data
             } 
                 const response = await fetch(`${httpRequests.getBaseURL()}/nutritionCalculator/getFoodsOfLoggedInUser/0/200`,
                 {
@@ -71,15 +84,16 @@ const FoodLogSavedPage = () => {
                 if (response.status === 200) {
 
                     const foodArray = await response.json();
-
+                   
                     // Ensure the array is sorted by food name alphabetically
                     foodArray.sort((a: Food, b: Food) => a.name.localeCompare(b.name));
 
                     console.log("Fetched and sorted food details:", foodArray);
                     setFoodDetails(foodArray);
+                    setFilteredFoodDetails(foodArray); // Initialize filtered data
 
                      // Cache the sorted food details
-                    await AsyncStorage.setItem('foodDetails', JSON.stringify(foodArray));
+                    await AsyncStorage.setItem(foodKey, JSON.stringify(foodArray));
                 } else {
                     console.log("Failed to fetch food IDs. Status:", response.status);
                 }
@@ -92,7 +106,7 @@ const FoodLogSavedPage = () => {
     };
 
     const saveFoodChanges = async (updatedFood: Food) => {
-        console.log("UPdated food: ", updatedFood);
+        console.log("Updated food: ", updatedFood);
         
         function customJSONStringify(obj: any, keysOrder: string[]): string {
             const orderedObj: any = {};
@@ -156,8 +170,9 @@ const FoodLogSavedPage = () => {
             console.log("Response status for logging food: ", response.status);
             if (response.status === 201) {
                 console.log("Successfully logged food to the day.");
+                Alert.alert("Success", "Successfully added food to day.");
                 // Optionally update the local state to reflect the change.
-                setFoodDetails((prev) => [...prev, food]);
+                // setFoodDetails((prev) => [...prev, food]);
             } else {
                 console.error("Failed to log food.");
             }
@@ -182,7 +197,7 @@ const FoodLogSavedPage = () => {
 
     useEffect(() => {
         const fetchDayID = async () => {
-            const dayID = await AsyncStorage.getItem('day');
+            const dayID = await AsyncStorage.getItem(dayKey);
             console.log(dayID); // Should print the stored ID
             if(dayID) {
                 setDay(JSON.parse(dayID));
@@ -233,6 +248,10 @@ const FoodLogSavedPage = () => {
             };
     };
 
+    const filteredFoods = foodDetails.filter((food: any) =>
+        food.name.toLowerCase().includes(searchText.toLowerCase())
+      );
+
 
     const renderItem = ({ item }:{item: Food}) => (
         <Swipeable
@@ -256,9 +275,30 @@ const FoodLogSavedPage = () => {
 
     return cached ? (
         <View style={styles.bottomContainer}>
-            <CustomSearchBar/>
+            <View style={styles.searchContainer}>
+                <Ionicons
+                name="search-outline"
+                size={15}
+                color="#747474"
+                style={styles.iconContainer}
+                />
+                <CustomTextInput
+                placeholder="Search"
+                placeholderTextColor="#999"
+                // width={width * 0.85}
+                value={searchText}
+                onChangeText={setSearchText}
+                style={{
+                    borderWidth: 0,
+                    fontSize: 16,
+                    paddingLeft: 30,
+                    borderRadius: 20,
+                    backgroundColor: "#EDEDED",
+                }}
+        />
+        </View>
             <FlatList 
-                data={foodDetails}
+                data={filteredFoods}
                 renderItem={renderItem}
                 keyExtractor={(item) => `${item.id}`}
                 refreshing={refreshing} // Add refreshing prop
@@ -267,17 +307,80 @@ const FoodLogSavedPage = () => {
         </View>
     ) : loading ? (
         <View style={styles.bottomContainer}>
-            <CustomSearchBar></CustomSearchBar>
+           <View style={styles.searchContainer}>
+                <Ionicons
+                name="search-outline"
+                size={15}
+                color="#747474"
+                style={styles.iconContainer}
+                />
+                <CustomTextInput
+                placeholder="Search"
+                placeholderTextColor="#999"
+                // width={width * 0.85}
+                value={searchText}
+                onChangeText={setSearchText}
+                style={{
+                    borderWidth: 0,
+                    fontSize: 16,
+                    paddingLeft: 30,
+                    borderRadius: 20,
+                    backgroundColor: "#EDEDED",
+                }}
+        />
+        </View>
             <Text style={styles.message}>Loading...</Text>
        </View>
     ) : foodDetails.length === 0 ? (
         <View style={styles.bottomContainer}>
-            <CustomSearchBar></CustomSearchBar>
+           <View style={styles.searchContainer}>
+                <Ionicons
+                name="search-outline"
+                size={15}
+                color="#747474"
+                style={styles.iconContainer}
+                />
+                <CustomTextInput
+                placeholder="Search"
+                placeholderTextColor="#999"
+                // width={width * 0.85}
+                value={searchText}
+                onChangeText={setSearchText}
+                style={{
+                    borderWidth: 0,
+                    fontSize: 16,
+                    paddingLeft: 30,
+                    borderRadius: 20,
+                    backgroundColor: "#EDEDED",
+                }}
+        />
+        </View>
             <Text style={styles.message}>No food items logged.</Text>
         </View>
     ) : (
         <View style={styles.bottomContainer}>
-            <CustomSearchBar></CustomSearchBar>
+          <View style={styles.searchContainer}>
+                <Ionicons
+                name="search-outline"
+                size={15}
+                color="#747474"
+                style={styles.iconContainer}
+                />
+                <CustomTextInput
+                placeholder="Search"
+                placeholderTextColor="#999"
+                // width={width * 0.85}
+                value={searchText}
+                onChangeText={setSearchText}
+                style={{
+                    borderWidth: 0,
+                    fontSize: 16,
+                    paddingLeft: 30,
+                    borderRadius: 20,
+                    backgroundColor: "#EDEDED",
+                }}
+        />
+        </View>
             <FlatList 
                 data={foodDetails}
                 renderItem={renderItem}
@@ -290,6 +393,15 @@ const FoodLogSavedPage = () => {
 };
 
 const styles = StyleSheet.create({
+    searchContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+      },
+      iconContainer: {
+        position: "absolute",
+        paddingLeft: 10,
+        zIndex: 1,
+      },
     container: {
         flex: 1, 
         padding: 20,
@@ -327,7 +439,7 @@ const styles = StyleSheet.create({
         padding: 30,
     }, 
     swipeDeleteButton: {
-        backgroundColor: '#F22E2E',
+        backgroundColor: 'red',
         justifyContent: 'center',
         alignItems: 'center',
         width: 80,

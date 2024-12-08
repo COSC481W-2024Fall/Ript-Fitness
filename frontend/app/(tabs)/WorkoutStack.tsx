@@ -57,12 +57,25 @@ export default function WorkoutStack() {
           headerRight: () => <StreakCounter />,
         }}
       />
-      <Stack.Screen
+       <Stack.Screen
         name="StartWorkoutScreen"
         component={StartWorkoutScreen}
-        options={{
-          title: 'Live Workouts', 
-        }}
+        options={({ navigation }) => ({
+          title: 'Live Workout',
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => navigation.navigate('WorkoutApiScreen', {})}
+              style={[styles.leftButton, styles.button, styles.buttonSize]}
+            >
+              <TabBarIcon
+                name="arrow-back-outline"
+                size={30}
+                color="#454343"
+              />
+            </TouchableOpacity>
+          ),
+          headerTitleAlign: 'center',
+        })}
       />
       <Stack.Screen
         name="MyWorkoutsScreen"

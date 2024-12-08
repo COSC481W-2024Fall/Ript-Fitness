@@ -13,6 +13,7 @@ import CustomSearchBar from "@/components/custom/CustomSearchBar";
 export default function RiptWorkoutsScreen() {
 
   const navigation = useNavigation<WorkoutScreenNavigationProp>();
+  
 
   //   const handleWorkoutPress = (workoutId: number) => {
   //       // Find the selected workout data
@@ -34,7 +35,7 @@ export default function RiptWorkoutsScreen() {
     return (
         <View style={styles.container}>
             <StreakHeader></StreakHeader>
-            <SearchBarHeader></SearchBarHeader>
+            {/* <SearchBarHeader></SearchBarHeader> */}
             <FlatList 
                 style={styles.workoutContainer}
                 data={RiptWorkouts}

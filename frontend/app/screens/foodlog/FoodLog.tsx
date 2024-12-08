@@ -11,6 +11,7 @@ import FoodLogSavedPage from "./FoodLogSaved";
 import FoodLogLoggedPage from "./FoodLogLogged";
 import { ProfileScreenNavigationProp } from "@/app/(tabs)/ProfileStack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { TouchableOpacity } from "react-native";
 
 
 
@@ -24,9 +25,17 @@ export default function FoodLogScreen() {
     const [totalProtein, setTotalProtein] = useState(0);
     const [totalWater, setTotalWater] = useState(0);
     const [dayIndex, setDayIndex] = useState(0);
-    const [day, setDay] = useState();
+    const [day, setDay] = useState<number | null>(null);
     const context = useContext(GlobalContext);
     const [cached, setCached] = useState(false);
+
+     // Prefix all keys with user ID (assuming it's stored in context)
+     const userID = context?.data.token; 
+     if (!userID) throw new Error("User ID not found");
+
+     const foodTodayKey = `${userID}_foodTodayDetails`;
+     const dayKey = `${userID}_day`;
+     const fullDayKey = `${userID}_fullDay`;
 
     
     const newDay = async () => {
@@ -48,8 +57,8 @@ export default function FoodLogScreen() {
                 // console.log("Day ID: ", dayID);
                 clearMacroFields();
                 
-                await AsyncStorage.setItem('day', JSON.stringify(dayID));
-                await AsyncStorage.removeItem('foodTodayDetails');
+                await AsyncStorage.setItem(dayKey, JSON.stringify(dayID));
+                await AsyncStorage.removeItem(foodTodayKey);
             }
         } catch (error) {
             console.log("Failed to create day", error);
@@ -65,7 +74,7 @@ export default function FoodLogScreen() {
     };
 
     const setTotalForDay = async () => {
-        const thisDay = await AsyncStorage.getItem('day');
+        const thisDay = await AsyncStorage.getItem(dayKey);
         if (thisDay) {
             setDay(JSON.parse(thisDay));
         } else {
@@ -86,16 +95,16 @@ export default function FoodLogScreen() {
             if (getDayResponse.status == 200) {
                 const dayData = await getDayResponse.json(); 
                 // console.log(dayData);
-                await AsyncStorage.setItem('fullDay', JSON.stringify(dayData));
+                await AsyncStorage.setItem(fullDayKey, JSON.stringify(dayData));
 
                 setTotalCalories(dayData.calories); 
                 setTotalCarbs(dayData.totalCarbs);
                 setTotalProtein(dayData.totalProtein);
                 setTotalFat(dayData.totalFat);
-                setTotalWater(dayData.totalWaterConsumed);
+                // setTotalWater(dayData.totalWaterConsumed);
                 setCached(true);
 
-                await AsyncStorage.setItem('day', JSON.stringify(dayData.id));
+                await AsyncStorage.setItem(dayKey, JSON.stringify(dayData.id));
                 setDay(dayData.id);
                 // console.log("day item in storage: ", dayData.id);
             } else {
@@ -105,6 +114,34 @@ export default function FoodLogScreen() {
             console.log('Error', 'An error occurred. Please try again.');
         }
     };
+
+    // Eventually would like to be able to click back to see days in the past
+
+    // const changeDayBackWard = async () => {
+    //     const thisDay = await AsyncStorage.getItem(dayKey);
+    //     if(thisDay) {
+    //         const newDay = JSON.parse(thisDay) - 1;
+    //         console.log("New day: ", newDay);
+    //         await AsyncStorage.setItem(dayKey, JSON.stringify(newDay));
+    //         setDay(newDay);
+    //         // await AsyncStorage.setItem(dayKey, JSON.stringify(newDay));
+    //         setTotalForDay();
+    //     } else {
+
+    //     }
+    // }
+
+    // const changeDayForward = async () => {
+    //     const thisDay = await AsyncStorage.getItem(dayKey);
+    //     if(thisDay) {
+    //         const newDay = JSON.parse(thisDay) + 1;
+    //         console.log("New day: ", newDay);
+    //         await AsyncStorage.setItem(dayKey, JSON.stringify(newDay));
+    //         setDay(newDay);
+    //         // await AsyncStorage.setItem(dayKey, JSON.stringify(newDay));
+    //         setTotalForDay();
+    //     }
+    // }
 
 
     const updateTotalMacros = () => {
@@ -119,7 +156,7 @@ export default function FoodLogScreen() {
     useFocusEffect(
         useCallback(() => {
             const fetchDayID = async () => {
-                const dayData = await AsyncStorage.getItem('fullDay');
+                const dayData = await AsyncStorage.getItem(fullDayKey);
                 // console.log(dayData); // Should print the stored ID
                 if (dayData) {
                     const dayID = JSON.parse(dayData).id;
@@ -180,26 +217,34 @@ const updateWater = async () => {
         if (selectedPage === "Add") return <FoodLogAddPage />;
     };
 
+    const getUsername = () => {
+        return (context?.userProfile.username);
+    }
     return (
         <SafeAreaView style={styles.flexContainer}>
             <View>
-                <View style={styles.calendarNav}>
-                    <Ionicons 
+                
+             {/* Navbar for Logged, Saved, Add */}
+
+              <View style={styles.calendarNav}>
+                    {/* <Ionicons 
                         name={"chevron-back-outline"} 
                         color={"white"}
                         size={24} 
                         style={styles.leftArrow}
-                        onPress={() => navigation.navigate('ApiScreen')}
+                        // onPress={() => changeDayBackWard()}
                 />
-                     <Ionicons name={"calendar-clear-outline"} size={24} color={"white"}></Ionicons>
-                    <Text style={styles.whiteText} onPress={() => newDay()}>Today</Text>
-                    <Ionicons 
+                     <Ionicons name={"calendar-clear-outline"} size={24} color={"white"}></Ionicons> */}
+                    <Text style={styles.whiteText}>{getUsername()}'s Food Log</Text>
+                    <Text style={styles.newDayButton} onPress={() => newDay()}>Start New Day</Text>
+                    {/* <Ionicons color="white" name="add-circle-outline"size={35} style={styles.plusButton} onPress={() => newDay()}></Ionicons> */}
+                    {/* <Ionicons 
                         name={"chevron-forward-outline"} 
                         color={"white"}
                         size={24} 
                         style={styles.rightArrow}
-                        onPress={() => navigation.navigate('ApiScreen')}
-                    /> 
+                        // onPress={() => changeDayForward()}
+                    />  */}
                 </View>
             
             <View style={styles.macroView}> 
@@ -262,8 +307,8 @@ const updateWater = async () => {
                     </View>
                 </View>
             </View> 
-             {/* Navbar for Logged, Saved, Add */}
-             <View style={styles.dataBar}>
+             
+            <View style={styles.dataBar}>
                 {/* <View style={styles.align}>
                     <Ionicons name="today-outline" size={30} onPress={() => addWater()}></Ionicons>
                     <Text style={styles.text}>Start new day log</Text>
@@ -298,6 +343,7 @@ const updateWater = async () => {
         <View style={styles.pageContainer}>
                 {renderContent()}
         </View>
+            
     </SafeAreaView> 
     );
 };
@@ -310,7 +356,7 @@ const styles = StyleSheet.create({
         flex: 1, 
     },
     calendarNav: {
-        height: 40,
+        height: 50,
         width: '100%', 
         backgroundColor: '#21BFBF',
         flexDirection: 'row',
@@ -319,9 +365,33 @@ const styles = StyleSheet.create({
         position: 'relative',
         justifyContent: 'center',
     },
+    newDayButton: {
+        // position: 'absolute',
+        // right: 5,
+        marginLeft: 30,
+        padding: 2,
+        color: '#21BFBF', 
+        width: 80,
+        textAlign: 'center',
+        backgroundColor: 'white',
+        borderRadius: 5,
+        fontSize: 15,
+        elevation: 5,
+        shadowColor: "#000",
+        shadowOffset: {
+          width: 0,
+          height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+    },
     whiteText: {
+        // backgroundColor: 'white',
+        padding: 5,
         color: "white",
-        paddingLeft: 5
+        fontSize: 20, 
+        paddingLeft: 5, 
+        borderRadius: 5,
     },
     rightArrow: {
         position: 'absolute',
