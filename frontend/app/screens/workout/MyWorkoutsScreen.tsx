@@ -495,7 +495,7 @@ return (
   <View style={styles.container}>
     {loading ? ( // Show ActivityIndicator if loading is true
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#4CAF50" />
+        <ActivityIndicator size="large" />
         <Text>Loading Workouts...</Text>
       </View>
     ) : (

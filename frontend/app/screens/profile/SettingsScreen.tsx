@@ -244,7 +244,7 @@ const SettingsScreen = ({ navigation }: any) => {
           onPress={() => navigation.navigate("ChangePasswordScreen")}
         >
           <Text style={styles.label}>Change password</Text>
-          <Ionicons name="chevron-forward" size={20} color="black" />
+          <Ionicons name="chevron-forward" size={20} color="black" style={{paddingRight: 15}} />
         </TouchableOpacity>
       </View>
     </KeyboardAwareScrollView>
@@ -303,7 +303,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ddd',
   },
   label: { fontSize: 16, fontWeight: '500', color: '#333' },
-  input: { fontSize: 16, color: '#333', flex: 1, textAlign: 'right' },
+  input: { fontSize: 16, color: '#333', paddingRight: 15, flex: 1, textAlign: 'right', },
 });
 
 export default SettingsScreen;

@@ -62,7 +62,7 @@ const context = useContext(GlobalContext)
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color="black" />
         </TouchableOpacity>
-        <Text style={styles.title}>Friends</Text>
+        <Text style={styles.title}>Friends List</Text>
         <TouchableOpacity onPress={() => navigation.navigate('FindFriendsScreen')}>
           <Ionicons name="add" size={30} color="black" style={styles.addButton} />
         </TouchableOpacity>

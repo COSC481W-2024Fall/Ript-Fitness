@@ -71,8 +71,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 40,
     right: 20,
-    backgroundColor: 'rgba(255, 0, 0, 0.7)',
-    borderRadius: 20,
+    backgroundColor: '#F22E2E',
+    borderRadius: 25,
     padding: 10,
   },
 });

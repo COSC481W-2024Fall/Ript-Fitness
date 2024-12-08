@@ -63,7 +63,7 @@ export function ExerciseButton({ leftColor, descColor, title, desc, children, si
   {sideButtons?.map((button: {id: string, icon: string, func: any, style:any}, index : number) => (
       <TouchableOpacity style={styles.sideButton} key={index} onPress={() => button.func(id)}>
     
-      <Ionicons name={button.icon as any} style={button.style} size={20} color="#000000" />
+      <Ionicons name={button.icon as any} style={button.style} size={20} color="#000" />
     
       </TouchableOpacity>
         ))}

@@ -48,7 +48,7 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
   const emailRegex = /^([a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/;
   // const usernameRegex = /^[a-zA-Z0-9]([.-](?![._-])|[a-zA-Z0-9]){3,18}[a-zA-Z0-9]$/;
   const usernameRegex = /^(?![0-9]+$)(?!.*\.\.)(?!\.)[a-zA-Z0-9_.]+(?<!\.)$/; //Can't be only numbers, can't have multiple periods in a row, can't start or end with a period.
-  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^])[A-Za-z\d@$!%*?&#^]{8,}$/;
 
   //Handle text input change for email
   const handleEmailPOST = (text: string) => {
@@ -108,12 +108,13 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
     if (!passwordRegex.test(password)) {
       setIsPasswordValid(false);
       isValid = false;
-      setpasswordErrorMessage(`Password must have:
-        • At least 8 characters
-        • At least 1 uppercase letter
-        • At least 1 lowercase letter
-        • At least 1 special character
-        • At least 1 number`
+      setpasswordErrorMessage(
+`Password must have:
+• At least 8 characters
+• At least 1 number
+• At least 1 uppercase letter
+• At least 1 lowercase letter
+• At least 1 special character (!@#$%^&*)`
       );
     } else {
       setIsPasswordValid(true);
@@ -284,7 +285,7 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
               </View>
               {/* Password Error message */}
               {submitted && passwordErrorMessage ? (
-              <View style={{ marginTop: height * -0.01, flexWrap: 'wrap', width: width * 0.75, flexDirection: 'row'  }}>
+              <View style={{ marginTop: height * -0.01, flexWrap: 'wrap', width: width * 0.75, flexDirection: 'row',  }}>
                 {/* <Ionicons name="alert-circle" size={24} color={'#F2505D'} /> */}
                 <Text style={styles.secondaryErrorText}>{passwordErrorMessage}</Text>
               </View>

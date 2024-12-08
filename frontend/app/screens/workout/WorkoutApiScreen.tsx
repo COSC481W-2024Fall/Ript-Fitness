@@ -28,7 +28,7 @@ export default function WorkoutApiScreen() {
       </View>
       <View style={styles.lineBreak}></View>
       {/* My Workouts */}
-      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('MyWorkoutsScreen', { })}  > 
+      <TouchableOpacity style={[styles.button, styles.shadowProp]} onPress={() => navigation.navigate('MyWorkoutsScreen', { })}  > 
         {/* <Ionicons name="heart" size={35} color="#F2505D" /> */}
         <Image 
         style={styles.image}
@@ -38,7 +38,7 @@ export default function WorkoutApiScreen() {
       </TouchableOpacity>
 
       {/* Add Workout */}
-      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('AddWorkoutScreen', { })}  >
+      <TouchableOpacity style={[styles.button, styles.shadowProp]} onPress={() => navigation.navigate('AddWorkoutScreen', { })}  >
         <Image 
         style={styles.image}
           source={require('@/assets/images/dashboard-widgets-add.png')}
@@ -47,7 +47,7 @@ export default function WorkoutApiScreen() {
       </TouchableOpacity>
       
       {/* Ript Workouts */}
-      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('RiptWorkoutScreen', { })}  >
+      <TouchableOpacity style={[styles.button, styles.shadowProp]} onPress={() => navigation.navigate('RiptWorkoutScreen', { })}  >
       <Image 
         style={styles.image}
         source={require('@/assets/images/secondary.png')}
@@ -56,7 +56,7 @@ export default function WorkoutApiScreen() {
       </TouchableOpacity>
       
       {/* My Notes */}
-      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('MyNotesScreen', { })} >
+      <TouchableOpacity style={[styles.button, styles.shadowProp]} onPress={() => navigation.navigate('MyNotesScreen', { })} >
       <Image 
         style={styles.image}
         source={require('@/assets/images/my-notes.png')}
@@ -65,7 +65,7 @@ export default function WorkoutApiScreen() {
       </TouchableOpacity>
 
       {/* Start Workout */}
-      <TouchableOpacity style={styles.startButton} onPress={() => navigation.navigate('StartWorkoutScreen', { })} >
+      <TouchableOpacity style={[styles.startButton, styles.shadowProp]} onPress={() => navigation.navigate('StartWorkoutScreen', { })} >
         <Text style={styles.buttonText}>Live Workouts</Text>
       </TouchableOpacity>
     </View>
@@ -114,7 +114,12 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginVertical: 5,
     marginHorizontal: 5,
-    //'#000000', this is black border check with team
+  },
+  shadowProp: {
+    shadowColor: '#2493BF',
+    shadowOffset: {width: 2, height: 7},
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
   },
   startButton: {
     width: '90%',
