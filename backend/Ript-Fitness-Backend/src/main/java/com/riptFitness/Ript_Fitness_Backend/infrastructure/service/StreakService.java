@@ -1,7 +1,7 @@
 package com.riptFitness.Ript_Fitness_Backend.infrastructure.service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
-
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -11,6 +11,7 @@ import com.riptFitness.Ript_Fitness_Backend.domain.model.Streak;
 import com.riptFitness.Ript_Fitness_Backend.domain.repository.AccountsRepository;
 import com.riptFitness.Ript_Fitness_Backend.domain.repository.StreakRepository;
 import com.riptFitness.Ript_Fitness_Backend.web.dto.StreakDto;
+
 
 
 @Service
@@ -29,40 +30,39 @@ public class StreakService {
 
 	
 	public StreakDto updateStreak() {
-		Long currentUserId = accountsService.getLoggedInUserId();
-		Optional<Streak> optionalStr = streakRepository.findById(currentUserId);
-		if(optionalStr.isEmpty()) {
-			throw new RuntimeException("No streak found with id = " + currentUserId);
-		}
-		Streak streak = optionalStr.get();
-		StreakDto streakDto = StreakMapper.INSTANCE.toStreakDto(streak);
-		
-		LocalDateTime curTime = LocalDateTime.now();
-		LocalDateTime prevLogin = streakDto.prevLogin;
-		
-		if (prevLogin.getDayOfYear() != curTime.getDayOfYear()) {// checks for same day
-			if(prevLogin.getDayOfYear() == 366 && curTime.getDayOfYear() == 1) { //check for leap year last day of the year
-				streak.currentSt++;
-				streakRepository.save(streak);
-				
-			} else if(prevLogin.getDayOfYear() == 365 && curTime.getDayOfYear() == 1) { //checks for leap year and if it is the last day of the year
-				streak.currentSt++;
-				streakRepository.save(streak);
-				
-			} else if(prevLogin.getDayOfYear()+1 == curTime.getDayOfYear() && prevLogin.getYear() == curTime.getYear()) {//Checks to see if it is the next day of the same year
-				streak.currentSt++;
-				streakRepository.save(streak);
-				
-			} else {
-				streak.currentSt = 0;
-				streakRepository.save(streak);
-				
-			}
-			streak.prevLogin = curTime;
-		}
-		
-		return StreakMapper.INSTANCE.toStreakDto(streak);
+	    Long currentUserId = accountsService.getLoggedInUserId();
+	    Optional<Streak> optionalStr = streakRepository.findById(currentUserId);
+	    if (optionalStr.isEmpty()) {
+	        throw new RuntimeException("No streak found with id = " + currentUserId);
+	    }
+
+	    Streak streak = optionalStr.get();
+	    LocalDateTime curTime = LocalDateTime.now();
+	    LocalDateTime prevLogin = streak.prevLogin; // Assuming this field exists and is tracked in your entity
+
+	    if (prevLogin == null) {
+	        // If there's no previous login, start the streak at 1
+	        streak.currentSt = (1);
+	    } else {
+	        long hoursBetween = Duration.between(prevLogin, curTime).toHours();
+	        if (hoursBetween < 48 && hoursBetween > 24) {
+	            // Logged in within 24 hours of the last login => increment streak
+	            streak.currentSt++;
+	        } else {
+	            // More than 24 hours have passed => reset streak
+	            streak.currentSt = 1;
+	        }
+	    }
+
+	    // Update the prevLogin time
+	    streak.prevLogin = (curTime);
+
+	    // Save the updated streak after all changes are done
+	    streakRepository.save(streak);
+
+	    return StreakMapper.INSTANCE.toStreakDto(streak);
 	}
+
 	
 	public StreakDto getStreak() {
 		Long currentUserId = accountsService.getLoggedInUserId();
