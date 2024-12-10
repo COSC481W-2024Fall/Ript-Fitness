@@ -235,7 +235,7 @@ const updateWater = async () => {
                         // onPress={() => changeDayBackWard()}
                 />
                      <Ionicons name={"calendar-clear-outline"} size={24} color={"white"}></Ionicons> */}
-                    <Text style={styles.whiteText}>{getUsername()}'s Food Log</Text>
+                    <Text style={styles.whiteText}>Food Log</Text>
                     <Text style={styles.newDayButton} onPress={() => newDay()}>Start New Day</Text>
                     {/* <Ionicons color="white" name="add-circle-outline"size={35} style={styles.plusButton} onPress={() => newDay()}></Ionicons> */}
                     {/* <Ionicons 
@@ -368,14 +368,15 @@ const styles = StyleSheet.create({
     newDayButton: {
         // position: 'absolute',
         // right: 5,
-        marginLeft: 30,
-        padding: 2,
+        marginLeft: 10,
+        padding: 10,
         color: '#21BFBF', 
-        width: 80,
+        width: '35%',
         textAlign: 'center',
         backgroundColor: 'white',
         borderRadius: 5,
         fontSize: 15,
+        fontWeight: 'bold',
         elevation: 5,
         shadowColor: "#000",
         shadowOffset: {
@@ -402,9 +403,10 @@ const styles = StyleSheet.create({
         left: 0,
     },
     macroView: {
-        height: 210,
+        marginTop: 10,
+        height: 220,
         width: '100%',
-        backgroundColor: 'white', 
+        // backgroundColor: 'white', 
     }, 
     macroRow: {
         flexDirection: 'row',

@@ -18,7 +18,7 @@ type MacroButtonProps = {
 const MacroButton: React.FC<MacroButtonProps> = ({ title, backgroundColor, borderColor, borderWidth, width, textColor, fontSize, total, label}) => {
 
   const buttonStyle: ViewStyle = {
-    backgroundColor: 'white',
+    // backgroundColor: 'red',
     borderColor: borderColor,
     borderWidth: borderWidth,
     width: width || 'auto'

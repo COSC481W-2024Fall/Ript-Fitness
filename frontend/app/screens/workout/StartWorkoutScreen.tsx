@@ -645,7 +645,8 @@ return (
         <TouchableOpacity style={styles.notesButton} onPress={() => setNoteModalVisible(true)}>
         {noteText ?
           <Text style={styles.notesButtonText}>
-              {noteText.slice(0, 35) + "..." }
+              {noteText.slice(0, 200) }
+              {/* {noteText.slice(0, 200) + "..." } */}
           </Text>
         : 
           <View>

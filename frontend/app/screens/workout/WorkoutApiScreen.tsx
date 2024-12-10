@@ -94,7 +94,7 @@ export default function WorkoutApiScreen() {
 
       {/* Start Workout */}
       <TouchableOpacity style={styles.startButton} onPress={() => navigation.navigate('StartWorkoutScreen', { })} >
-        <Text style={[styles.buttonText, {color: '#fff'}]}>Live Workouts</Text>
+        <Text style={[styles.buttonText, {color: '#fff'}]}>Start Live Workout</Text>
       </TouchableOpacity>
     </View>
   );

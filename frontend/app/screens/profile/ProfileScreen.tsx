@@ -1159,7 +1159,7 @@ const MainScreen = () => {
           <View style={styles.popup}>
             <ScrollView
               contentContainerStyle={styles.scrollViewContent}
-              showsVerticalScrollIndicator={true}
+              showsVerticalScrollIndicator={false}
               keyboardShouldPersistTaps="handled"
             >
               {ProfContext && ProfContext?.requestingFriends?.length > 0 ? (

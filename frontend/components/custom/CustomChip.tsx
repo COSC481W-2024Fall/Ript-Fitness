@@ -30,7 +30,7 @@ const CustomChip: React.FC<CustomChipProps> = ({ selectedType, onTypeSelect }) =
     <View style={styles.container}>
       <Chip label="Upper" value={1} selected={selectedType === 1} onPress={onTypeSelect} />
       <Chip label="Lower" value={2} selected={selectedType === 2} onPress={onTypeSelect} />
-      <Chip label="Rec" value={3} selected={selectedType === 3} onPress={onTypeSelect} />
+      <Chip label="Other" value={3} selected={selectedType === 3} onPress={onTypeSelect} />
     </View>
   );
 };

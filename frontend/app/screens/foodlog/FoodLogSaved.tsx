@@ -1,4 +1,4 @@
-import { TextInput, StyleSheet, ScrollView, Text, View, FlatList, Alert, TouchableOpacity, Modal, TouchableWithoutFeedback } from "react-native";
+import { TextInput, StyleSheet, ScrollView, Text, View, FlatList, Alert, TouchableOpacity, Modal, TouchableWithoutFeedback, Dimensions } from "react-native";
 import React,  { useCallback, useContext, useEffect, useState } from 'react';
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { GlobalContext } from "@/context/GlobalContext";
@@ -21,7 +21,7 @@ interface Food {
     isDeleted: boolean;
 }
 
-const FoodItem: React.FC<{ food: Food; saveFoodChanges: (food: Food) => void; logFoodToDay: (food: Food) => void}> =  ({ food, saveFoodChanges, logFoodToDay}) => {
+const FoodItem: React.FC<{ food: Food; saveFoodChanges: (food: Food) => void; logFoodToDay: (food: Food) => void}> =  ({ food, saveFoodChanges, logFoodToDay}) => {    
     return(
         <LogFoodButton 
             id={food.id}
@@ -34,10 +34,10 @@ const FoodItem: React.FC<{ food: Food; saveFoodChanges: (food: Food) => void; lo
             saveFoodChanges={(updatedFood) => saveFoodChanges(updatedFood)}
             logFoodToDay={(updatedFood) => logFoodToDay(updatedFood)}
             textColor="black"
-            backgroundColor='white'
-            borderWidth={1}
+            backgroundColor='#EDEDED'
+            borderWidth={0}
             fontSize={16}
-            width ='100%'
+            width ='95%'
             />
     );
     };
@@ -52,6 +52,8 @@ const FoodLogSavedPage = () => {
     const [refreshing, setRefreshing] = useState(false); 
     const [day, setDay] = useState();
     const context = useContext(GlobalContext);
+    const { width } = Dimensions.get("window");
+
 
      // Prefix all keys with user ID (assuming it's stored in context)
      const userID = context?.data.token; 
@@ -285,7 +287,7 @@ const FoodLogSavedPage = () => {
                 <CustomTextInput
                 placeholder="Search"
                 placeholderTextColor="#999"
-                // width={width * 0.85}
+                width={width * 0.85}
                 value={searchText}
                 onChangeText={setSearchText}
                 style={{
@@ -360,6 +362,7 @@ const FoodLogSavedPage = () => {
         </View>
     ) : (
         <View style={styles.bottomContainer}>
+            <View style={{alignContent: 'center'}}>
           <View style={styles.searchContainer}>
                 <Ionicons
                 name="search-outline"
@@ -382,6 +385,8 @@ const FoodLogSavedPage = () => {
                 }}
         />
         </View>
+            </View>
+
             <FlatList 
                 data={foodDetails}
                 renderItem={renderItem}
@@ -395,12 +400,14 @@ const FoodLogSavedPage = () => {
 
 const styles = StyleSheet.create({
     searchContainer: {
-        flexDirection: "row",
-        alignItems: "center",
+        justifyContent: "center",
+        alignSelf: 'center',
+        paddingTop: 15,
       },
       iconContainer: {
         position: "absolute",
-        paddingLeft: 10,
+        paddingTop: 15,
+        paddingLeft: 7,
         zIndex: 1,
       },
     container: {
@@ -432,6 +439,7 @@ const styles = StyleSheet.create({
     bottomContainer: {
         height: '100%',
         backgroundColor: '#fff',
+        // alignItems: 'center',
     }, 
     message: {
         textAlign: 'center', 
@@ -443,8 +451,9 @@ const styles = StyleSheet.create({
         backgroundColor: 'red',
         justifyContent: 'center',
         alignItems: 'center',
-        width: 80,
-        height: '100%',
+        width: 85,
+        height: '80%',
+        marginTop: 7,
         // borderRadius: 10,
       },
       deleteText: {

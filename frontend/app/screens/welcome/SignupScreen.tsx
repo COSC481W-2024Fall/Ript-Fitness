@@ -46,8 +46,8 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
 
   //Regex for email, username, and password validation
   const emailRegex = /^([a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/;
-  // const usernameRegex = /^[a-zA-Z0-9]([.-](?![._-])|[a-zA-Z0-9]){3,18}[a-zA-Z0-9]$/;
-  const usernameRegex = /^(?![0-9]+$)(?!.*\.\.)(?!\.)[a-zA-Z0-9_.]+(?<!\.)$/; //Can't be only numbers, can't have multiple periods in a row, can't start or end with a period.
+  // const usernameRegex = /^(?![0-9]+$)(?!.*\.\.)(?!\.)[a-zA-Z0-9_.]+(?<!\.)$/; //Can't be only numbers, can't have multiple periods in a row, can't start or end with a period.
+  const usernameRegex = /^(?![0-9]+$)(?!.*\.\.)(?!\.)[a-zA-Z0-9_.]{3,}(?<!\.)$/; //Can't be only numbers, can't have multiple periods in a row, can't start or end with a period.
   const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^])[A-Za-z\d@$!%*?&#^]{8,}$/;
 
   //Handle text input change for email
@@ -87,7 +87,9 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
       isValid = false;
   
       //Set error message for username based on specific condition
-      if (/^\d+$/.test(username)) {
+      if (username.length < 3) {
+        setusernameErrorMessage("Username must be at least 3 characters.");
+      } else if (/^\d+$/.test(username)) {
         setusernameErrorMessage("Username cannot contain only numbers.");
       } else if (/\.\./.test(username)) {
         setusernameErrorMessage("Username cannot have more than one period in a row.");

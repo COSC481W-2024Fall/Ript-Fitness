@@ -33,10 +33,10 @@ const FoodItem: React.FC<{ food: Food; saveFoodChanges: (food: Food) => void; lo
             saveFoodChanges={(updatedFood) => saveFoodChanges(updatedFood)}
             logFoodToDay={(updatedFood) => logFoodToDay(updatedFood)}
             textColor="black"
-            backgroundColor='white'
-            borderWidth={1}
+            backgroundColor='#EDEDED'
+            borderWidth={0}
             fontSize={16}
-            width='100%'
+            width ='95%'
     />
     );
     };
@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
         paddingBottom: 20, 
     }, 
     foodItemContainer: {
-        // position: 'relative',
+        position: 'relative',
         padding: 15, 
         backgroundColor: 'white', 
         borderBottomWidth: 1, 
@@ -348,8 +348,9 @@ const styles = StyleSheet.create({
         backgroundColor: 'red',
         justifyContent: 'center',
         alignItems: 'center',
-        width: 80,
-        height: '100%',
+        width: 85,
+        height: '80%',
+        marginTop: 7,
         // borderRadius: 10,
       },
       deleteText: {

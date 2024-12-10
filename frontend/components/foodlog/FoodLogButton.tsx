@@ -132,7 +132,7 @@ const LogFoodButton: React.FC<LogFoodButtonProps> = ({
       >
         <Text style={styles.foodName}>{name}</Text>
         <View style={styles.foodTextRight}>
-          <Text>Calories: {calories}</Text>
+          <Text>{calories} Calories</Text>
         </View>
       </TouchableOpacity>
 
@@ -240,9 +240,14 @@ const LogFoodButton: React.FC<LogFoodButtonProps> = ({
 const styles = StyleSheet.create({
   foodItemContainer: {
     padding: 20,
-    backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderColor: 'black',
+    backgroundColor: '#EDEDED',
+    alignSelf: 'center',
+    alignItems: 'center',
+    borderRadius: 5,
+    marginBottom: 5,
+    marginTop: 7,
+    // borderBottomWidth: 1,
+    // borderColor: 'black',
     flexDirection: 'row',
   },
   foodName: {

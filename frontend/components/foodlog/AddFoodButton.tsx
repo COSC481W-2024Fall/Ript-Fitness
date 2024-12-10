@@ -27,6 +27,7 @@ const AddFoodButton: React.FC<AddFoodButtonProps> = ({ title, backgroundColor, b
   const textStyle: TextStyle = {
     color: textColor || '#fff',
     fontSize: fontSize || 15,
+    fontWeight: 'bold',
   };
 
   return (
@@ -48,7 +49,7 @@ const styles = StyleSheet.create({
     circle: {
         width: 100, // Diameter of the circle
         height: 50,
-        borderRadius: 20, // Half of the width/height to make it a circle
+        borderRadius: 30, // Half of the width/height to make it a circle
         justifyContent: 'center', // Center the text vertically
         alignItems: 'center', // Center the text horizontally
         marginRight: 10,

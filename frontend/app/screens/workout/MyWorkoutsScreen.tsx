@@ -1000,6 +1000,7 @@ return (
                 onPress={async () => {
                   await logWorkout();
                   setIsTracking(false);
+                  Alert.alert("Get Ript!", "You have logged a workout! Check the calendar.");
                 }}
               >
                 <Text style={styles.finishButtonText}>Finish Workout</Text>
