@@ -43,22 +43,19 @@ public class StreakService {
 		if (prevLogin.getDayOfYear() != curTime.getDayOfYear()) {// checks for same day
 			if(prevLogin.getDayOfYear() == 366 && curTime.getDayOfYear() == 1) { //check for leap year last day of the year
 				streak.currentSt++;
-				streakRepository.save(streak);
 				
 			} else if(prevLogin.getDayOfYear() == 365 && curTime.getDayOfYear() == 1) { //checks for leap year and if it is the last day of the year
 				streak.currentSt++;
-				streakRepository.save(streak);
 				
 			} else if(prevLogin.getDayOfYear()+1 == curTime.getDayOfYear() && prevLogin.getYear() == curTime.getYear()) {//Checks to see if it is the next day of the same year
 				streak.currentSt++;
-				streakRepository.save(streak);
 				
 			} else {
 				streak.currentSt = 1;
-				streakRepository.save(streak);
 				
 			}
 			streak.prevLogin = curTime;
+			streakRepository.save(streak);
 		}
 		
 		return StreakMapper.INSTANCE.toStreakDto(streak);
@@ -72,10 +69,9 @@ public class StreakService {
 			throw new RuntimeException("No streak found with id = " + currentUserId);
 		}
 		Streak streak = optionalStr.get();
-		StreakDto streakDto = StreakMapper.INSTANCE.toStreakDto(streak);
 		
 		LocalDateTime curTime = LocalDateTime.now();
-		LocalDateTime prevLogin = streakDto.prevLogin;
+		LocalDateTime prevLogin = streak.prevLogin;
 		
 		if (curTime.isAfter(prevLogin.plusDays(1))) {
 			streak.currentSt = 0;
