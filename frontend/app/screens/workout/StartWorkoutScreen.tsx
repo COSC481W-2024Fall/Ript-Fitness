@@ -714,6 +714,7 @@ return (
         data={exercises}
         keyExtractor={(_, index) => index.toString()} // Use the index as the unique key
         renderItem={renderExercise} // Use the updated renderExercise function
+        contentContainerStyle={{ paddingBottom: 100 }}
       />
     {/* Submit button */}
     <TouchableOpacity
