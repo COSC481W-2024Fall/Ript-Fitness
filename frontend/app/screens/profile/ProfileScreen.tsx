@@ -756,8 +756,8 @@ function ProgressScreen() {
 
   const formatDate = (date: Date): string => {
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
-    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1); // Months are zero-based
+    const day = String(date.getDate());
     return `${month}/${day}/${year}`;
   };
 
@@ -791,6 +791,9 @@ function ProgressScreen() {
   };
 
   const getActivityType = (myDate: Date): number => {
+    console.log("Checking: " , formatDate(myDate))
+    console.log("Is: " , context!.calendar[formatDate(myDate)])
+    console.log(context!.calendar)
     if (context && context.calendar[formatDate(myDate)]) {
       // If date is in context, use the context date
       return context.calendar[formatDate(myDate)];
@@ -824,7 +827,7 @@ function ProgressScreen() {
   const [refreshKey, setRefreshKey] = useState(0); // State to trigger re-render
   
   const Calendar = () => {
-    const daysInMonth = new Date(myDate.getFullYear(), myDate.getMonth(), 0).getDate(); // Directly calculate days
+    const daysInMonth = new Date(myDate.getFullYear(), myDate.getMonth()+1, 0).getDate(); // Directly calculate days
 
     React.useEffect(() => {
 

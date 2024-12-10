@@ -461,7 +461,7 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
       day.date = TimeZone.convertToTimeZone(day.date, day.timeZoneWhenLogged).split(',')[0].trim()
        calendarData[day.date] = day.activityType; 
      });
-
+     console.log(calendarData)
      if (clear) {
       clearCalendar();
      }
