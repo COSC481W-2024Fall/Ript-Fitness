@@ -54,7 +54,7 @@ public class StreakService {
 				streakRepository.save(streak);
 				
 			} else {
-				streak.currentSt = 0;
+				streak.currentSt = 1;
 				streakRepository.save(streak);
 				
 			}
@@ -72,6 +72,16 @@ public class StreakService {
 			throw new RuntimeException("No streak found with id = " + currentUserId);
 		}
 		Streak streak = optionalStr.get();
+		StreakDto streakDto = StreakMapper.INSTANCE.toStreakDto(streak);
+		
+		LocalDateTime curTime = LocalDateTime.now();
+		LocalDateTime prevLogin = streakDto.prevLogin;
+		
+		if (curTime.isAfter(prevLogin.plusDays(1))) {
+			streak.currentSt = 0;
+			streakRepository.save(streak);
+		}
+		
 		return StreakMapper.INSTANCE.toStreakDto(streak);
 	}
 }
