@@ -161,6 +161,8 @@ export function SocialFeedProvider({ children }: { children: ReactNode }) {
         return;
       }
 
+      console.log("Fetching posts with:", { startIndex, endIndex });
+
       setLoading(true);
       setError(null);
       const abortController = new AbortController();
@@ -395,7 +397,6 @@ export function SocialFeedProvider({ children }: { children: ReactNode }) {
         clearError();
       } catch (err) {
         // Revert on error
-        // Revert on error
         updatePost(postId, (post) => ({
           ...post,
           userIDsOfLikes: isLiked
@@ -420,7 +421,7 @@ export function SocialFeedProvider({ children }: { children: ReactNode }) {
   const addComment = useCallback(
     async (postId: string, content: string) => {
       console.log("[DEBUG] AddComment started:", { postId, content });
-      console.log(postId , " " , content)
+      console.log(postId, " ", content);
 
       if (!token) {
         console.error("[DEBUG] No token available for adding a comment.");

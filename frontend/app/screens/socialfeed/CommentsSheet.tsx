@@ -19,7 +19,10 @@ import {
   FlatList,
   Alert,
 } from "react-native";
-import BottomSheet, { BottomSheetScrollView, BottomSheetTextInput } from "@gorhom/bottom-sheet";
+import BottomSheet, {
+  BottomSheetScrollView,
+  BottomSheetTextInput,
+} from "@gorhom/bottom-sheet";
 import { useSocialFeed, SocialPostComment } from "@/context/SocialFeedContext";
 import ProfileImage from "../../../assets/images/profile/Profile.png";
 import { GlobalContext } from "@/context/GlobalContext";
@@ -248,7 +251,6 @@ const CommentsSheet = forwardRef<CommentsSheetRef, CommentsSheetProps>(
         keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"
         android_keyboardInputMode="adjustResize"
-      
       >
         <KeyboardAvoidingView
           style={styles.keyboardAvoidingView}
@@ -262,23 +264,27 @@ const CommentsSheet = forwardRef<CommentsSheetRef, CommentsSheetProps>(
 
             {/* Comments list */}
             <BottomSheetScrollView>
-            <FlatList
-            keyboardShouldPersistTaps="handled"
-            scrollEnabled={true}
-              data={comments}
-              keyExtractor={(item) => item.id}
-              style={{zIndex:10, elevation:10}}
-              renderItem={({ item }) => (
-                <CommentItem
-                  comment={item}
-                  onReply={() => {
-                    inputRef.current?.focus();
-                    setCommentText(`@${item.accountId} `);
-                  }}
-                />
-              )}
-              contentContainerStyle={styles.commentsList}
-            />
+              <FlatList
+                keyboardShouldPersistTaps="handled"
+                scrollEnabled={true}
+                data={comments}
+                keyExtractor={(item) => item.id}
+                style={{ zIndex: 10, elevation: 10 }}
+                renderItem={({ item }) => (
+                  <CommentItem
+                    comment={{
+                      ...item,
+                      username: item.userProfile?.username || item.accountId,
+                    }}
+                    onReply={() => {
+                      inputRef.current?.focus();
+                      const usernameToReplyTo = item.username;
+                      setCommentText(`@${usernameToReplyTo} `);
+                    }}
+                  />
+                )}
+                contentContainerStyle={styles.commentsList}
+              />
             </BottomSheetScrollView>
 
             {/* Comment input section */}
@@ -409,8 +415,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     marginLeft: 8,
-    flex:1,
-    minWidth:60,
+    flex: 1,
+    minWidth: 60,
   },
   sendButtonDisabled: {
     opacity: 0.5,

@@ -138,8 +138,8 @@ const CreatePostSheet = forwardRef<CreatePostSheetRef, CreatePostSheetProps>(
               />
             </View>
           </View>
-
-          <View style={styles.mediaButtonsContainer}>
+          {/* remove {display: "none"} to see the media buttons again (to be implemented) */}
+          <View style={(styles.mediaButtonsContainer, { display: "none" })}>
             <TouchableOpacity style={styles.mediaButton}>
               <MaterialIcons name="photo" size={24} color="#21BFBF" />
             </TouchableOpacity>
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     color: "#000",
   },
   shareButton: {
-    width: '20%',
+    width: "20%",
     paddingVertical: 5,
     // paddingHorizontal: 8,
     borderRadius: 25,
