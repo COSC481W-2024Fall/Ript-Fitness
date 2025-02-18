@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,7 +15,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
+import com.riptFitness.Ript_Fitness_Backend.domain.model.WeightHistory;
 import com.riptFitness.Ript_Fitness_Backend.infrastructure.service.AzureBlobService;
 import com.riptFitness.Ript_Fitness_Backend.infrastructure.service.UserProfileService;
 import com.riptFitness.Ript_Fitness_Backend.web.dto.UserDto;
@@ -142,6 +144,22 @@ public class UserProfileController {
 		} catch (IllegalArgumentException ex) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
 		}
+	}
+	
+	@PutMapping("/updateWeight")
+    public ResponseEntity<UserDto> updateUserWeight(@RequestParam Double weight) {
+        String username = getUsernameFromContext();
+        UserDto updatedUser = userProfileService.updateUserWeight(username, weight);
+        return ResponseEntity.ok(updatedUser);
+    }
+	
+	@GetMapping("/weightHistory")
+	public ResponseEntity<List<WeightHistory>> getUserWeightHistory(@RequestParam(required = false) String username) {
+	    if (username == null) {
+	        username = getUsernameFromContext();
+	    }
+	    List<WeightHistory> history = userProfileService.getUserWeightHistory(username);
+	    return ResponseEntity.ok(history);
 	}
 
 }

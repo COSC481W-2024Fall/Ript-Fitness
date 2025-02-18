@@ -48,6 +48,9 @@ export default function SocialFeed() {
   const [initialLoadDone, setInitialLoadDone] = useState(false);
   const isFetchingRef = useRef(false);
 
+
+  const isDarkMode = context?.isDarkMode;
+
   useEffect(() => {
     if (!initialLoadDone) {
       handleInitialLoad();
@@ -223,7 +226,7 @@ export default function SocialFeed() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <PortalProvider>
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[isDarkMode? styles.darkContainer : styles.container]}>
           <StreakHeader />
           <StatusBar barStyle="default" />
 
@@ -273,6 +276,11 @@ export default function SocialFeed() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    // backgroundColor: 'black'
+  },
+  darkContainer: {
+    flex: 1,
+    backgroundColor: 'black'
   },
   emptyContainer: {
     alignItems: "center",

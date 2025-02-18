@@ -86,6 +86,8 @@ const SettingsScreen = ({ navigation }: any) => {
   const [restDays, setRestDays] = useState<string>("");
   const [bio, setBio] = useState<string>("");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const isDarkMode = context?.isDarkMode;
+
 
 // ADDING STATE FOR TIMEZONE, NO REMOVALS
   const [selectedTimeZone, setSelectedTimeZone] = useState<string>("America/New_York");
@@ -179,18 +181,18 @@ const SettingsScreen = ({ navigation }: any) => {
   const [isFocus, setIsFocus] = useState(false);
   return (
     <KeyboardAwareScrollView
-      style={styles.container}
+      style={[isDarkMode? styles.darkContainer : styles.container]}
       contentContainerStyle={styles.scrollContainer}
       keyboardShouldPersistTaps="handled"
       enableResetScrollToCoords={false}
       enableOnAndroid={true}
       extraScrollHeight={80}
     >
-      <View style={styles.header}>
+      <View style={[isDarkMode? styles.darkHeader : styles.header]}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="black" />
+          <Ionicons name="arrow-back" size={24} color={isDarkMode? "white" : "black"} />
         </TouchableOpacity>
-        <Text style={styles.title}>Account Settings</Text>
+        <Text style={[isDarkMode? styles.darkTitle : styles.title]}>Account Settings</Text>
         <TouchableOpacity style={styles.saveButton} onPress={saveSettings}>
           <Text style={styles.saveButtonText}>Save</Text>
         </TouchableOpacity>
@@ -215,9 +217,9 @@ const SettingsScreen = ({ navigation }: any) => {
 
       <View style={styles.infoContainer}>
         <View style={styles.infoRow}>
-          <Text style={styles.label}>First Name</Text>
+          <Text style={[isDarkMode? styles.darkLabel : styles.label]}>First Name</Text>
           <TextInput
-            style={styles.input}
+            style={[isDarkMode? styles.darkInput : styles.input]}
             value={firstName}
             onChangeText={(text) => {
               setFirstName(text);
@@ -242,7 +244,7 @@ const SettingsScreen = ({ navigation }: any) => {
           />
         </View>
         <View style={styles.infoRow}>
-          <Text style={styles.label}>Last Name</Text>
+          <Text style={[isDarkMode? styles.darkLabel : styles.label]}>Last Name</Text>
           <TextInput
             style={styles.input}
             value={lastName}
@@ -269,7 +271,7 @@ const SettingsScreen = ({ navigation }: any) => {
           />
         </View>
         <View style={styles.infoRow}>
-          <Text style={styles.label}>Display Name</Text>
+          <Text style={[isDarkMode? styles.darkLabel : styles.label]}>Display Name</Text>
           <TextInput
             style={styles.input}
             value={displayName}
@@ -297,7 +299,7 @@ const SettingsScreen = ({ navigation }: any) => {
           />
         </View>
         <View style={styles.infoRow}>
-          <Text style={styles.label}>Rest Days</Text>
+          <Text style={[isDarkMode? styles.darkLabel : styles.label]}>Rest Days</Text>
           <TextInput
             style={styles.input}
             value={restDays}
@@ -325,7 +327,7 @@ const SettingsScreen = ({ navigation }: any) => {
           />
         </View>
         <View style={styles.infoRow}>
-          <Text style={styles.label}>Bio</Text>
+          <Text style={[isDarkMode? styles.darkLabel : styles.label]}>Bio</Text>
           <TextInput
             style={styles.input}
             value={bio}
@@ -354,7 +356,7 @@ const SettingsScreen = ({ navigation }: any) => {
         </View>
         {/* ADD TIME ZONE DROPDOWN HERE WITHOUT REMOVING ANYTHING */}
         <View style={[styles.infoRow]}>
-          <Text style={[styles.label, {flex:1}]}>Time Zone</Text>
+          <Text style={[[isDarkMode? styles.darkLabel : styles.label], {flex:1}]}>Time Zone</Text>
           <View style={{flex:2, justifyContent:'center'}}>
           <Dropdown
         data={timeZones.map(tz => ({ label: tz, value: tz }))}
@@ -367,7 +369,7 @@ const SettingsScreen = ({ navigation }: any) => {
         containerStyle={{ maxHeight: 200 }} // optional, limit dropdown height
         onFocus={() => setIsFocus(true)}
         onBlur={() => setIsFocus(false)}
-        selectedTextStyle={{ marginLeft: 10 }}
+        selectedTextStyle={{ marginLeft: 10, color:isDarkMode?'white':'black' }}
         onChange={item => {
           setSelectedTimeZone(item.value);
           setIsFocus(false);
@@ -391,8 +393,8 @@ const SettingsScreen = ({ navigation }: any) => {
           style={styles.infoRow}
           onPress={() => navigation.navigate("ChangePasswordScreen")}
         >
-          <Text style={styles.label}>Change password</Text>
-          <Ionicons name="chevron-forward" size={20} color="black" style={{paddingRight: 15}} />
+          <Text style={[isDarkMode? styles.darkLabel : styles.label]}>Change password</Text>
+          <Ionicons name="chevron-forward" size={20} color={isDarkMode? "white" : "black"} style={{paddingRight: 15}} />
         </TouchableOpacity>
       </View>
     </KeyboardAwareScrollView>
@@ -402,6 +404,7 @@ const SettingsScreen = ({ navigation }: any) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff', },
+  darkContainer: { flex: 1, backgroundColor: 'black', },
   scrollContainer: { flexGrow: 1, },
   header: {
     flexDirection: 'row',
@@ -410,9 +413,20 @@ const styles = StyleSheet.create({
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
-    marginTop: Platform.OS === "ios" ? '10%' : 0
+    marginTop: Platform.OS === "ios" ? '10%' : 0,
+  },
+  darkHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+    marginTop: Platform.OS === "ios" ? '10%' : 0,
+    backgroundColor: 'black',
   },
   title: { fontSize: 18, fontWeight: 'bold' },
+  darkTitle: { fontSize: 18, fontWeight: 'bold', color: 'white' },
   saveButton: {
     backgroundColor: '#21BFBF',
     paddingHorizontal: 16,
@@ -442,6 +456,7 @@ const styles = StyleSheet.create({
   },
   errorLabel: { fontSize: 16, color: 'red' },
   infoContainer: { paddingHorizontal: 16, flexGrow: 1 },
+  darkInfoContainer: { paddingHorizontal: 16, flexGrow: 1, backgroundColor: 'black' },
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -451,7 +466,9 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ddd',
   },
   label: { fontSize: 16, fontWeight: '500', color: '#333' },
-  input: { fontSize: 16, color: '#333', flex: 1, textAlign: 'right', minWidth:30, marginRight:10 },
+  darkLabel: { fontSize: 16, fontWeight: '500', color: 'white' },
+  input: { fontSize: 16, color: 'white', flex: 1, textAlign: 'right', minWidth:30, marginRight:10 },
+  darkInput: { fontSize: 16, color: 'white', flex: 1, textAlign: 'right', minWidth:30, marginRight:10 },
   dropdown: { fontSize: 16, color: '#333', flex: 2, textAlign: 'right', minWidth:50, backgroundColor:'grey' },
 });
 

@@ -3,17 +3,21 @@ package com.riptFitness.Ript_Fitness_Backend.web.controllerTests;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,13 +25,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.riptFitness.Ript_Fitness_Backend.domain.model.UserProfile;
+import com.riptFitness.Ript_Fitness_Backend.domain.model.WeightHistory;
 import com.riptFitness.Ript_Fitness_Backend.infrastructure.config.JwtUtil;
 import com.riptFitness.Ript_Fitness_Backend.infrastructure.config.SecurityConfig;
 import com.riptFitness.Ript_Fitness_Backend.infrastructure.service.UserProfileService;
@@ -44,6 +55,8 @@ public class UserProfileControllerTests {
 
 	@MockBean
 	private UserProfileService userProfileService;
+	private UserProfile userProfile;
+    private List<WeightHistory> history;
 
 	@Autowired
 	private ObjectMapper objectMapper;
@@ -71,6 +84,12 @@ public class UserProfileControllerTests {
 		userDto.lastName = "Van";
 		userDto.username = "testUser";
 		userDto.isDeleted = false;
+		
+		history = List.of(
+	            new WeightHistory(userProfile, 180.0, LocalDateTime.now().minusDays(1)),
+	            new WeightHistory(userProfile, 175.0, LocalDateTime.now())
+	        );
+		
 
 		when(jwtUtil.extractUsername(any(String.class))).thenReturn("testUser");
 	}
@@ -183,5 +202,28 @@ public class UserProfileControllerTests {
 
 		verify(userProfileService, times(1)).searchUserProfilesByUsername(eq("test"), eq(0), eq(10), anyString());
 	}
+	
+	@Test
+	public void testGetUserWeightHistory_Returns200() throws Exception {
+	    when(userProfileService.getUserWeightHistory("testUser")).thenReturn(history);
+
+	    mockMvc.perform(get("/userProfile/weightHistory")
+	            .param("username", "testUser")  
+	            .header("Authorization", token))
+	        .andExpect(status().isOk())  
+	        .andExpect(jsonPath("$.length()").value(2))  
+	        .andExpect(jsonPath("$[0].weight").value(180.0));
+	}
+
+	@Test
+	public void testGetUserWeightHistory_UserNotFound_Returns500() throws Exception {
+	    when(userProfileService.getUserWeightHistory("invalidUser"))
+	        .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+	    mockMvc.perform(get("/userProfile/weightHistory")
+	            .param("username", "invalidUser")
+	            .header("Authorization", token))
+	        .andExpect(status().isInternalServerError())  
+	        .andExpect(content().string("An unexpected error has occured. Message: 404 NOT_FOUND \"User not found\""));	}
 
 }

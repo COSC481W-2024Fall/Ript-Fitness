@@ -116,6 +116,9 @@ interface GlobalContextType {
   updateWorkout: (updatedWorkout: Workout) => void;
   reloadFriends: () => void;
 
+  // Added by Team A 
+  isDarkMode: boolean;
+  toggleTheme: () => void;
 }
 
 
@@ -607,6 +610,26 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
   };
 
+  const ThemeContext = createContext<any>(null);
+
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+ useEffect(() => {
+  const getTheme = async () => {
+    const storedTheme = await AsyncStorage.getItem('isDarkMode');
+    if (storedTheme !== null) {
+      setIsDarkMode(JSON.parse(storedTheme));  
+    }
+  };
+  getTheme();
+}, []);
+
+const toggleTheme = async () => {
+  const newTheme = !isDarkMode;
+  setIsDarkMode(newTheme);
+  await AsyncStorage.setItem('isDarkMode', JSON.stringify(newTheme));  
+};
+
 
   return (
 
@@ -636,7 +659,9 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
         updateWorkout,
         reloadFriends,
         incrementRemovePending,
-        decrementRemovePending
+        decrementRemovePending,
+        isDarkMode,
+        toggleTheme
       }}
     >
 
@@ -645,4 +670,3 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
     </GlobalContext.Provider>
   );
 };
-

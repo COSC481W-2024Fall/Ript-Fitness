@@ -27,6 +27,8 @@ const FoodLogAddPage = () => {
     const [totalWater, setTotalWater] = useState(0);
     const [day, setDay] = useState();
     const context = useContext(GlobalContext);
+    const isDarkMode = context?.isDarkMode;
+
 
      // Prefix all keys with user ID (assuming it's stored in context)
      const userID = context?.data.token; 

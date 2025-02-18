@@ -1,9 +1,11 @@
 import { ThemedView } from "@/components/ThemedView";
 import { Ionicons } from "@expo/vector-icons";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { View, StyleSheet, TouchableOpacity, Text, Platform, Image, SafeAreaView } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
+import { GlobalContext } from '@/context/GlobalContext';
+
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -85,8 +87,11 @@ interface TeamScreenProps {
 
 function TeamScreen({ filteredData }: TeamScreenProps) {
 
+  const context = useContext(GlobalContext);
+  const isDarkMode = context?.isDarkMode;
+  
   return (
-    <ThemedView style={{ flex: 1 }}>
+    <ThemedView style={{ flex: 1, backgroundColor: isDarkMode? "black" : "white"}}>
       <SafeAreaView style={{ flex: 1 }} />
       <FlatList
         data={filteredData} // Pass filtered data
@@ -99,8 +104,8 @@ function TeamScreen({ filteredData }: TeamScreenProps) {
               source={item.imageSrc} 
               style={{ height: 150, width: 150, borderRadius: 100 }}
             />
-            <Text style={{marginTop: 3, fontWeight: 'bold', fontSize: 15}}>{item.name}</Text>
-            <Text style={{fontSize: 13}}>{item.title}</Text>
+            <Text style={{marginTop: 3, fontWeight: 'bold', fontSize: 15, color: isDarkMode? "white" : "black"}}>{item.name}</Text>
+            <Text style={{fontSize: 13, color: isDarkMode? "white" : "black"}}>{item.title}</Text>
           </View>
         )}
       />
@@ -126,9 +131,11 @@ function BackendScreen() {
 }
 
 const RiptTeamScreen = ({ navigation }: any) => {
+  const context = useContext(GlobalContext);  
+  const isDarkMode = context?.isDarkMode;
   return (
     <View style={{flex: 1,}}>
-      <View style={styles.entireContainer}>
+      <View style={[isDarkMode? styles.darkEntireContainer : styles.entireContainer]}>
         {/* Header */}
         {/* <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -139,7 +146,7 @@ const RiptTeamScreen = ({ navigation }: any) => {
         <View style={styles.topContainer}>
             <View style={{width: '100%', paddingHorizontal: 12,}}>
               <TouchableOpacity onPress={() => navigation.goBack()}>
-                <Ionicons name="arrow-back" size={24} color="black" />
+                <Ionicons name="arrow-back" size={24} color={isDarkMode? "white" : "black"} />
               </TouchableOpacity>
               <Text style={styles.heading}>Ript Fitness Team</Text>
             </View>
@@ -150,8 +157,8 @@ const RiptTeamScreen = ({ navigation }: any) => {
         <View style={{ height: 500 }}>
           <Tab.Navigator
             screenOptions={{
-              tabBarLabelStyle: { fontSize: 14, fontWeight: 'bold', color: 'black' },
-              tabBarStyle: { backgroundColor: '#fff' },
+              tabBarLabelStyle: { fontSize: 14, fontWeight: 'bold', color: isDarkMode ? 'white' : 'black' },
+              tabBarStyle: { backgroundColor: isDarkMode? 'black' : '#fff' },
               tabBarIndicatorStyle: { backgroundColor: '#21BFBF', height: 3, },
             }}
           >
@@ -170,6 +177,10 @@ const styles = StyleSheet.create({
   entireContainer: {
     flex: 1,
     // backgroundColor: 'blue',
+  },
+  darkEntireContainer: {
+    flex: 1,
+    backgroundColor: 'black',
   },
   header: {
     flexDirection: 'row',
@@ -196,7 +207,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     textAlign: 'center',
-    // color: '#21BFBF',
+    color: '#21BFBF',
     paddingBottom: 15,
   },
   mainImage: {

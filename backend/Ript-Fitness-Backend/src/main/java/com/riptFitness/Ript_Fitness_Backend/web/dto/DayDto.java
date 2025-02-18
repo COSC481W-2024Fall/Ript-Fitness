@@ -14,6 +14,15 @@ public class DayDto {
 	public double totalCarbs;
 	public double totalProtein;
 	public double totalFat;
+	public double totalCholesterol;
+	public double totalSaturatedFat;
+	public double totalTransFat;
+	public double totalSodium;
+	public double totalFiber;
+	public double totalSugars;
+	public double totalCalcium;
+	public double totalIron;
+	public double totalPotassium;
 	public int totalWaterConsumed;
 	public boolean isDeleted = false;
 }

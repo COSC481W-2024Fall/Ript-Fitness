@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -17,15 +17,18 @@ import { GlobalContext } from '@/context/GlobalContext';
 export default function WorkoutApiScreen() { 
   
   const navigation = useNavigation<WorkoutScreenNavigationProp >();
-  const context = useContext(GlobalContext)
+  const context = useContext(GlobalContext);
+
+  const isDarkMode = context?.isDarkMode;  
   // TouchableOpacity is what gives the fade effect
   // view is calling the container that helps the layout
     
 // makes button clickable 
   return (
-    <View style={styles.container}>
+    
+    <View style={[isDarkMode ? styles.darkContainer : styles.container]}>
       <View style={styles.welcomeContainer}>
-        <Text style={styles.welcomeText}>Welcome, {context?.userProfile.displayname}!</Text>
+        <Text style={[isDarkMode ? styles.darkWelcomeText : styles.welcomeText]}>Welcome, {context?.userProfile.displayname}!</Text>
       </View>
       <View style={styles.lineBreak}></View>
       {/* My Workouts */}
@@ -100,13 +103,24 @@ export default function WorkoutApiScreen() {
   );
 }
 
+
 // talk to team about adujust position to look more/less like figma
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     // paddingHorizontal: 50,
     paddingTop: 30,
-    // backgroundColor: '#FFFF',
+    //backgroundColor: 'black',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignContent: 'center',
+    justifyContent: 'center',
+  },
+  darkContainer: {
+    flex: 1,
+    // paddingHorizontal: 50,
+    paddingTop: 30,
+    backgroundColor: 'black',
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignContent: 'center',
@@ -122,6 +136,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     // marginHorizontal: 20,
     color: '#1D2526',
+  },
+  darkWelcomeText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    // marginHorizontal: 20,
+    color: 'white',
   },
   lineBreak: {
     backgroundColor: '#21BFBF',

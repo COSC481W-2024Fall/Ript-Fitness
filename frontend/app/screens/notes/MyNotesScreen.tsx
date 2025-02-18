@@ -8,8 +8,9 @@ import { Note as NoteType } from '@/components/MyNotes/NotesContext';
 import { StackNavigationProp } from "@react-navigation/stack";
 import { WorkoutStackParamList } from "@/app/(tabs)/WorkoutStack"
 import CustomSearchBar from "@/components/custom/CustomSearchBar";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import TimeZone from "@/api/timeZone";
+import { GlobalContext } from "@/context/GlobalContext";
 
 type MyNotesScreenNavigationProp = StackNavigationProp<WorkoutStackParamList, 'MyNotesScreen'>;
 
@@ -18,6 +19,8 @@ export default function MyNotesScreen() {
   const [searchText, setSearchText] = useState("");
   const { width } = Dimensions.get("window");
   const navigation = useNavigation<MyNotesScreenNavigationProp>();
+  const context = useContext(GlobalContext);
+  const isDarkMode = context?.isDarkMode;
 
   useEffect(() => {
     fetchNotes(); // Fetch notes on screen load
@@ -30,7 +33,7 @@ export default function MyNotesScreen() {
 
 
   return (
-    <View style={styles.container}>      
+    <View style={[isDarkMode ? styles.darkContainer : styles.container]}>      
       <View style={styles.searchContainer}>
         <Ionicons
           name="search-outline"
@@ -99,6 +102,12 @@ const styles = StyleSheet.create({
     width:"100%",
     flex: 1,
     backgroundColor: '#fff',
+    alignItems: 'center'
+  },
+  darkContainer: {
+    width:"100%",
+    flex: 1,
+    backgroundColor: 'black',
     alignItems: 'center'
   },
   searchContainer: {

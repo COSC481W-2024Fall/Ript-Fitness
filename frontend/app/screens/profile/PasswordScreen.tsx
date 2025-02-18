@@ -12,7 +12,9 @@ const ChangePasswordScreen = ({ navigation } : any) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^])[A-Za-z\d@$!%*?&#^]{8,}$/;
-const context = useContext(GlobalContext)
+  const context = useContext(GlobalContext);
+  const isDarkMode = context?.isDarkMode;
+
 
     const setNewPasswordWithWarning = (value : string) => {
         setNewPassword(value)
@@ -81,12 +83,12 @@ const context = useContext(GlobalContext)
     }
 
   return (
-    <View style={styles.container}>
+    <View style={[isDarkMode? styles.darkContainer : styles.container]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="black" />
+          <Ionicons name="arrow-back" size={24} color={isDarkMode ? "white" : "black"} />
         </TouchableOpacity>
-        <Text style={styles.title}>Change Password</Text>
+        <Text style={[isDarkMode? styles.darkTitle : styles.title]}>Change Password</Text>
         <TouchableOpacity style={styles.saveButton} onPress={ savePassword}>
           <Text style={styles.saveButtonText}>Save</Text>
         </TouchableOpacity>
@@ -137,6 +139,7 @@ const styles = StyleSheet.create({
       borderRadius: 8, // Add rounded corners
       alignItems: 'flex-start', // Center the text horizontally
     },
+    darkContainer: { flex: 1, backgroundColor: 'black', },
     container: { flex: 1, backgroundColor: '#fff', },
     center: {
       alignContent: 'center',
@@ -153,6 +156,7 @@ const styles = StyleSheet.create({
       marginTop: Platform.OS === "ios" ? '10%' : 0
     },
     title: { fontSize: 18, fontWeight: 'bold' },
+    darkTitle: { fontSize: 18, fontWeight: 'bold', color: 'white' },
     saveButton: {
       backgroundColor: '#21BFBF',
       paddingHorizontal: 16,

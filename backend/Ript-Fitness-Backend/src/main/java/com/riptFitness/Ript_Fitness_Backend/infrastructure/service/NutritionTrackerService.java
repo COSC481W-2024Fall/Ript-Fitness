@@ -43,7 +43,7 @@ public class NutritionTrackerService {
 	public FoodDto addFood(FoodDto foodDto) {
 		Food foodToBeAdded = FoodMapper.INSTANCE.toFood(foodDto);
 		foodToBeAdded.name = (foodToBeAdded.name == null) ? "Unnamed food" : foodToBeAdded.name;	//If name is null in HTTP request, set name to "Unnamed food"
-		foodToBeAdded.multiplier = (foodToBeAdded.multiplier == 0) ? 1 : foodToBeAdded.multiplier;	//If multiplier is null in HTTP request, set multiplier to 1
+		foodToBeAdded.serving = (foodToBeAdded.serving == 0) ? 1 : foodToBeAdded.serving;	//If serving is null in HTTP request, set serving to 1
 		Long currentlyLoggedInUserId = accountsService.getLoggedInUserId();
 		AccountsModel currentlyLoggedInAccount = accountsRepository.findById(currentlyLoggedInUserId).get();
 		foodToBeAdded.account = currentlyLoggedInAccount;
@@ -272,20 +272,41 @@ public class NutritionTrackerService {
 		if(day == null)
 			throw new IllegalArgumentException("Day cannot be null in calculateTotalDayStats method in CalculateStats class.");
 		
-		int totalCalories = 0, totalProtein = 0, totalCarbs = 0, totalFat = 0;
+		int totalCalories = 0, totalProtein = 0, totalCarbs = 0, totalFat = 0, totalCholesterol = 0;
+		int totalSaturatedFat=0, totalTransFat = 0, totalSodium = 0, totalFiber = 0, totalSugars = 0;
+		int totalCalcium = 0, totalIron = 0, totalPotassium = 0;
 		
 		for(Food food : day.foodsEatenInDay) {
 			if(food.isDeleted)
 				continue;
-			totalCalories += food.calories * food.multiplier;
-			totalProtein += food.protein * food.multiplier;
-			totalCarbs += food.carbs * food.multiplier;
-			totalFat += food.fat * food.multiplier;
+			totalCalories += food.calories * food.serving;
+			totalProtein += food.protein * food.serving;
+			totalCarbs += food.carbs * food.serving;
+			totalFat += food.fat * food.serving;
+			totalCholesterol += food.cholesterol * food.serving;
+			totalSaturatedFat += food.saturatedFat * food.serving;
+			totalTransFat += food.transFat * food.serving;
+			totalSodium += food.sodium * food.serving;
+			totalFiber += food.fiber * food.serving;
+			totalSugars += food.sugars * food.serving;
+			totalCalcium += food.calcium * food.serving;
+			totalIron += food.iron * food.serving;
+			totalPotassium += food.potassium * food.potassium;
 		}
 		
 		day.calories = totalCalories;
 		day.totalProtein = totalProtein;
 		day.totalCarbs = totalCarbs;
 		day.totalFat = totalFat;
+		day.totalCholesterol = totalCholesterol;
+		day.totalSaturatedFat = totalSaturatedFat;
+		day.totalTransFat = totalTransFat;
+		day.totalSodium = totalSodium;
+		day.totalFiber = totalFiber;
+		day.totalSugars = totalSugars;
+		day.totalCalcium = totalCalcium;
+		day.totalIron = totalIron;
+		day.totalPotassium = totalPotassium;
+		
 	}
 }

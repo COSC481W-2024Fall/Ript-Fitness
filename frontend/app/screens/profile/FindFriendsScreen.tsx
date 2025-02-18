@@ -28,10 +28,11 @@ const FindFriendsScreen = ({ navigation }: any) => {
 const context = useContext(GlobalContext)
 const [loading, setLoading] = useState(false);
 const [adding, setAdding] = useState<number[]>([])
-
+const isDarkMode = context?.isDarkMode; 
 
 
 const [potentialFriends, setPotentialFriends] = useState<FriendObject[]>([]);
+
 
 
 
@@ -166,17 +167,17 @@ const updatePotentialFriends = (newFriends: FriendObject[]) => {
   );}
 
   return (
-    <View style={styles.container}>
+    <View style={[isDarkMode? styles.darkContainer : styles.container]}>
       {/* Header */}
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={[isDarkMode ? styles.darkSafeArea : styles.safeArea]}>
       <View style={styles.header}>
         {/* Back Button */}
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="black" />
+          <Ionicons name="arrow-back" size={24} color={isDarkMode? "white" : "black"} />
         </TouchableOpacity>
 
         {/* Title */}
-        <Text style={styles.title}>Find Friends</Text>
+        <Text style={[isDarkMode? styles.darkTitle : styles.title]}>Find Friends</Text>
       </View>
     </SafeAreaView>
 
@@ -217,8 +218,11 @@ const updatePotentialFriends = (newFriends: FriendObject[]) => {
   );
 };
 
-const styles = StyleSheet.create({
 
+
+
+const styles = StyleSheet.create({
+  
 
   emptyStateContainer: {
     flex: 1,
@@ -232,6 +236,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   container: { flex: 1, backgroundColor: '#fff' },
+  darkContainer: { flex: 1, backgroundColor: 'black' },
   header: {
     marginTop: Platform.OS === 'ios' ? 10 : 0,
     height: 60, // Fixed height for consistency
@@ -252,6 +257,15 @@ const styles = StyleSheet.create({
     alignContent:'center',
     alignSelf:'center',
     width:'100%',
+  },
+  darkTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    alignContent:'center',
+    alignSelf:'center',
+    width:'100%',
+    color: 'white',
   },
   leftContainer: {
     flex: 1,
@@ -287,6 +301,10 @@ const styles = StyleSheet.create({
 },
 safeArea: {
   backgroundColor: 'white',
+},
+darkSafeArea: {
+  backgroundColor: 'black',
+  
 },
   friendUserName: {     
     fontSize: 14,

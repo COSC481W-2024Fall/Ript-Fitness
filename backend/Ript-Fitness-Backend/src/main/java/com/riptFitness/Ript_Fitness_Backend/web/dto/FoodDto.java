@@ -9,6 +9,15 @@ public class FoodDto {
 	public double carbs;
 	public double protein;
 	public double fat;
-	public double multiplier;
+	public double cholesterol;
+	public double saturatedFat;
+	public double transFat;
+	public double sodium;
+	public double fiber;
+	public double sugars;
+	public double calcium;
+	public double iron;
+	public double potassium;
+	public double serving;
 	public boolean isDeleted = false;
 }

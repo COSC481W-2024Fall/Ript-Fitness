@@ -9,16 +9,20 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.riptFitness.Ript_Fitness_Backend.domain.mapper.UserProfileMapper;
 import com.riptFitness.Ript_Fitness_Backend.domain.model.Photo;
 import com.riptFitness.Ript_Fitness_Backend.domain.model.UserProfile;
+import com.riptFitness.Ript_Fitness_Backend.domain.model.WeightHistory;
+import com.riptFitness.Ript_Fitness_Backend.domain.repository.CalendarRepository;
 import com.riptFitness.Ript_Fitness_Backend.domain.repository.PhotoRepository;
 import com.riptFitness.Ript_Fitness_Backend.domain.repository.UserProfileRepository;
+import com.riptFitness.Ript_Fitness_Backend.domain.repository.WeightHistoryRepository;
 import com.riptFitness.Ript_Fitness_Backend.web.dto.UserDto;
-import com.riptFitness.Ript_Fitness_Backend.domain.repository.CalendarRepository;
 
 import jakarta.transaction.Transactional;
 
@@ -29,14 +33,16 @@ public class UserProfileService {
 	private final PhotoRepository photoRepository;
 	private final AzureBlobService azureBlobService;
 	private final CalendarRepository calendarRepository;
+	private final WeightHistoryRepository weightHistoryRepository;
 
 	// Dependency injection constructor
 	public UserProfileService(UserProfileRepository userRepository, PhotoRepository photoRepository,
-			AzureBlobService azureBlobService, CalendarRepository calendarRepository) {
+			AzureBlobService azureBlobService, CalendarRepository calendarRepository, WeightHistoryRepository weightHistoryRepository) {
 		this.userRepository = userRepository;
 		this.photoRepository = photoRepository;
 		this.azureBlobService = azureBlobService;
 		this.calendarRepository = calendarRepository;
+		this.weightHistoryRepository = weightHistoryRepository;
 	}
 
 	// Adds a new user profile with default values
@@ -143,6 +149,18 @@ public class UserProfileService {
 				throw new RuntimeException("Invalid timeZone: " + userDto.getTimeZone());
 			}
 		}
+		if (userDto.getWeight() != null && userDto.getWeight() > 0.0) {
+		    if (userProfile.getWeight() != 0.0) {  // Save old weight before updating
+		        WeightHistory history = new WeightHistory();
+		        history.setUserProfile(userProfile);
+		        history.setWeight(userProfile.getWeight());  // Store old weight
+		        weightHistoryRepository.save(history); 
+		    }
+		    
+		    userProfile.setWeight(userDto.getWeight());  // Update new weight
+		}
+
+
 	}
 
 	// Soft-deletes user profile by username
@@ -321,5 +339,32 @@ public class UserProfileService {
 		// Map results to DTOs
 		return userProfiles.stream().map(UserProfileMapper.INSTANCE::toUserDto).collect(Collectors.toList());
 	}
+	
+	public List<WeightHistory> getUserWeightHistory(String username) {
+	    UserProfile user = userRepository.findByUsername(username)
+	            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+	    return weightHistoryRepository.findByUserProfileOrderByRecordedAtDesc(user.getId());
+	}
+
+	 public UserDto updateUserWeight(String username, Double newWeight) {
+	        UserProfile user = userRepository.findByUsername(username)
+	                .orElseThrow(() -> new RuntimeException("User not found"));
+
+	        //  Save previous weight before updating
+	        if (user.getWeight() != 0.0) {
+	            WeightHistory history = new WeightHistory();
+	            history.setUserProfile(user);
+	            history.setWeight(user.getWeight());  // Store the old weight
+	            weightHistoryRepository.save(history);
+	        }
+
+	        // Update new weight in UserProfile
+	        user.setWeight(newWeight);
+	        userRepository.save(user);
+
+	        return new UserDto() {{ setWeight(newWeight); }};
+	    }
+
 
 }

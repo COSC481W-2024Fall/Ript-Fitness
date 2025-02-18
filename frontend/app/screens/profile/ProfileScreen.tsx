@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import * as Haptics from "expo-haptics";
 import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { ScrollView } from 'react-native-gesture-handler';
 import { DrawerActions, NavigationContainer, useFocusEffect, useNavigation } from '@react-navigation/native';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
@@ -31,7 +32,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DEFAULT_PROFILE_PICTURE from '@/assets/base64/defaultPicture';
 import timeZone from '@/api/timeZone'
 import TimeZone from '@/api/timeZone';
-import { Timer } from 'victory';
+import { Background, Timer } from 'victory';
+import { useColorScheme } from 'react-native';
+import { useThemeColor } from '@/hooks/useThemeColor';
+import { Colors } from '@/constants/Colors';
 
 const Tab = createMaterialTopTabNavigator();
 const Drawer = createDrawerNavigator();
@@ -151,6 +155,9 @@ const resizeImage = async (uri: string, maxDimension: number): Promise<string> =
   }
 };
 const ProfileTabs = () => {
+  const context = useContext(GlobalContext);
+  const isDarkMode = context?.isDarkMode;
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -159,7 +166,7 @@ const ProfileTabs = () => {
         tabBarStyle: {
           overflow: 'hidden',
           alignSelf: 'center',
-          backgroundColor: 'white',
+          backgroundColor: isDarkMode ? 'black' : 'white',
           width: '80%',
           borderColor: '#40bcbc',
           borderRadius: 50,
@@ -170,8 +177,9 @@ const ProfileTabs = () => {
         tabBarActiveTintColor: 'white',
         tabBarInactiveTintColor: '#40bcbc',
         tabBarScrollEnabled: false,
+        
       }}
-      style={styles.nav}
+      style={[isDarkMode? styles.darkNav : styles.nav]}
     >
       <Tab.Screen name="Progress" component={ProgressScreen} />
       <Tab.Screen name="Photos" component={PhotosScreen} />
@@ -370,15 +378,15 @@ function PhotosScreen() {
     }
   };
 
-  
+  const isDarkMode = context?.isDarkMode;
   return (
 
     <View style={{width:'100%', flex:1, backgroundColor:'#fff'}}>
       <TouchableOpacity style={styles.addPhotoButton} onPress={handlePhoto}>
           <Ionicons name="add" size={24} color="white" />
         </TouchableOpacity>
-<View style={styles.photosContainer}>
-  {photos.length > 0 ? <></>: <View style={{width:'100%', height:'80%', justifyContent:'center'}}><Text style={{textAlign:'center'}}>Add your first photo! These photos are private.</Text></View>}
+<View style={[isDarkMode ? styles.darkPhotosContainer : styles.photosContainer]}>
+  {photos.length > 0 ? <></>: <View style={{width:'100%', height:'80%', justifyContent:'center'}}><Text style={{textAlign:'center', color: isDarkMode ? 'white': 'black'}}>Add your first photo! These photos are private.</Text></View>}
 <FlatList
   data={photos}
   keyExtractor={(item, index) => index.toString()}
@@ -388,7 +396,7 @@ function PhotosScreen() {
     justifyContent: 'flex-start',
     alignItems: 'flex-start', // Align items to the left
     paddingTop: 10,
-    backgroundColor: '#fff',
+    backgroundColor: isDarkMode ? 'black' : 'white',
   }}
   showsVerticalScrollIndicator={true}
   onEndReached={handleLoadMore}
@@ -701,10 +709,10 @@ function PostsScreen() {
     }
 
   };
-
+  const isDarkMode = context?.isDarkMode;
   // refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
   return (
-    <View style={styles.postView}>
+    <View style={[isDarkMode? styles.darkPostView : styles.postView]}>
       {true ? (
         <FlatList
           data={posts}
@@ -714,7 +722,7 @@ function PostsScreen() {
           contentContainerStyle={{
             alignItems: 'center',
             paddingTop: 10,
-            backgroundColor: '#fff',
+            backgroundColor: isDarkMode ? 'black' : '#fff',
           }}
           showsVerticalScrollIndicator={true}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
@@ -743,6 +751,7 @@ function ProgressScreen() {
   const context = useContext(GlobalContext);
   const [loadingDates, setLoadingDates] = useState<Date[]>([]);
 
+  const isDarkMode = context?.isDarkMode;
 
   useFocusEffect(
     useCallback(() => {
@@ -881,9 +890,10 @@ function ProgressScreen() {
         </React.Fragment>
       );
     });
+  const isDarkMode = context?.isDarkMode;
     return (
-      <View style={styles.calendarContainer}>
-        <View style={styles.daysContainer}>
+      <View style={[isDarkMode? styles.darkCalendarContainer : styles.calendarContainer]}>
+        <View style={[isDarkMode? styles.darkDaysContainer : styles.daysContainer]}>
           {spacers}
           {calendarDays}
         </View>
@@ -967,18 +977,18 @@ function ProgressScreen() {
 
   return (
     <ScrollView>
-      <View style={styles.calendar}>
+      <View style={[isDarkMode? styles.darkCalendar : styles.calendar]}>
         <View style={styles.calendarHeader}>
           <TouchableOpacity onPress={setToFirstOfPreviousMonth}>
-            <Ionicons name="chevron-back-outline" size={24} />
+            <Ionicons name="chevron-back-outline" size={24} color={isDarkMode? 'white' : 'black'}/>
           </TouchableOpacity>
           <View style={styles.minWidth}>
-            <Text style={styles.month}>
+            <Text style={[isDarkMode ? styles.darkMonth : styles.month]}>
               {monthNames[myDate.getMonth()]} {myDate.getFullYear()}
             </Text>
           </View>
           <TouchableOpacity onPress={setToFirstOfNextMonth}>
-            <Ionicons name="chevron-forward-outline" size={24} />
+            <Ionicons name="chevron-forward-outline" size={24} color={isDarkMode? 'white' : 'black'} />
           </TouchableOpacity>
         </View>
 
@@ -986,7 +996,7 @@ function ProgressScreen() {
     <Calendar/>
 
     <View style={{ marginBottom: '10%', flexDirection: 'row', alignItems: 'center', }}>
-      <Text style={{ }} >{context?.userProfile.restDaysLeft} days available</Text>
+      <Text style={{ color: isDarkMode? 'white' : 'black'}} >{context?.userProfile.restDaysLeft} days available</Text>
       <TouchableOpacity
         style={{
           marginLeft: 10,
@@ -1019,6 +1029,7 @@ function ProgressScreen() {
   );
 }
 
+
 function CustomDrawerContent({ navigation }: any) {
   const drawerNav = async (navigation: any) => {
     navigation.closeDrawer();
@@ -1030,8 +1041,16 @@ function CustomDrawerContent({ navigation }: any) {
   };
 
   const context = useContext(GlobalContext);
+  const isDarkMode = context?.isDarkMode;
+
+
+  const drawerBackgroundColor = context?.isDarkMode ? '#121212' : '#FFFFFF';
+  const textColor = context?.isDarkMode ? '#FFF' : '#000'; 
+  const iconColor = context?.isDarkMode ? '#FFF' : '#000';
+  
+
   return (
-    <View style={styles.drawerContent}>
+    <View style={[styles.drawerContent, { backgroundColor: drawerBackgroundColor}]}>
       <View>
         <TouchableOpacity
           style={styles.drawerItem}
@@ -1042,8 +1061,8 @@ function CustomDrawerContent({ navigation }: any) {
           }}
         >
           <View style={styles.drawerItemTextContainer}>
-            <Ionicons name="settings-outline" size={24} color={'#1E1E1E'} />
-            <Text style={styles.drawerItemText}>Account Settings</Text>
+            <Ionicons name="settings-outline" size={24} color={iconColor} />
+            <Text style={[styles.drawerItemText, {color: textColor}]}>Account Settings</Text>
           </View>
         </TouchableOpacity>
         <TouchableOpacity
@@ -1056,8 +1075,26 @@ function CustomDrawerContent({ navigation }: any) {
           }}
         >
           <View style={styles.drawerItemTextContainer}>
-            <Ionicons name="log-out-outline" size={24} color={'#1E1E1E'} />
-            <Text style={styles.drawerItemText}>Logout</Text>
+            <Ionicons name="log-out-outline" size={24} color={iconColor} />
+            <Text style={[styles.drawerItemText, {color: textColor}]}>Logout</Text>
+          </View>
+        </TouchableOpacity>
+
+        // Dark mode button
+        <TouchableOpacity
+          style={styles.drawerItem}
+          onPress={() => {
+            // Handle logic here
+            context?.toggleTheme();
+            //navigation.closeDrawer();
+          }}
+        
+        >
+          <View style={styles.drawerItemTextContainer}>
+            <MaterialCommunityIcons name={context?.isDarkMode ? 'weather-sunny' : 'weather-night'} size={24} color={iconColor} />
+            <Text style={[styles.drawerItemText, {color: textColor}]}>
+            {context?.isDarkMode ? "Light Mode" : "Dark Mode"}
+            </Text>
           </View>
         </TouchableOpacity>
       </View>
@@ -1070,8 +1107,8 @@ function CustomDrawerContent({ navigation }: any) {
         }}
       >
         <View style={[styles.drawerItemTextContainer, {borderTopWidth: 1, paddingTop: 10, borderBottomWidth: 0, borderTopColor: '#ddd'}]}>
-          <Ionicons name="people-outline" size={24} color={'#1E1E1E'} />
-          <Text style={styles.drawerItemText}>RiptFitness Team</Text>
+          <Ionicons name="people-outline" size={24} color={iconColor} />
+          <Text style={[styles.drawerItemText, {color: textColor}]}>RiptFitness Team</Text>
         </View>
       </TouchableOpacity>
     </View>
@@ -1145,6 +1182,7 @@ const MainScreen = () => {
   const handlePressOutside = () => {
     ProfContext?.setRequestsOpen(false);
   };
+  const isDarkMode = context?.isDarkMode;
   return (
     <View style={styles.bg}>
       <Modal
@@ -1222,7 +1260,7 @@ const MainScreen = () => {
           </View>
         </View>
       </Modal>
-      <View style={styles.container}>
+      <View style={[isDarkMode? styles.darkContainer : styles.container]}>
 
         <View style={styles.center}>
           {/* Profile Section */}
@@ -1231,9 +1269,9 @@ const MainScreen = () => {
               source={{ uri: `data:image/png;base64,${context?.userProfile.profilePicture}` }}
               style={styles.avatar}
             />
-            <Text style={styles.name}>{context?.userProfile.displayname}</Text>
+            <Text style={[isDarkMode? styles.darkName : styles.name]}>{context?.userProfile.displayname}</Text>
             {context?.userProfile.bio ? (
-              <View style={styles.bioStyle}>
+              <View style={[styles.bioStyle]}>
                 <TouchableOpacity
                   onPress={() => {
                     if (context?.userProfile) {
@@ -1243,7 +1281,7 @@ const MainScreen = () => {
                     }
                   }}
                 >
-                  <Text style={styles.bio}>
+                  <Text style={[isDarkMode? styles.darkBio : styles.bio]}>
                     {context?.userProfile?.bio != null
                       ? `${(context?.userProfile?.bio.split('\n')[0] || '').slice(0, 50)}`
                       : null}
@@ -1303,7 +1341,7 @@ const MainScreen = () => {
           </View>
         </View>
       </View>
-      <View style={styles.tabContainer}>
+      <View style={[isDarkMode? styles.darkTabContainer : styles.tabContainer]}>
         <ProfileTabs />
       </View>
     </View>
@@ -1315,6 +1353,7 @@ const ProfileScreen: React.FC = () => {
   const ProfContext = useContext(ProfileContext);
   const context = useContext(GlobalContext); // Access GlobalContext here
   const insets = useSafeAreaInsets();
+  const isDarkMode = context?.isDarkMode;
   return (
     <Drawer.Navigator
       screenOptions={{
@@ -1330,11 +1369,14 @@ const ProfileScreen: React.FC = () => {
           headerTitleAlign: 'center', // Center the header title
 
           headerTitle: context?.userProfile.username,
+          headerTitleStyle: {
+            color: isDarkMode? 'white' : 'black',
+          },
           headerStyle: {
             // paddingTop: Platform.OS === "ios" ? 20 : 0, // Add paddingTop for iOS
             height: Platform.OS === "ios" ? 100 : 60,    // Adjust header height if necessary
-            backgroundColor: 'white',                  // Ensure consistent background
-
+            backgroundColor: isDarkMode? 'black' : 'white',                  // Ensure consistent background
+            
             // You can add more styling properties as needed
           },
           headerRight: () => (
@@ -1344,7 +1386,7 @@ const ProfileScreen: React.FC = () => {
                   ProfContext?.setRequestsOpen(!ProfContext?.requestsOpen);
                 }}
               >
-                <Ionicons name="notifications-outline" size={24} />
+                <Ionicons name="notifications-outline" size={24} color={isDarkMode? "white" : "black"} />
                 {ProfContext && ProfContext?.requestingFriends?.length > 0 ? (
                   <View style={styles.pendingFriend}></View>
                 ) : null}
@@ -1358,7 +1400,7 @@ const ProfileScreen: React.FC = () => {
               style={{ marginLeft: 15 }}
             >
               {/* Replace the View with a circle containing the user's profile picture */}
-              <Ionicons name="menu" size={24} />
+              <Ionicons name="menu" size={24} color={isDarkMode? "white" : "black"} />
             </TouchableOpacity>
           ),
         })}
@@ -1470,7 +1512,7 @@ const styles = StyleSheet.create({
     padding: 0,
   },
   pendingFriend: {
-    backgroundColor: 'red',
+    //backgroundColor: 'red',
     width: 10,
     height: 10,
     position: 'absolute',
@@ -1551,7 +1593,7 @@ const styles = StyleSheet.create({
   emptyContainer: {
     alignItems: "center",
     marginTop: 50,
-    flex:1
+    flex:1,
   },
   emptyText: {
     fontSize: 20,
@@ -1600,6 +1642,13 @@ const styles = StyleSheet.create({
     margin:0,
     // alignItems:'left',
   },
+  darkPhotosContainer: {
+    flex: 1, // Allows FlatList to take up full height and be scrollable
+    padding: 0,
+    margin:0,
+    // alignItems:'left',
+    backgroundColor: 'black'
+  },
   addPhotoButton: {
     position: "absolute",
     right: 20,
@@ -1636,7 +1685,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#fff',
   },
+  darkTabContainer: {
+    flex: 1,
+    width: '100%',
+    alignItems: 'center',
+    backgroundColor: 'black',
+  },
   container: { backgroundColor: '#fff' },
+  darkContainer: { backgroundColor: 'black' },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -1650,8 +1706,12 @@ const styles = StyleSheet.create({
   title: { fontSize: 24, fontWeight: 'bold' },
   profileSection: { alignItems: 'center', marginTop: 20, },
   avatar: { width: 100, height: 100, borderRadius: 50 },
-  name: { fontSize: 20, fontWeight: 'bold', marginTop: 10 },
+  name: { fontSize: 20, fontWeight: 'bold', marginTop: 10, },
+  darkName: { fontSize: 20, fontWeight: 'bold', marginTop: 10, color: 'white'},
+
   bio: { fontSize: 13, marginTop: 3, textAlign: 'center' },
+  darkBio: { fontSize: 13, marginTop: 3, textAlign: 'center', color: 'white' },
+
   friendsContainer: { },
   friendsSection: { flexDirection: 'row', marginTop: 10},
   friendsLabel: { marginRight: 10, fontSize: 16, },
@@ -1668,19 +1728,31 @@ const styles = StyleSheet.create({
   },
 
   nav: { height:"10%", width:"100%", marginTop:5,marginBottom:5, backgroundColor:"#fff", flex:1},
+  darkNav: { height:"10%", width:"100%", marginTop:5,marginBottom:5, backgroundColor:"black", flex:1},
+
   moreFriendsText: { color: '#757575' },
   friendsList: {alignContent:'center'},
   calendar: { paddingTop: 20, paddingBottom:20, alignItems: 'center' , width:'100%', backgroundColor:"white", height:"100%"},
+  darkCalendar: { paddingTop: 20, paddingBottom:20, alignItems: 'center' , width:'100%', backgroundColor:"black", height:"100%"},
+
   calendarHeader: { flexDirection: 'row', alignItems: 'center' , paddingBottom:'2%'},
+  darkCalendarHeader: { flexDirection: 'row', alignItems: 'center' , paddingBottom:'2%', color: 'white'},
+
   minWidth: { minWidth:'50%', alignItems:'center'},
+  darkMonth: { marginHorizontal: 10, fontSize: 18, fontWeight: 'bold', color: 'white' },
 
   month: { marginHorizontal: 10, fontSize: 18, fontWeight: 'bold' },
   daysRow: {},
   calendarContainer: {
-    // backgroundColor:"red",
     alignItems: 'center',
     width: '90%',
     aspectRatio: 1.166,
+  },
+  darkCalendarContainer: {
+    alignItems: 'center',
+    width: '90%',
+    aspectRatio: 1.166,
+    backgroundColor: 'black'
   },
   daysContainer: {
     paddingLeft: '4%',
@@ -1691,6 +1763,18 @@ const styles = StyleSheet.create({
     height: 'auto',
     alignItems: 'center',
     aspectRatio: 1.1,
+    backgroundColor: 'white'
+  },
+  darkDaysContainer: {
+    paddingLeft: '4%',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-start',
+    width: '95%',
+    height: 'auto',
+    alignItems: 'center',
+    aspectRatio: 1.1,
+    backgroundColor: 'black'
   },
   day: { width: '11.42%', aspectRatio: 1, margin: 4, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   activeDay: { backgroundColor: '#63c782' },
@@ -1728,9 +1812,14 @@ const styles = StyleSheet.create({
     flex: 1, // Allows FlatList to take up full height and be scrollable
     padding: 0,
     margin: 0,
-    // backgroundColor:"#fff",
-    // alignItems:"center",
+  },
+  darkPostView: {
+    backgroundColor: 'black',
+    flex: 1, // Allows FlatList to take up full height and be scrollable
+    padding: 0,
+    margin: 0,
   },
 });
+
 
 export default ProfileScreen;
