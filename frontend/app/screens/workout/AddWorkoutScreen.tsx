@@ -501,8 +501,10 @@ const addExercise = () => {
     setExercises(data)
   }
 
+  const isDarkMode = gblContext?.isDarkMode;
+
   return (    
-    <View style={styles.totalView}>
+    <View style={[isDarkMode ? styles.darkTotalView : styles.totalView]}>
       {/* Workout Name Input */}
       <View style={{marginTop:10, alignSelf:"center", }}>
         <View style={styles.workoutNameContainer}>
@@ -510,7 +512,7 @@ const addExercise = () => {
             placeholder="Workout Name"
             placeholderTextColor={'#B6B6B6'}
             autoCapitalize='words'
-            style={styles.inputStyle}
+            style={[isDarkMode? styles.darkInputStyle : styles.inputStyle]}
             onChangeText={setText}
             onBlur={Keyboard.dismiss}
             autoFocus={true}
@@ -603,6 +605,12 @@ const styles = StyleSheet.create({
     fontSize: 25,
     fontWeight: 'bold',
   },
+  darkInputStyle: {
+    flex: 1, // Ensures the input takes up the remaining space
+    color: 'white',
+    fontSize: 25,
+    fontWeight: 'bold',
+  },
   dragOverlay: {
     position: 'absolute',
     top: 0,
@@ -672,6 +680,13 @@ test: {
     flex:1,
     justifyContent: 'space-between',
     backgroundColor: '#fff', // main background e2e2e2 or f6f6f6
+  },
+  darkTotalView: {
+    // height:'50%',
+    alignItems:'center',
+    flex:1,
+    justifyContent: 'space-between',
+    backgroundColor: 'black', 
   },
   rowItem:{
     borderTopColor:'grey',

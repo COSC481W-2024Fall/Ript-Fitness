@@ -9,6 +9,7 @@ public class UserDto {
 	public String username;
 	public String displayname;
 	public String bio;
+	public Double weight; //in pounds
 	public boolean isDeleted = false;
 	public Integer restDays;
 	public Integer restDaysLeft;
@@ -29,6 +30,14 @@ public class UserDto {
 
 	public String getFirstName() {
 		return firstName;
+	}
+
+	public Double getWeight() {
+		return weight;
+	}
+
+	public void setWeight(Double weight) {
+		this.weight = weight;
 	}
 
 	public void setFirstName(String firstName) {

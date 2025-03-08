@@ -55,6 +55,7 @@ export default function WorkoutDetailScreen() {
   const gblContext = useContext(GlobalContext);
   const token = gblContext?.data.token;
   const userProfile = gblContext?.userProfile;
+  const isDarkMode = gblContext?.isDarkMode;
 
   // Access navigation for screen transitions
   const navigation = useNavigation();
@@ -268,7 +269,7 @@ const handleAddWorkout = async () => {
 
 
   return (
-    <View style={styles.container}>
+    <View style={[isDarkMode? styles.darkContainer : styles.container]}>
       {/* Workout Name Input */}
       <View style={styles.workoutNameContainer}>
         {/* <TextInput
@@ -284,7 +285,7 @@ const handleAddWorkout = async () => {
       </View>
 
       {/* Workout Details */}
-      <ThemedText style={styles.title}>{workout.name}</ThemedText>
+      <ThemedText style={[isDarkMode ? styles.darkTitle : styles.title]}>{workout.name}</ThemedText>
 
       <View style={styles.textWrapper}>
         <ThemedText style={styles.dateText}>
@@ -330,6 +331,11 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#FFFFFF',
   },
+  darkContainer: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: 'black',
+  },
   workoutNameContainer: {
     marginBottom: 20,
   },
@@ -347,6 +353,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
+  },
+  darkTitle: {
+    fontSize: 25,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+    color: 'white',
   },
   exercise: {
     padding: 15,

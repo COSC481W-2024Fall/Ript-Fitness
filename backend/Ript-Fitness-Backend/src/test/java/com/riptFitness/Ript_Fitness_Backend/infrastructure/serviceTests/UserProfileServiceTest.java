@@ -1,8 +1,19 @@
 package com.riptFitness.Ript_Fitness_Backend.infrastructure.serviceTests;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,8 +30,10 @@ import org.springframework.data.domain.Pageable;
 import com.riptFitness.Ript_Fitness_Backend.domain.mapper.UserProfileMapper;
 import com.riptFitness.Ript_Fitness_Backend.domain.model.Photo;
 import com.riptFitness.Ript_Fitness_Backend.domain.model.UserProfile;
+import com.riptFitness.Ript_Fitness_Backend.domain.model.WeightHistory;
 import com.riptFitness.Ript_Fitness_Backend.domain.repository.PhotoRepository;
 import com.riptFitness.Ript_Fitness_Backend.domain.repository.UserProfileRepository;
+import com.riptFitness.Ript_Fitness_Backend.domain.repository.WeightHistoryRepository;
 import com.riptFitness.Ript_Fitness_Backend.infrastructure.service.AzureBlobService;
 import com.riptFitness.Ript_Fitness_Backend.infrastructure.service.UserProfileService;
 import com.riptFitness.Ript_Fitness_Backend.web.dto.UserDto;
@@ -38,6 +51,10 @@ public class UserProfileServiceTest {
 
 	@Mock
 	private UserProfileMapper userProfileMapper;
+	
+	@Mock
+	private WeightHistoryRepository weightHistoryRepository;
+
 
 	@InjectMocks
 	private UserProfileService userProfileService;
@@ -52,18 +69,23 @@ public class UserProfileServiceTest {
 	    userDto = new UserDto();
 	    userDto.setFirstName("Tom");
 	    userDto.setLastName("Van");
+	    userDto.setUsername("tom.van");
 	    userDto.setDeleted(false);
 	    userDto.setTimeZone("America/New_York"); 
+	    userDto.setWeight(175.0);
 
 	    userProfile = new UserProfile();
 	    userProfile.setId(1L);
 	    userProfile.setFirstName("Tom");
 	    userProfile.setLastName("Van");
+	    userProfile.setUsername("tom.van");
 	    userProfile.setDeleted(false);
 	    userProfile.setRestDays(3);
 	    userProfile.setRestDaysLeft(3);
 	    userProfile.setRestResetDate(LocalDateTime.now());
 	    userProfile.setTimeZone("America/New_York"); 
+	    userProfile.setWeight(175.0);
+	    userProfile.setProfilePicture(new byte[]{1, 2, 3});
 
 	    when(userProfileMapper.toUser(any(UserDto.class))).thenReturn(userProfile);
 	    when(userProfileMapper.toUserDto(any(UserProfile.class))).thenReturn(userDto);
@@ -266,6 +288,49 @@ public class UserProfileServiceTest {
 		assertFalse(result.isEmpty());
 		assertEquals(1, result.size());
 		assertEquals("Tom", result.get(0).getFirstName());
+	}
+	
+	/* Weight testing*/
+	@Test
+	public void testUpdateUserWeight_SavesWeightHistory() {
+	    when(userProfileRepository.findByUsername(any(String.class)))
+	            .thenReturn(Optional.of(userProfile));
+	    
+	    when(userProfileRepository.save(any(UserProfile.class)))
+	            .thenReturn(userProfile);
+	    
+	    when(userProfileMapper.toUserDto(any(UserProfile.class)))
+	            .thenReturn(userDto);
+	    
+	    when(weightHistoryRepository.save(any(WeightHistory.class)))
+	            .thenReturn(new WeightHistory());
+
+	    UserDto updatedUser = userProfileService.updateUserByUsername("tom.van", userDto);
+	    
+	    assertNotNull(updatedUser);
+	    assertEquals(userDto.getWeight(), updatedUser.getWeight());
+
+	    verify(weightHistoryRepository, times(1)).save(any(WeightHistory.class));
+	}
+
+
+
+	@Test
+	public void testGetUserWeightHistory_ReturnsHistory() {
+	    when(userProfileRepository.findByUsername(any(String.class))).thenReturn(Optional.of(userProfile));
+
+	    List<WeightHistory> history = List.of(
+	        new WeightHistory() {{ setWeight(170.0); }},
+	        new WeightHistory() {{ setWeight(165.0); }}
+	    );
+	    
+	    when(weightHistoryRepository.findByUserProfileOrderByRecordedAtDesc(anyLong())).thenReturn(history);
+
+	    List<WeightHistory> retrievedHistory = userProfileService.getUserWeightHistory("tom.van");
+
+	    assertEquals(2, retrievedHistory.size());
+	    assertEquals(170.0, retrievedHistory.get(0).getWeight());
+	    assertEquals(165.0, retrievedHistory.get(1).getWeight());
 	}
 
 }

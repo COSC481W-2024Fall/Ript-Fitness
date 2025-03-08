@@ -1,6 +1,6 @@
 // ./app/(tabs)/SocialStack.tsx
 
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { StyleSheet, Image } from "react-native";
 import {
   createStackNavigator,
@@ -15,6 +15,8 @@ import VisitProfileScreen from "../screens/profile/VisitProfileScreen";
 import StreakCounter from "@/components/StreakCounter";
 import { StreakProvider } from "@/context/StreakContext";
 import VisitFriendsScreen from "../screens/profile/VisitFriendsScreen";
+import { GlobalContext } from '@/context/GlobalContext';
+
 
 const Stack = createStackNavigator();
 
@@ -25,7 +27,14 @@ export type SocialStackParamList = {
 export type SocialScreenNavigationProp =
   StackNavigationProp<SocialStackParamList>;
 
+    
+
 const SocialStack: React.FC = () => {
+  const context = useContext(GlobalContext);
+  const [isDarkMode, setIsDark] = useState(true);
+  
+  
+    const drawerBackgroundColor = context?.isDarkMode ? '#121212' : '#FFFFFF';
   return (
     <SocialProvider>
       <Stack.Navigator
@@ -34,7 +43,7 @@ const SocialStack: React.FC = () => {
           headerShown: true,
           headerTitleAlign: "center",
           headerStyle: {
-            backgroundColor: "#f8f8f8",
+            backgroundColor: drawerBackgroundColor,
           },
           headerStyleInterpolator: HeaderStyleInterpolators.forNoAnimation,
         }}

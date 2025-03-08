@@ -110,4 +110,10 @@ public class NutritionTrackerController {
 		DayDto updatedDayObject = nutritionTrackerService.editWaterIntake(dayId, waterIntake);
 		return ResponseEntity.ok(updatedDayObject);
 	}
+	
+	@GetMapping("/getFoodByBarcode/{barcode}")
+    public ResponseEntity<FoodDto> getFoodByBarcode(@PathVariable String barcode) {
+        FoodDto foodDto = nutritionTrackerService.getFoodByBarcode(barcode);
+        return ResponseEntity.ok(foodDto);
+    }
 }

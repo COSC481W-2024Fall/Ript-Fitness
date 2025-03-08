@@ -19,10 +19,12 @@ import { KeyboardAvoidingView, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Stopwatch from "./Stopwatch";
 import { httpRequests } from "@/api/httpRequests";
+import { WorkoutContext } from "@/context/WorkoutContext";  // Import WorkoutContext for managing workout data and state.
 
 export default function MyWorkoutsScreen() {
   const context = useContext(GlobalContext);
-
+  const workoutContext = useContext(WorkoutContext); // Access workout data and state using WorkoutContext.
+  const isDarkMode = context?.isDarkMode;
 
   const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -32,6 +34,15 @@ export default function MyWorkoutsScreen() {
   const [loading, setLoading] = useState<boolean>(true); // State for loading
   const [isTracking, setIsTracking] = useState<boolean>(false);
   const [checkboxStates, setCheckboxState] = useState<{ [key: string]: boolean }>({});
+
+  // Stores the interval IDs for each set's timer.
+  const [startTime, setStartTime] = useState<{ [key: string]: ReturnType<typeof setInterval> }>({});
+  // Stores the formatted time ranges for each set.
+  const [timeRanges, setTimeRanges] = useState<{ [key: string]: string }>({});
+  // Tracks the elapsed time (in seconds) for the currently active timer.
+  const [currentTimer, setCurrentTimer] = useState<number | null>(null); 
+  // Tracks the key of the currently active set being timed.
+  const [activeSet, setActiveSet] = useState<string | null>(null); 
 
   useEffect(() => {
     const fetchData = async () => {
@@ -54,6 +65,56 @@ export default function MyWorkoutsScreen() {
     setSelectedWorkout(workout);
     setIsTracking(true);
   };
+
+  // Formats elapsed seconds into a readable time string (e.g., "1 hr 5 min 30 sec").
+  const formatTimeRange = (seconds: number): string => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+  
+    return [
+      hrs > 0 ? `${hrs} hr` : "",
+      mins > 0 ? `${mins} min` : "",
+      `${secs} sec`
+    ].filter(Boolean).join(" ");
+  };
+
+  // Stops the timer for a specific set and removes its interval reference.
+  const stopTimerForSet = (setKey: string) => {
+    if (!startTime[setKey]) return;     // Exit if no timer is running for the set.
+      clearInterval(startTime[setKey]); // Stop the timer.
+      setStartTime((prev) => {
+        const updated = { ...prev };
+        delete updated[setKey]; // Remove the timer reference for the set.
+        return updated;
+    });
+
+    // Saves the elapsed time for the specific set key.
+    if (currentTimer !== null) {
+      const elapsedSeconds = currentTimer; // Get the total elapsed time in seconds.
+      const formattedTime = formatTimeRange(elapsedSeconds); // Convert seconds into a human-readable format
+      
+      // Update the time range in the shared context to synchronize 
+      // between the view page and the start page.
+      workoutContext?.setTimeRanges((prev) => ({ 
+        ...prev,
+        [setKey]: formattedTime,
+      }));
+
+       //Updates the time range in current view
+       setTimeRanges((prev) => {
+        const updatedTimeRanges = {
+          ...prev,
+          [setKey]: formattedTime, // Assign the formatted time to the corresponding set.
+        };
+        console.log(" Updated Time Ranges:", updatedTimeRanges); // Log the updated time ranges for debugging.
+        return updatedTimeRanges;
+      });
+    }
+    // Reset active set and timer state after stopping the timer.
+      setActiveSet(null);
+      setCurrentTimer(null);
+  }
   
   const openModal = (workout: Workout) => {
     setSelectedWorkout(workout);
@@ -67,6 +128,10 @@ export default function MyWorkoutsScreen() {
   const closeModal = () => {
     // Reset modal state without persisting changes
     setIsModalVisible(false);
+
+    // Resets timer state to prevent old data from affecting new timing.
+    setStartTime({}); // Clear all active timers.
+    setTimeRanges({}); // Reset recorded time ranges.
  
     // Revert changes if unsaved
     if (selectedWorkout) {
@@ -271,7 +336,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 10,
-    // backgroundColor: "white", // Light gray background for better contrast
+    //backgroundColor: "white", // Light gray background for better contrast
+    justifyContent: 'space-evenly',
+    alignItems: 'center',
+  },
+  darkContainer: {
+    flex: 1,
+    paddingTop: 10,
+    backgroundColor: "black", 
     justifyContent: 'space-evenly',
     alignItems: 'center',
   },
@@ -333,6 +405,14 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center",
   },
+
+  // Stop button styling with padding, rounded corners, and center alignment.
+  stopButton: {
+    padding: 10,
+    borderRadius: 8,
+    alignItems: "center",
+    marginHorizontal: 5,
+  }, 
 
   deleteButton: {
     backgroundColor: "#F2505D", // Subtle red for delete
@@ -526,20 +606,26 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginVertical: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 5, // Adds vertical padding, a bottom border, and horizontal spacing.
+    borderBottomWidth: 1,
+    borderBottomColor: "#f2f2f2",
   },
   labelRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginVertical: 10,
-    marginRight: -10,
+    paddingVertical: 8,
+    paddingHorizontal: 0, 
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
   },
   setLabel: {
     fontSize: 16,
     fontWeight: "bold",
     color: "#555",
     flex: 1,
+    textAlign: "center", // Centers the text horizontally.
   },
   setInput: {
     borderWidth: 1,
@@ -572,11 +658,18 @@ const styles = StyleSheet.create({
     flex: 1,
   }, 
   setValue: {
-    fontSize: 16,
+    fontSize: 14,
     color: "#555",
     textAlign: "center",
     flex: 1,
   },
+
+  // Ensures equal column width and centers the icon.
+  setLabelIcon: {
+    flex: 1, 
+    textAlign: "center",
+  },
+
   addSetButton: {
     // backgroundColor: "#56C97B",
     paddingTop: 3,
@@ -683,7 +776,7 @@ const styles = StyleSheet.create({
 });
 
 return (
-  <View style={styles.container}>
+  <View testID='screen-container' style={[isDarkMode? styles.darkContainer : styles.container]}>
     {loading ? (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" />
@@ -702,14 +795,14 @@ return (
           showsVerticalScrollIndicator= {false}
           renderItem={({ item }) => (
             <View style={styles.workoutItem}>
-              <Text style={styles.workoutName}>{item.name}</Text>
+              <Text style={styles.workoutName}>{String(item.name)}</Text>
               <View style={styles.buttonGroup}>
               <TouchableOpacity
                   style={styles.deleteButton}
                   onPress={() =>
                     Alert.alert(
                       "Confirm Delete",
-                      `Are you sure you want to delete the workout "${item.name}"?`,
+                      `Are you sure you want to delete the workout "${String(item.name)}"?`,
                       [
                         { text: "Cancel", style: "cancel" },
                         {
@@ -803,14 +896,19 @@ return (
                       data={item.reps.map((_, setIndex) => ({
                         reps: item.reps[setIndex],
                         weight: item.weight[setIndex],
+                        // Retrieves the recorded time range for the set or defaults to "Not Started".
+                        timeRange: timeRanges[`${selectedWorkout?.id}-${item.exerciseId}-${setIndex}`] || "Not Started",
                       }))}
                       keyExtractor={(setItem, setIndex) =>
-                        `set-${index}-${setIndex}`
+                        `set-${item.exerciseId}-${setIndex}`
                       }
                       renderItem={({ item: setItem, index: setIndex }) => (
                         <View style={styles.setRow}>
                           <Text style={styles.setLabel}>  {setIndex + 1}</Text>
-                          
+                          <Text style={styles.setValue}>{setItem.reps ?? "N/A"}</Text>
+                          <Text style={styles.setValue}>{setItem.weight !== null ? `${setItem.weight} lbs` : "N/A"} lbs</Text>
+                          <Text style={styles.setValue}>{setItem.timeRange}</Text> {/* keep Time Range */}
+
                           {/* Reps Label and Input */}
                           <View style={styles.inputContainer}>
                             {/* <Text style={styles.inputLabel}></Text> */}
@@ -894,40 +992,76 @@ return (
                 keyExtractor={(item, index) =>
                   `exercise-${item.exerciseId}-${index}`
                 }
-                renderItem={({ item }) => (
+                renderItem={({ item,index: exerciseIndex }) => (
                   <View style={styles.exerciseCard}>
                     <Text style={styles.exerciseName}>
                       {item.nameOfExercise}
                     </Text>
                     <View style={styles.setRow}>
-                      <Text style={styles.setLabel}>Set</Text>
-                      <Text style={styles.setValueTitle}>Reps</Text>
-                      <Text style={styles.setValueTitle}>Weight</Text>
+                      <Text style={[styles.setLabel, { flex: 0.5, textAlign: "left", paddingLeft: 10 }]}>Set</Text>
+                      <Text style={[styles.setValueTitle, { flex: 1, textAlign: "center", paddingHorizontal: 5 }]}>Reps</Text>
+                      <Text style={[styles.setValueTitle, { flex: 1, textAlign: "center", paddingHorizontal: 5 }]}>Weight</Text>
+                      <Text style={[styles.setValueTitle, { flex: 1.2, textAlign: "left", paddingRight: 10 }]}>Time</Text>
                     </View>
                     <FlatList
                       data={item.reps.map((_, setIndex) => ({
                         reps: item.reps[setIndex],
                         weight: item.weight[setIndex],
+                         // Retrieves the time range for the set, defaulting to "Not Started" if unavailable.
+                        timeRange: timeRanges[`${selectedWorkout?.id}-${item.exerciseId}-${setIndex}`] || "Not Started",
                       }))}
                       keyExtractor={(setItem, setIndex) =>
-                        `set-${setIndex}`
+                        `set-${item.exerciseId}-${setIndex}`
                       }
                       renderItem={({
                         item: setItem,
                         index: setIndex,
-                      }) => (
+                      }) => {
+                        const setKey = `${selectedWorkout?.id}-${item.exerciseId}-${setIndex}`;
+                        const isActive = activeSet === setKey; // Check if the current set is being timed.
+                                              
+                     return(
                         <View style={styles.setRow}>
                           <Text style={styles.setLabel}>
                             {setIndex + 1}
                           </Text>
                           <Text style={styles.setValue}>
-                            {setItem.reps}
+                            {setItem.reps ?? "N/A"}
                           </Text>
                           <Text style={styles.setValue}>
-                            {setItem.weight} lbs
+                            {item.weight[setIndex]} lbs
                           </Text>
+                          <Text style={styles.setValue}>
+                            {setItem.timeRange}         {/* Display recorded time range */}
+                          </Text>
+
+                          {/* Start and Stop button */}
+                          {!isActive ? (
+                              <TouchableOpacity
+                                style={[styles.startButton, { width: 40, height: 30, padding: 3 }]} // Adjusts start button size and padding
+                                onPress={() => {
+                                  //const setKey = `${selectedWorkout?.id}-${item.exerciseId}-${setIndex}`;
+                                  setActiveSet(setKey); // Set the currently active set being timed
+                                  setCurrentTimer(0); // Initialize the timer
+                                  const interval = setInterval(() => {
+                                    setCurrentTimer((prev) => (prev !== null ? prev + 1 : 1)); // Increment every second
+                                  }, 1000);  
+                                  setStartTime((prev) => ({ ...prev, [setKey]: interval })); // Save the interval ID
+                                }}
+                              >
+                                <Text style={styles.buttonText}>Start</Text>
+                                </TouchableOpacity>
+                              ) : (
+                                <TouchableOpacity
+                                  style={[styles.startButton, { backgroundColor: "red",  width: 40, height: 30, padding: 3 }]}// Adjusts button size and padding
+                                  onPress={() => stopTimerForSet(setKey)} // Stop the timer and save the elapsed time             
+                                >
+                                  <Text style={styles.buttonText}>Stop</Text>
+                                </TouchableOpacity>
+                              )}
                         </View>
                       )}
+                      }
                     />
                   </View>
                 )}
@@ -976,16 +1110,23 @@ return (
                       <Text style={styles.setLabel}>Set</Text>
                       <Text style={styles.setValueTitleStart}>Reps</Text>
                       <Text style={styles.setValueTitleStart}>Weight</Text>
-                      <Ionicons style={{ marginLeft: '10%', marginRight: '5%' }} name="checkmark" size={30} color="#555" />
+                      <Text style={styles.setValueTitle}>  Time</Text>
+                      <Ionicons style={styles.setLabelIcon} name="checkmark" size={24} color="#555" />
                       {/* <Text style={styles.setValueTitleStart}>Finish</Text> */}
                   </View>
                   
                   {/* Replace the nested FlatList with map() */}
-                  {item.reps.map((rep, setIndex) => (
-                    <View key={`set-${exerciseIndex}-${setIndex}`} style={styles.setRow}>
-                      <Text style={styles.setLabel}> {setIndex + 1}</Text>
-                      <Text style={styles.setValue}>{rep}</Text>
-                      <Text style={styles.setValue}>{item.weight[setIndex]} lbs</Text>
+                  {item.reps.map((rep, setIndex) => {
+                    const setKey = `${selectedWorkout?.id}-${item.exerciseId}-${setIndex}`; // Unique key for each set
+                    const isActive = activeSet === setKey; // Check if the current set is being timed
+                    const timeRange = workoutContext?.timeRanges[setKey] || "Not Started"; // Retrieve the time range from context
+                    
+                    return (
+                      <View key={`set-${exerciseIndex}-${setIndex}`} style={styles.setRow}>
+                        <Text style={styles.setLabel}> {setIndex + 1}</Text>
+                        <Text style={styles.setValue}>{rep}</Text>
+                        <Text style={styles.setValue}>{item.weight[setIndex]} lbs</Text>
+                        <Text style={styles.setValue}>{timeRange}</Text>
 
                       {/* Checkbox */}
                       <TouchableOpacity
@@ -1008,8 +1149,9 @@ return (
                         {checkboxStates[`${exerciseIndex}-${setIndex}`] ? "✔" : " "}
                         </Text>
                       </TouchableOpacity>
-                    </View>
-                  ))}
+                    </View> 
+                    );                 
+                  })}
                 </View>
               )}
             />

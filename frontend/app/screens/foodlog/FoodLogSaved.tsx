@@ -53,6 +53,8 @@ const FoodLogSavedPage = () => {
     const [day, setDay] = useState();
     const context = useContext(GlobalContext);
     const { width } = Dimensions.get("window");
+    const isDarkMode = context?.isDarkMode;
+
 
 
      // Prefix all keys with user ID (assuming it's stored in context)
@@ -276,7 +278,7 @@ const FoodLogSavedPage = () => {
 
 
     return cached ? (
-        <View style={styles.bottomContainer}>
+        <View style={[isDarkMode? styles.darkBottomContainer : styles.bottomContainer]}>
             <View style={styles.searchContainer}>
                 <Ionicons
                 name="search-outline"
@@ -309,7 +311,7 @@ const FoodLogSavedPage = () => {
             />
         </View>
     ) : loading ? (
-        <View style={styles.bottomContainer}>
+        <View style={[isDarkMode ? styles.darkBottomContainer : styles.bottomContainer]}>
            <View style={styles.searchContainer}>
                 <Ionicons
                 name="search-outline"
@@ -335,7 +337,7 @@ const FoodLogSavedPage = () => {
             <Text style={styles.message}>Loading...</Text>
        </View>
     ) : foodDetails.length === 0 ? (
-        <View style={styles.bottomContainer}>
+        <View style={[isDarkMode? styles.darkBottomContainer : styles.bottomContainer]}>
            <View style={styles.searchContainer}>
                 <Ionicons
                 name="search-outline"
@@ -361,7 +363,7 @@ const FoodLogSavedPage = () => {
             <Text style={styles.message}>No food items logged.</Text>
         </View>
     ) : (
-        <View style={styles.bottomContainer}>
+        <View style={[isDarkMode ? styles.darkBottomContainer : styles.bottomContainer]}>
             <View style={{alignContent: 'center'}}>
           <View style={styles.searchContainer}>
                 <Ionicons
@@ -440,6 +442,10 @@ const styles = StyleSheet.create({
         height: '100%',
         backgroundColor: '#fff',
         // alignItems: 'center',
+    }, 
+    darkBottomContainer: {
+        height: '100%',
+        backgroundColor: 'black',
     }, 
     message: {
         textAlign: 'center', 

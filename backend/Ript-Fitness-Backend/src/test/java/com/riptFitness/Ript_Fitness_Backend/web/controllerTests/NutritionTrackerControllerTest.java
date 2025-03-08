@@ -69,35 +69,71 @@ public class NutritionTrackerControllerTest {
 	public void setUp() {
 		foodDto = new FoodDto();
 		foodDto.name = "Protein bar";
-		foodDto.calories = 400;
-		foodDto.protein = 30;
-		foodDto.carbs = 40;
-		foodDto.fat = 21;
-		foodDto.multiplier = 1.0;
+		foodDto.calories = 400.0;
+		foodDto.protein = 30.0;
+		foodDto.carbs = 40.0;
+		foodDto.fat = 21.0;
+		foodDto.cholesterol = 200.0;
+		foodDto.saturatedFat = 22.0;
+		foodDto.transFat = 1.0;
+		foodDto.sodium = 10.0;
+		foodDto.fiber = 3.0;
+		foodDto.sugars = 150.0;
+		foodDto.calcium = 17.0;
+		foodDto.iron = 2.0;
+		foodDto.potassium = 11.0;
+		foodDto.serving = 1.0;
 		
 		food = new Food();
 		food.name = "Protein bar";
-		food.calories = 400;
-		food.protein = 30;
-		food.carbs = 40;
-		food.fat = 21;
-		food.multiplier = 1.0;
+		food.calories = 400.0;
+		food.protein = 30.0;
+		food.carbs = 40.0;
+		food.fat = 21.0;
+		food.serving = 1.0;
+		food.cholesterol = 200.0;
+		food.saturatedFat = 22.0;
+		food.transFat = 1.0;
+		food.sodium = 10.0;
+		food.fiber = 3.0;
+		food.sugars = 150.0;
+		food.calcium = 17.0;
+		food.iron = 2.0;
+		food.potassium = 11.0;
 		
 		foodDtoTwo = new FoodDto();
 		foodDtoTwo.name = "Chicken breast";
-		foodDtoTwo.calories = 500;
-		foodDtoTwo.protein = 100;
-		foodDtoTwo.carbs = 0;
-		foodDtoTwo.fat = 9;
-		foodDtoTwo.multiplier = 0.5;
+		foodDtoTwo.calories = 500.0;
+		foodDtoTwo.protein = 100.0;
+		foodDtoTwo.carbs = 0.0;
+		foodDtoTwo.fat = 9.0;
+		foodDtoTwo.cholesterol = 100.0;
+		foodDtoTwo.saturatedFat = 39.0;
+		foodDtoTwo.transFat = 0.0;
+		foodDtoTwo.sodium = 18.0;
+		foodDtoTwo.fiber = 30.0;
+		foodDtoTwo.sugars = 10.0;
+		foodDtoTwo.calcium = 23.0;
+		foodDtoTwo.iron = 7.0;
+		foodDtoTwo.potassium = 13.0;
+		foodDtoTwo.serving = 0.5;
 		
 		foodTwo = new Food();
 		foodTwo.name = "Chicken breast";
-		foodTwo.calories = 500;
-		foodTwo.protein = 100;
-		foodTwo.carbs = 0;
-		foodTwo.fat = 9;
-		foodTwo.multiplier = 0.5;
+		foodTwo.calories = 500.0;
+		foodTwo.protein = 100.0;
+		foodTwo.carbs = 0.0;
+		foodTwo.fat = 9.0;
+		foodTwo.cholesterol = 100.0;
+		foodTwo.saturatedFat = 39.0;
+		foodTwo.transFat = 0.0;
+		foodTwo.sodium = 18.0;
+		foodTwo.fiber = 30.0;
+		foodTwo.sugars = 10.0;
+		foodTwo.calcium = 23.0;
+		foodTwo.iron = 7.0;
+		foodTwo.potassium = 13.0;
+		foodTwo.serving = 0.5;
 				
 		dayDto = new DayDto();
 		dayDto.foodsEatenInDay = List.of(foodDto, foodDtoTwo);
@@ -128,7 +164,16 @@ public class NutritionTrackerControllerTest {
 				.andExpect(jsonPath("$.protein").value(30))
 				.andExpect(jsonPath("$.carbs").value(40))
 				.andExpect(jsonPath("$.fat").value(21))
-				.andExpect(jsonPath("$.multiplier").value(1.0))
+				.andExpect(jsonPath("$.cholesterol").value(200))
+				.andExpect(jsonPath("$.saturatedFat").value(22))
+				.andExpect(jsonPath("$.transFat").value(1))
+				.andExpect(jsonPath("$.sodium").value(10))
+				.andExpect(jsonPath("$.fiber").value(3))
+				.andExpect(jsonPath("$.sugars").value(150))
+				.andExpect(jsonPath("$.calcium").value(17))
+				.andExpect(jsonPath("$.iron").value(2))
+				.andExpect(jsonPath("$.potassium").value(11))
+				.andExpect(jsonPath("$.serving").value(1.0))
 				.andReturn();	
 	}
 	
@@ -154,7 +199,16 @@ public class NutritionTrackerControllerTest {
 				.andExpect(jsonPath("$.protein").value(30))
 				.andExpect(jsonPath("$.carbs").value(40))
 				.andExpect(jsonPath("$.fat").value(21))
-				.andExpect(jsonPath("$.multiplier").value(1.0))
+				.andExpect(jsonPath("$.cholesterol").value(200))
+				.andExpect(jsonPath("$.saturatedFat").value(22))
+				.andExpect(jsonPath("$.transFat").value(1))
+				.andExpect(jsonPath("$.sodium").value(10))
+				.andExpect(jsonPath("$.fiber").value(3))
+				.andExpect(jsonPath("$.sugars").value(150))
+				.andExpect(jsonPath("$.calcium").value(17))
+				.andExpect(jsonPath("$.iron").value(2))
+				.andExpect(jsonPath("$.potassium").value(11))
+				.andExpect(jsonPath("$.serving").value(1.0))
 				.andReturn();	
 	}
 	
@@ -194,7 +248,16 @@ public class NutritionTrackerControllerTest {
 				.andExpect(jsonPath("$.protein").value(30))
 				.andExpect(jsonPath("$.carbs").value(40))
 				.andExpect(jsonPath("$.fat").value(21))
-				.andExpect(jsonPath("$.multiplier").value(1.0))
+				.andExpect(jsonPath("$.cholesterol").value(200))
+				.andExpect(jsonPath("$.saturatedFat").value(22))
+				.andExpect(jsonPath("$.transFat").value(1))
+				.andExpect(jsonPath("$.sodium").value(10))
+				.andExpect(jsonPath("$.fiber").value(3))
+				.andExpect(jsonPath("$.sugars").value(150))
+				.andExpect(jsonPath("$.calcium").value(17))
+				.andExpect(jsonPath("$.iron").value(2))
+				.andExpect(jsonPath("$.potassium").value(11))
+				.andExpect(jsonPath("$.serving").value(1.0))
 				.andReturn();	
 	}
 	

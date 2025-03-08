@@ -1,7 +1,8 @@
 {
   "expo": {
-    "name": "Ript",
-    "slug": "Ript",
+    "name": "riptfitness",
+    "slug": "riptfitness",
+    "owner": "jeccles1",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/final-2nd-logo.png",
@@ -30,14 +31,14 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "ea20e0cb-de85-4497-8c69-2a529bb4a3a4"
+        "projectId": "64d90884-788f-46e5-83fa-a6a96d32cb70"
       }
     },
     "runtimeVersion": {
       "policy": "appVersion"
     },
     "updates": {
-      "url": "https://u.expo.dev/ea20e0cb-de85-4497-8c69-2a529bb4a3a4"
+      "url": "https://u.expo.dev/64d90884-788f-46e5-83fa-a6a96d32cb70"
     }
   },
   "name": "ript"

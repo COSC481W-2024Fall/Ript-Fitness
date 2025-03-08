@@ -9,6 +9,7 @@ import { useFocusEffect } from '@react-navigation/native';
 const FriendsScreen = ({ navigation }: any) => {
 const context = useContext(GlobalContext)
   const [search, setSearch] = useState('');
+  const isDarkMode = context?.isDarkMode; 
 
   const filteredFriends = context?.friends.filter((friend: any) =>
     friend.username.toLowerCase().includes(search.toLowerCase())
@@ -48,7 +49,7 @@ const context = useContext(GlobalContext)
       <TouchableOpacity style={{flex:1, flexDirection:'row', alignItems: 'center'}} onPress={() => {navigation.navigate("VisitProfileScreen", {item})}}>
         <Image source={{ uri: `data:image/png;base64,${item.profilePicture}` }} style={styles.profileImage} />
         <View style={{flex:1}}>
-        <Text style={styles.friendName}>{item.displayname}</Text>
+        <Text style={[isDarkMode? styles.darkFriendName : styles.friendName]}>{item.displayname}</Text>
         <Text style={styles.friendUserName}>@{item.username}</Text>
       </View>
       </TouchableOpacity>
@@ -60,16 +61,16 @@ const context = useContext(GlobalContext)
 
   return (
     <View style={[styles.container, {paddingTop: Platform.OS === "ios" ? 30 : 0, // Add paddingTop for iOS
-      height: Platform.OS === "ios" ? 80 : 60,    // Adjust header height if necessary
-      backgroundColor: 'white', }]}>
+      height: Platform.OS === "ios" ? 80 : 60, },   // Adjust header height if necessary
+      {backgroundColor: isDarkMode? 'black' : 'white', }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[isDarkMode? styles.darkHeader : styles.header]}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="black" />
+          <Ionicons name="arrow-back" size={24} color={isDarkMode? "white" : "black"} />
         </TouchableOpacity>
-        <Text style={styles.title}>Friends List</Text>
+        <Text style={[isDarkMode? styles.darkTitle : styles.title]}>Friends List</Text>
         <TouchableOpacity onPress={() => navigation.navigate('FindFriendsScreen')}>
-          <Ionicons name="add" size={30} color="black" style={styles.addButton} />
+          <Ionicons name="add" size={30} color={isDarkMode? "white" : "black"} style={styles.addButton} />
         </TouchableOpacity>
       </View>
 
@@ -83,7 +84,7 @@ const context = useContext(GlobalContext)
 
       {/* Friend List or Empty Message */}
       {context?.friends.length === 0 ? (
-        <View style={styles.emptyContainer}>
+        <View style={[isDarkMode? styles.darkEmptyContainer : styles.emptyContainer]}>
           <Text style={styles.emptyMessage}>Press + to add a friend</Text>
         </View>
       ) : (
@@ -91,7 +92,7 @@ const context = useContext(GlobalContext)
           data={filteredFriends}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={[styles.list, ]}
         />
       )}
     </View>
@@ -99,7 +100,9 @@ const context = useContext(GlobalContext)
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff',  },
+  container: { 
+    flex: 1, backgroundColor: '#fff',  
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -108,7 +111,17 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
   },
+  darkHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+    backgroundColor: 'black',
+  },
   title: { fontSize: 20, fontWeight: 'bold' },
+  darkTitle: { fontSize: 20, fontWeight: 'bold', color: 'white' },
   addButton: { marginRight: 10 },
   searchBar: {
     backgroundColor: '#f2f2f2',
@@ -116,7 +129,7 @@ const styles = StyleSheet.create({
     margin: 16,
     borderRadius: 8,
   },
-  list: { paddingHorizontal: 16 },
+  list: { paddingHorizontal: 16, },
   friendItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -128,12 +141,18 @@ const styles = StyleSheet.create({
   friendName: {
     fontSize: 16,
     fontWeight: 'bold', 
-},
+    //color: 'white'
+  },
+  darkFriendName: {
+  fontSize: 16,
+  fontWeight: 'bold', 
+  color: 'white'
+  },
 
   friendUserName: {     
     fontSize: 14,
     color: '#888', 
-},
+  },
   removeButton: {
     backgroundColor: '#f0f0f0',
     alignContent:'flex-end',
@@ -148,6 +167,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  darkEmptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'black'
   },
   emptyMessage: {
     fontSize: 16,
