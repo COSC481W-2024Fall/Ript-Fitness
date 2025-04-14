@@ -55,6 +55,7 @@ export default function WorkoutDetailScreen() {
   const gblContext = useContext(GlobalContext);
   const token = gblContext?.data.token;
   const userProfile = gblContext?.userProfile;
+  const isDarkMode = gblContext?.isDarkMode;
 
   // Access navigation for screen transitions
   const navigation = useNavigation();
@@ -268,7 +269,7 @@ const handleAddWorkout = async () => {
 
 
   return (
-    <View style={styles.container}>
+    <View style={[isDarkMode? styles.darkContainer : styles.container]}>
       {/* Workout Name Input */}
       <View style={styles.workoutNameContainer}>
         {/* <TextInput
@@ -284,7 +285,7 @@ const handleAddWorkout = async () => {
       </View>
 
       {/* Workout Details */}
-      <ThemedText style={styles.title}>{workout.name}</ThemedText>
+      <ThemedText style={[isDarkMode ? styles.darkTitle : styles.title]}>{workout.name}</ThemedText>
 
       <View style={styles.textWrapper}>
         <ThemedText style={styles.dateText}>
@@ -297,9 +298,9 @@ const handleAddWorkout = async () => {
         data={workout.exercises}
         keyExtractor={(_, index) => index.toString()}
         renderItem={({ item }) => (
-          <View style={styles.exercise}>
-            <Text style={styles.nameOfExercise}>{item.exercise}</Text>
-            <Text style={styles.exerciseText}>
+          <View style={isDarkMode?styles.darkExercise:styles.exercise}>
+            <Text style={isDarkMode?styles.darkNameOfExercise: styles.nameOfExercise}>{item.exercise}</Text>
+            <Text style={isDarkMode?styles.darkExerciseText:styles.exerciseText}>
               {item.sets} sets x {item.reps} reps | {item.weight} lbs
             </Text>
           </View>
@@ -330,6 +331,11 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#FFFFFF',
   },
+  darkContainer: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: 'black',
+  },
   workoutNameContainer: {
     marginBottom: 20,
   },
@@ -348,9 +354,22 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: 'center',
   },
+  darkTitle: {
+    fontSize: 25,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+    color: 'white',
+  },
   exercise: {
     padding: 15,
     backgroundColor: '#F5F5F5',
+    borderRadius: 10,
+    marginVertical: 5,
+  },
+  darkExercise: {
+    padding: 15,
+    backgroundColor: '#333333',
     borderRadius: 10,
     marginVertical: 5,
   },
@@ -362,6 +381,15 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: '#000000',
+  },
+  darkExerciseText: {
+    fontSize: 18,
+    color: '#666666',
+  },
+  darkNameOfExercise: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: 'white',
   },
   textWrapper: {
     alignSelf: 'center',

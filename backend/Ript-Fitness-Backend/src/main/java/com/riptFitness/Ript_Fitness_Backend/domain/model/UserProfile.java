@@ -27,6 +27,10 @@ public class UserProfile {
 
 	public String displayName;
 
+	//all weight in pounds
+	@Column(nullable = false)
+	public Double weight =0.0;
+
 	@OneToMany(mappedBy = "userProfile", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<SocialPost> socialPosts;
 
@@ -168,7 +172,7 @@ public class UserProfile {
 	}
 
 	public void setBio(String bio) {
-		this.bio = bio;
+		this.bio = bio + "";
 	}
 
 	public String getUsername() {
@@ -204,7 +208,7 @@ public class UserProfile {
 	}
 
 	public Integer getRestDays() {
-		return restDays != null ? restDays : 3;
+		return restDays != null ? restDays : 7;
 	}
 
 	public void setRestDays(Integer restDays) {
@@ -229,6 +233,14 @@ public class UserProfile {
 
 	public Integer getRestResetDayOfWeek() {
 		return restResetDayOfWeek;
+	}
+
+	public double getWeight() {
+		return weight;
+	}
+
+	public void setWeight(double weight) {
+		this.weight = weight;
 	}
 
 	public void setRestResetDayOfWeek(Integer restResetDayOfWeek) {

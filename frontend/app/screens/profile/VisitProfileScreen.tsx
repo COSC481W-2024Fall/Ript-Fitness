@@ -40,6 +40,8 @@ const VisitProfileScreen: React.FC = () => {
   const profContext = useContext(ProfileContext)
   const navigation = useNavigation<ProfileScreenNavigationProp>();
   const route = useRoute();
+  
+  const isDarkMode = context?.isDarkMode; 
 
   // Assume that the other user's profile data is passed via navigation params
   const { item } = route.params as any;
@@ -166,6 +168,7 @@ const confirmRemoveFriend = () => {
 
 
   const handleDeleteFriend = async () => {
+    
     if (DeletingFriend) return;
 
     const canceled = await confirmRemoveFriend();
@@ -225,16 +228,16 @@ const confirmRemoveFriend = () => {
     load();
   }
   return (
-    <View style={styles.container}>
+    <View style={isDarkMode? styles.darkContainer: styles.container}>
       {/* Header with Back Button */}
-      <View style={styles.header}>
+      <View style={isDarkMode?styles.darkHeader:styles.header}>
   <TouchableOpacity
     onPress={goBack}
     style={styles.backButton}
   >
-    <Ionicons name="arrow-back" size={24} color="#000" />
+    <Ionicons name="arrow-back" size={24} color={isDarkMode? "white" : "#000" }/>
   </TouchableOpacity>
-  <Text style={styles.headerTitle}>{item.username}</Text>
+  <Text style={isDarkMode? styles.darkHeaderTitle:styles.headerTitle}>{item.username}</Text>
 </View>
 <View style={styles.headerBorder}></View>
 
@@ -244,7 +247,7 @@ const confirmRemoveFriend = () => {
           source={{ uri: `data:image/png;base64,${item.profilePicture}` }}
           style={styles.avatar}
         />
-        <Text style={styles.name}>{item.displayname}</Text>
+        <Text style={isDarkMode?styles.darkName:styles.name}>{item.displayname}</Text>
         <View style={styles.bioStyle}><TouchableOpacity 
         onPress={() => {
             if (item) {
@@ -254,7 +257,7 @@ const confirmRemoveFriend = () => {
             }
           }}>
             
-            <Text style={styles.bio}>
+            <Text style={isDarkMode?styles.darkBio:styles.bio}>
   {item.bio != null
     ? `${(item.bio.split('\n')[0] || '').slice(0, 50)}`
     : ''}
@@ -308,6 +311,7 @@ const confirmRemoveFriend = () => {
                 </View>
 
         {/* Add Friend Button */}
+        {item.id !== context?.userProfile.id && (
         <TouchableOpacity style={[
     styles.addFriendButton,
             (context?.friends.some(friend => friend.username === item.username)
@@ -360,9 +364,7 @@ const confirmRemoveFriend = () => {
       : 'Add Friend'}
           </Text>
         </TouchableOpacity>
-
-
- 
+        )}
 
       </View>
 
@@ -391,6 +393,9 @@ const PostsScreen: React.FC<any> = ({
   const [postsPerLoad, setPostsPerLoad] = useState(9);
 
   const [AllPostsLoaded, setAllPostsLoaded] = useState(false);
+  const isDarkMode = context?.isDarkMode; 
+
+
 
   let [currentEndIndex, setCurrentEndIndex] = useState(postsPerLoad);
 
@@ -635,7 +640,7 @@ const PostsScreen: React.FC<any> = ({
   );
 
   const renderPostItem = ({ item: post }: { item: Post }) => (
-    <View style={styles.postItem}>
+    <View style={isDarkMode? styles.darkPostItem:styles.postItem}>
       <Image
         source={{
           uri: `data:image/png;base64,${
@@ -647,13 +652,13 @@ const PostsScreen: React.FC<any> = ({
         style={styles.postAvatar}
       />
       <View style={styles.postContent}>
-        <Text style={styles.postText}>{post.content}</Text>
+        <Text style={isDarkMode?styles.darkPostText:styles.postText}>{post.content}</Text>
         <View style={styles.postFooter}>
           <TouchableOpacity style={styles.likeCommentContainer} onPress={() => {toggleLike(post)}}>
             <Ionicons name="heart" size={24} color={post.userIDsOfLikes.includes(Number(context?.userProfile.id)) ? "#FF3B30" : "#B1B6C0"} />
-            <Text style={styles.likeCounter}>{post.userIDsOfLikes.length}</Text>
+            <Text style={isDarkMode?styles.darkLikeCounter:styles.likeCounter}>{post.userIDsOfLikes.length}</Text>
           </TouchableOpacity>
-          <Text style={styles.dateText}>{TimeZone.convertToTimeZone(post.dateTimeCreated, TimeZone.get())}</Text>
+          <Text style={isDarkMode?styles.darkDateText:styles.dateText}>{TimeZone.convertToTimeZone(post.dateTimeCreated, TimeZone.get())}</Text>
         </View>
       </View>
     </View>
@@ -685,18 +690,14 @@ const PostsScreen: React.FC<any> = ({
 
   // refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
   return (
-    <View style={styles.postView}>
+    <View style={isDarkMode? styles.darkPostView:styles.postView}>
       {true ? (
         <FlatList
           data={posts}
           keyExtractor={(_, index) => index.toString()}
           renderItem={renderPostItem}
-          //contentContainerStyle={styles.postsContainer} // Optional, to style the FlatList container
-          contentContainerStyle={{
-            alignItems: 'center',
-            paddingTop: 10,
-            backgroundColor: '#fff',
-          }}
+          contentContainerStyle={isDarkMode? styles.darkPostContainer:styles.postContainer} // Optional, to style the FlatList container
+          
           ListEmptyComponent={
             returned ? (
               <View style={styles.emptyContainer}>
@@ -727,6 +728,11 @@ const styles = StyleSheet.create({
     paddingTop:5,
     flex: 1,
     backgroundColor: "#fff",
+  },
+  darkContainer: {
+    paddingTop:5,
+    flex: 1,
+    backgroundColor: "black",
   },
   centered: {
     flex: 1,
@@ -760,6 +766,16 @@ const styles = StyleSheet.create({
     zIndex: 10,
     marginTop: Platform.OS === "ios" ? '10%' : 0
   },
+  darkHeader: {
+    paddingTop: 10,
+    paddingHorizontal: 16,
+    paddingBottom: 10,
+    backgroundColor: "black",
+    // Positioning the header at the top
+    position: "relative",
+    zIndex: 10,
+    marginTop: Platform.OS === "ios" ? '10%' : 0
+  },
   disabledButton: {
     backgroundColor: "#EDEDED", // Light grey
   },
@@ -775,10 +791,23 @@ const styles = StyleSheet.create({
       padding: 10,
       zIndex:10,
     },
+    darkBackButton: {
+      position: 'absolute',
+      left: 10, 
+      padding: 10,
+      zIndex:10,
+      color: 'white'
+    },
     headerTitle: {
       fontSize: 18, 
       fontWeight: 'bold',
       textAlign: 'center',
+    },
+    darkHeaderTitle: {
+      fontSize: 18, 
+      fontWeight: 'bold',
+      textAlign: 'center',
+      color: 'white'
     },
 
   
@@ -798,6 +827,12 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginTop: 10,
   },
+  darkName: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginTop: 10,
+    color: 'white'
+  },
   bioContainer: {
     marginTop: 10,
     paddingHorizontal: 20,
@@ -807,6 +842,12 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "bold",
     textAlign: "center",
+  },
+  darkBio: {
+    fontSize: 13,
+    fontWeight: "bold",
+    textAlign: "center",
+    color: "#666666"
   },
   addFriendButton: {
     flexDirection: 'row',
@@ -844,6 +885,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
+  darkPostView: {
+    flex: 1,
+    backgroundColor: 'black',
+  },
   postItem: {
     marginBottom: 10,
     width: '90%',
@@ -853,6 +898,24 @@ const styles = StyleSheet.create({
     borderColor: "#ddd",
     borderRadius: 10,
     flexDirection: "row",
+  },
+  darkPostItem: {
+    marginBottom: 10,
+    width: '90%',
+    minHeight: 80,
+    backgroundColor: "#333333",
+    borderRadius: 10,
+    flexDirection: "row",
+  },
+  postContainer:{
+    alignItems: 'center',
+    paddingTop: 10,
+    //backgroundColor: {'#fff'},
+  },
+  darkPostContainer:{
+    alignItems: 'center',
+    paddingTop: 10,
+    backgroundColor: 'black',
   },
   postAvatar: {
     width: 60,
@@ -870,6 +933,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 10,
   },
+  darkPostText: {
+    fontSize: 16,
+    marginBottom: 10,
+    color: 'white'
+  },
   postFooter: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -886,8 +954,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
+  darkLikeCounter: {
+    color: "white",
+    padding: 7,
+    fontSize: 16,
+    fontWeight: "bold",
+  },
   dateText: {
     marginRight: 15,
+  },
+  darkDateText: {
+    marginRight: 15,
+    color: "#666666"
   },
   addFriendContainer: {
     marginBottom: 5

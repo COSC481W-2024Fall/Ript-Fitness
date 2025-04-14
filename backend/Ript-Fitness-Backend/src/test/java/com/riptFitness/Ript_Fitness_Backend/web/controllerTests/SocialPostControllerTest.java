@@ -63,6 +63,7 @@ public class SocialPostControllerTest {
 		socialPost = new SocialPostDto();
 		socialPost.content = "Just benched 500 pounds, my name is Chris and I'm so strong!!";
 		socialPost.numberOfLikes = 2;
+		socialPost.isPublic = true;
 		socialPost.userIDsOfLikes = new ArrayList<>();
 		socialPost.userIDsOfLikes.add(2L);
 		socialPost.userIDsOfLikes.add(3L);
@@ -101,6 +102,7 @@ public class SocialPostControllerTest {
 				.andExpect(jsonPath("$.content").value("Just benched 500 pounds, my name is Chris and I'm so strong!!"))
 				.andExpect(jsonPath("$.numberOfLikes").value(2))
 				.andExpect(jsonPath("$.socialPostComments[0].content").value("Great job Chris, OMG!"))
+				.andExpect(jsonPath("$.isPublic").value(true))
 				.andReturn();
 	}
 	
@@ -124,6 +126,7 @@ public class SocialPostControllerTest {
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(jsonPath("$.content").value("Just benched 500 pounds, my name is Chris and I'm so strong!!"))
 				.andExpect(jsonPath("$.numberOfLikes").value(2))
+				.andExpect(jsonPath("$.isPublic").value(true))
 				.andExpect(jsonPath("$.socialPostComments[0].content").value("Great job Chris, OMG!"))
 				.andReturn();
 	}

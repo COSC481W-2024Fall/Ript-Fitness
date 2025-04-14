@@ -19,5 +19,7 @@ public class SocialPostDto {
     
     public boolean isDeleted;
     
+    public boolean isPublic;
+    
     public LocalDateTime dateTimeCreated;
 }

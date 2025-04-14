@@ -12,14 +12,16 @@ import {
   TouchableWithoutFeedback,
   Alert,
   Platform,
+  Switch,
 } from 'react-native';
 import * as Haptics from "expo-haptics";
 import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { ScrollView } from 'react-native-gesture-handler';
 import { DrawerActions, NavigationContainer, useFocusEffect, useNavigation } from '@react-navigation/native';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { httpRequests } from '@/api/httpRequests';
-import { GlobalContext, ProfileObject } from '@/context/GlobalContext';
+import { GlobalContext, ProfileObject, Workout, Exercise } from '@/context/GlobalContext';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { ProfileScreenNavigationProp } from '../../(tabs)/ProfileStack';
 import GraphScreen from './GraphScreen';
@@ -31,10 +33,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DEFAULT_PROFILE_PICTURE from '@/assets/base64/defaultPicture';
 import timeZone from '@/api/timeZone'
 import TimeZone from '@/api/timeZone';
-import { Timer } from 'victory';
+import { Background, Timer } from 'victory';
+import { useColorScheme } from 'react-native';
+import { WorkoutContext } from "@/context/WorkoutContext"; 
+
 
 const Tab = createMaterialTopTabNavigator();
 const Drawer = createDrawerNavigator();
+
 
 function getDateRange() {
   // Get the current date
@@ -151,6 +157,9 @@ const resizeImage = async (uri: string, maxDimension: number): Promise<string> =
   }
 };
 const ProfileTabs = () => {
+  const context = useContext(GlobalContext);
+  const isDarkMode = context?.isDarkMode;
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -159,7 +168,7 @@ const ProfileTabs = () => {
         tabBarStyle: {
           overflow: 'hidden',
           alignSelf: 'center',
-          backgroundColor: 'white',
+          backgroundColor: isDarkMode ? 'black' : 'white',
           width: '80%',
           borderColor: '#40bcbc',
           borderRadius: 50,
@@ -170,8 +179,9 @@ const ProfileTabs = () => {
         tabBarActiveTintColor: 'white',
         tabBarInactiveTintColor: '#40bcbc',
         tabBarScrollEnabled: false,
+        
       }}
-      style={styles.nav}
+      style={[isDarkMode? styles.darkNav : styles.nav]}
     >
       <Tab.Screen name="Progress" component={ProgressScreen} />
       <Tab.Screen name="Photos" component={PhotosScreen} />
@@ -230,6 +240,7 @@ function PhotosScreen() {
             Authorization: `Bearer ${context?.data.token}`,
           },
           body: '', // Convert the data to a JSON string
+        
         }
       ); // Use endpoint or replace with BASE_URL if needed
       if (!response.ok) {
@@ -370,15 +381,15 @@ function PhotosScreen() {
     }
   };
 
-  
+  const isDarkMode = context?.isDarkMode;
   return (
 
     <View style={{width:'100%', flex:1, backgroundColor:'#fff'}}>
       <TouchableOpacity style={styles.addPhotoButton} onPress={handlePhoto}>
           <Ionicons name="add" size={24} color="white" />
         </TouchableOpacity>
-<View style={styles.photosContainer}>
-  {photos.length > 0 ? <></>: <View style={{width:'100%', height:'80%', justifyContent:'center'}}><Text style={{textAlign:'center'}}>Add your first photo! These photos are private.</Text></View>}
+<View style={[isDarkMode ? styles.darkPhotosContainer : styles.photosContainer]}>
+  {photos.length > 0 ? <></>: <View style={{width:'100%', height:'80%', justifyContent:'center'}}><Text style={{textAlign:'center', color: isDarkMode ? 'white': 'black'}}>Add your first photo! These photos are private.</Text></View>}
 <FlatList
   data={photos}
   keyExtractor={(item, index) => index.toString()}
@@ -388,7 +399,7 @@ function PhotosScreen() {
     justifyContent: 'flex-start',
     alignItems: 'flex-start', // Align items to the left
     paddingTop: 10,
-    backgroundColor: '#fff',
+    backgroundColor: isDarkMode ? 'black' : 'white',
   }}
   showsVerticalScrollIndicator={true}
   onEndReached={handleLoadMore}
@@ -417,6 +428,7 @@ function PostsScreen() {
   const [postsPerLoad, setPostsPerLoad] = useState(9);
 
   const [AllPostsLoaded, setAllPostsLoaded] = useState(false);
+
 
   let [currentEndIndex, setCurrentEndIndex] = useState(postsPerLoad);
 
@@ -654,7 +666,7 @@ function PostsScreen() {
   );
 
   const renderPostItem = ({ item: post }: { item: Post }) => (
-    <View style={styles.postItem}>
+    <View style={isDarkMode?styles.darkPostItem:styles.postItem}>
       <Image
         source={{
           uri: `data:image/png;base64,${
@@ -666,13 +678,13 @@ function PostsScreen() {
         style={styles.postAvatar}
       />
       <View style={styles.postContent}>
-        <Text style={styles.postText}>{post.content}</Text>
+        <Text style={isDarkMode?styles.darkPostText:styles.postText}>{post.content}</Text>
         <View style={styles.postFooter}>
           <TouchableOpacity style={styles.likeCommentContainer} onPress={() => {toggleLike(post)}}>
             <Ionicons name="heart" size={24} color={post.userIDsOfLikes.includes(Number(context?.userProfile.id)) ? "#FF3B30" : "#B1B6C0"} />
-            <Text style={styles.likeCounter}>{post.userIDsOfLikes.length}</Text>
+            <Text style={isDarkMode?styles.darkLikeCounter:styles.likeCounter}>{post.userIDsOfLikes.length}</Text>
           </TouchableOpacity>
-          <Text style={styles.dateText}>{TimeZone.convertToTimeZone(post.dateTimeCreated, TimeZone.get())}</Text>
+          <Text style={isDarkMode?styles.darkDateText:styles.dateText}>{TimeZone.convertToTimeZone(post.dateTimeCreated, TimeZone.get())}</Text>
         </View>
       </View>
     </View>
@@ -701,10 +713,10 @@ function PostsScreen() {
     }
 
   };
-
+  const isDarkMode = context?.isDarkMode;
   // refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
   return (
-    <View style={styles.postView}>
+    <View style={[isDarkMode? styles.darkPostView : styles.postView]}>
       {true ? (
         <FlatList
           data={posts}
@@ -714,7 +726,7 @@ function PostsScreen() {
           contentContainerStyle={{
             alignItems: 'center',
             paddingTop: 10,
-            backgroundColor: '#fff',
+            backgroundColor: isDarkMode ? 'black' : '#fff',
           }}
           showsVerticalScrollIndicator={true}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
@@ -738,11 +750,16 @@ function PostsScreen() {
   );
 }
 
-function ProgressScreen() {
-  const navigation = useNavigation<ProfileScreenNavigationProp>();
+function ProgressScreen({ navigation }: any) {
+  //const navigation = useNavigation<ProfileScreenNavigationProp>();
   const context = useContext(GlobalContext);
   const [loadingDates, setLoadingDates] = useState<Date[]>([]);
 
+  const isDarkMode = context?.isDarkMode;
+  const [workoutName, setWorkoutName] = useState<string>("");
+  const workoutContext = useContext(WorkoutContext); 
+
+  
 
   useFocusEffect(
     useCallback(() => {
@@ -765,6 +782,61 @@ function ProgressScreen() {
   const renderCalendarDay = (day: number, month: number, year: number, type: number) => {
     let myStyle;
     let textStyle;
+
+
+    const [modalVisible, setModalVisible] = useState(false);
+    const [workouts, setWorkouts] = useState<any[]>([]);
+
+    const fetchWorkoutsByDate = async (formattedDate: string): Promise<number | undefined> => {
+    try {
+      const response = await fetch(
+        `${httpRequests.getBaseURL()}/calendar/getWorkoutsByDate/${formattedDate}`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${context?.data.token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch workouts: ${response.statusText}`);
+      }
+
+      const workoutsData = await response.json();
+      const workoutNames = workoutsData.map((workout: { name: string }) => workout.name);
+      setWorkouts(workoutsData); 
+      return workoutNames;
+      
+    } catch (error) {
+      console.error('Error fetching workouts:', error);
+    }
+  };
+
+
+  const handlePress = () => {
+
+    setModalVisible(true); // Show the modal when the text is clicked
+    const selectedDate = new Date (year, month, day);
+    console.log('Debug date params:', { month, year, day });
+    console.log('entered selected date:', {selectedDate});
+    const formattedDate = formatDateForBackend(selectedDate);
+    console.log('formated date:', {formattedDate});
+    fetchWorkoutsByDate(formattedDate);
+  };
+
+  function formatDateForBackend(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+  
+
+  const closeModal = () => {
+    setModalVisible(false); // Close the modal
+  };
+
     if (day == 0) {
       spacerKey++;
       day = spacerKey;
@@ -785,9 +857,54 @@ function ProgressScreen() {
     }
     return (
       <View style={[styles.day, myStyle]} key={day}>
-        <Text style={[styles.dayText, textStyle]}>{day}</Text>
+        <TouchableOpacity onPress={handlePress}>
+          <Text style={[styles.dayText, textStyle]}>{day}</Text>
+        </TouchableOpacity>
+
+        <Modal
+          visible={modalVisible}
+          transparent={true} // Makes the background dimmed
+          animationType="fade" // Adds animation to the modal appearance
+          onRequestClose={closeModal} // Android back button behavior
+        >
+        <TouchableWithoutFeedback onPress={closeModal}>
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
+              <View style={{ width: '80%', minHeight: 200, backgroundColor: isDarkMode?'#666':'white', alignItems: 'center', padding: 20, borderRadius: 8 }}>
+                <Text style={{color: isDarkMode? 'white':'black', fontWeight: 'bold', fontSize: 20}}>You've logged </Text>
+                {workouts && workouts.length === 0 ? (
+                  console.log('Workouts data:', workouts),
+                  <Text>nothing yet!</Text>
+                ) : (
+                  <FlatList
+                    style={{ alignContent: 'flex-start' }}
+                    data={workouts || []}
+                    keyExtractor={(item, index) =>
+                      item.workoutsId ? `workout-${item.workoutsId}-${index}` : `workout-${index}`
+                    }
+                    renderItem={({ item }) => {
+                      // If there are exercises, map them to display their names
+                      const exercisesList = item.exercises && item.exercises.length > 0 
+                        ? item.exercises.map((exercise: { name: string }) => exercise.name).join(", ")
+                        : "No exercises logged";
+                        return (
+                          <Text style={styles.bio}>{item.name || "Unnamed Workout"}</Text>
+                        );                        
+                    }}
+                  />
+                )}
+                <TouchableOpacity onPress={navigateToMyWorkoutScreen} style={styles.logMoreButton}>
+                  <Text>Log More</Text>
+                </TouchableOpacity>
+              </View>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
       </View>
     );
+  };
+
+  const navigateToMyWorkoutScreen = () => {
+    navigation.navigate('Workout', { screen: 'MyWorkoutsScreen' }); // Navigate to the my workouts screen
   };
 
   const getActivityType = (myDate: Date): number => {
@@ -862,7 +979,7 @@ function ProgressScreen() {
       if (i === 0) {
         const firstDay = new Date(myDate.getFullYear(), myDate.getMonth(), 1).getDay(); // Get first weekday of the month
         for (let j = 0; j < firstDay; j++) {
-          spacers.push(renderCalendarDay(0, myDate.getFullYear(), myDate.getMonth(), 5)); // Render empty spacers
+          spacers.push(renderCalendarDay(0, myDate.getMonth(), myDate.getFullYear(), 5)); // Render empty spacers
         }
       }
       // if date is in context
@@ -874,16 +991,17 @@ function ProgressScreen() {
         <React.Fragment key={i}>
           {renderCalendarDay(
             day,
-            myDate.getFullYear(),
             myDate.getMonth(),
+            myDate.getFullYear(),
             getActivityType(new Date(myDate.getFullYear(), myDate.getMonth(), day))
           )}
         </React.Fragment>
       );
     });
+  const isDarkMode = context?.isDarkMode;
     return (
-      <View style={styles.calendarContainer}>
-        <View style={styles.daysContainer}>
+      <View style={[isDarkMode? styles.darkCalendarContainer : styles.calendarContainer]}>
+        <View style={[isDarkMode? styles.darkDaysContainer : styles.daysContainer]}>
           {spacers}
           {calendarDays}
         </View>
@@ -967,18 +1085,18 @@ function ProgressScreen() {
 
   return (
     <ScrollView>
-      <View style={styles.calendar}>
+      <View style={[isDarkMode? styles.darkCalendar : styles.calendar]}>
         <View style={styles.calendarHeader}>
           <TouchableOpacity onPress={setToFirstOfPreviousMonth}>
-            <Ionicons name="chevron-back-outline" size={24} />
+            <Ionicons name="chevron-back-outline" size={24} color={isDarkMode? 'white' : 'black'}/>
           </TouchableOpacity>
           <View style={styles.minWidth}>
-            <Text style={styles.month}>
+            <Text style={[isDarkMode ? styles.darkMonth : styles.month]}>
               {monthNames[myDate.getMonth()]} {myDate.getFullYear()}
             </Text>
           </View>
           <TouchableOpacity onPress={setToFirstOfNextMonth}>
-            <Ionicons name="chevron-forward-outline" size={24} />
+            <Ionicons name="chevron-forward-outline" size={24} color={isDarkMode? 'white' : 'black'} />
           </TouchableOpacity>
         </View>
 
@@ -986,7 +1104,7 @@ function ProgressScreen() {
     <Calendar/>
 
     <View style={{ marginBottom: '10%', flexDirection: 'row', alignItems: 'center', }}>
-      <Text style={{ }} >{context?.userProfile.restDaysLeft} days available</Text>
+      <Text style={{ color: isDarkMode? 'white' : 'black'}} >{context?.userProfile.restDaysLeft} days available</Text>
       <TouchableOpacity
         style={{
           marginLeft: 10,
@@ -1019,6 +1137,7 @@ function ProgressScreen() {
   );
 }
 
+
 function CustomDrawerContent({ navigation }: any) {
   const drawerNav = async (navigation: any) => {
     navigation.closeDrawer();
@@ -1030,8 +1149,16 @@ function CustomDrawerContent({ navigation }: any) {
   };
 
   const context = useContext(GlobalContext);
+  const isDarkMode = context?.isDarkMode;
+
+
+  const drawerBackgroundColor = context?.isDarkMode ? '#121212' : '#FFFFFF';
+  const textColor = context?.isDarkMode ? '#FFF' : '#000'; 
+  const iconColor = context?.isDarkMode ? '#FFF' : '#000';
+  
+
   return (
-    <View style={styles.drawerContent}>
+    <View style={[styles.drawerContent, { backgroundColor: drawerBackgroundColor}]}>
       <View>
         <TouchableOpacity
           style={styles.drawerItem}
@@ -1042,8 +1169,8 @@ function CustomDrawerContent({ navigation }: any) {
           }}
         >
           <View style={styles.drawerItemTextContainer}>
-            <Ionicons name="settings-outline" size={24} color={'#1E1E1E'} />
-            <Text style={styles.drawerItemText}>Account Settings</Text>
+            <Ionicons name="settings-outline" size={24} color={iconColor} />
+            <Text style={[styles.drawerItemText, {color: textColor}]}>Account Settings</Text>
           </View>
         </TouchableOpacity>
         <TouchableOpacity
@@ -1056,10 +1183,28 @@ function CustomDrawerContent({ navigation }: any) {
           }}
         >
           <View style={styles.drawerItemTextContainer}>
-            <Ionicons name="log-out-outline" size={24} color={'#1E1E1E'} />
-            <Text style={styles.drawerItemText}>Logout</Text>
+            <Ionicons name="log-out-outline" size={24} color={iconColor} />
+            <Text style={[styles.drawerItemText, {color: textColor}]}>Logout</Text>
           </View>
         </TouchableOpacity>
+
+        // Dark mode button
+        
+          <View style={styles.switchDrawerItemTextContainer}>
+          
+            <MaterialCommunityIcons name={context?.isDarkMode ? 'weather-sunny' : 'weather-night'} size={24} color={iconColor} />
+            <Text style={[styles.drawerItemText, {color: textColor, justifyContent: 'flex-start'}]}>
+            {context?.isDarkMode ? "Light Mode" : "Dark Mode"}
+            </Text>
+            <Switch 
+          value={context?.isDarkMode}
+          style={styles.switchDrawerItem}
+          onValueChange={() => {
+            // Handle logic here
+            context?.toggleTheme();
+          }}
+        />
+          </View>
       </View>
       <TouchableOpacity
         style={styles.drawerItem}
@@ -1070,8 +1215,8 @@ function CustomDrawerContent({ navigation }: any) {
         }}
       >
         <View style={[styles.drawerItemTextContainer, {borderTopWidth: 1, paddingTop: 10, borderBottomWidth: 0, borderTopColor: '#ddd'}]}>
-          <Ionicons name="people-outline" size={24} color={'#1E1E1E'} />
-          <Text style={styles.drawerItemText}>RiptFitness Team</Text>
+          <Ionicons name="people-outline" size={24} color={iconColor} />
+          <Text style={[styles.drawerItemText, {color: textColor}]}>RiptFitness Team</Text>
         </View>
       </TouchableOpacity>
     </View>
@@ -1145,6 +1290,7 @@ const MainScreen = () => {
   const handlePressOutside = () => {
     ProfContext?.setRequestsOpen(false);
   };
+  const isDarkMode = context?.isDarkMode;
   return (
     <View style={styles.bg}>
       <Modal
@@ -1160,7 +1306,7 @@ const MainScreen = () => {
           </TouchableWithoutFeedback>
 
           {/* Modal Content */}
-          <View style={styles.popup}>
+          <View style={isDarkMode?styles.darkPopup:styles.popup}>
             <ScrollView
               contentContainerStyle={styles.scrollViewContent}
               showsVerticalScrollIndicator={false}
@@ -1222,7 +1368,7 @@ const MainScreen = () => {
           </View>
         </View>
       </Modal>
-      <View style={styles.container}>
+      <View style={[isDarkMode? styles.darkContainer : styles.container]}>
 
         <View style={styles.center}>
           {/* Profile Section */}
@@ -1231,9 +1377,9 @@ const MainScreen = () => {
               source={{ uri: `data:image/png;base64,${context?.userProfile.profilePicture}` }}
               style={styles.avatar}
             />
-            <Text style={styles.name}>{context?.userProfile.displayname}</Text>
+            <Text style={[isDarkMode? styles.darkName : styles.name]}>{context?.userProfile.displayname}</Text>
             {context?.userProfile.bio ? (
-              <View style={styles.bioStyle}>
+              <View style={[styles.bioStyle]}>
                 <TouchableOpacity
                   onPress={() => {
                     if (context?.userProfile) {
@@ -1243,7 +1389,7 @@ const MainScreen = () => {
                     }
                   }}
                 >
-                  <Text style={styles.bio}>
+                  <Text style={[isDarkMode? styles.darkBio : styles.bio]}>
                     {context?.userProfile?.bio != null
                       ? `${(context?.userProfile?.bio.split('\n')[0] || '').slice(0, 50)}`
                       : null}
@@ -1303,7 +1449,7 @@ const MainScreen = () => {
           </View>
         </View>
       </View>
-      <View style={styles.tabContainer}>
+      <View style={[isDarkMode? styles.darkTabContainer : styles.tabContainer]}>
         <ProfileTabs />
       </View>
     </View>
@@ -1315,6 +1461,7 @@ const ProfileScreen: React.FC = () => {
   const ProfContext = useContext(ProfileContext);
   const context = useContext(GlobalContext); // Access GlobalContext here
   const insets = useSafeAreaInsets();
+  const isDarkMode = context?.isDarkMode;
   return (
     <Drawer.Navigator
       screenOptions={{
@@ -1330,11 +1477,14 @@ const ProfileScreen: React.FC = () => {
           headerTitleAlign: 'center', // Center the header title
 
           headerTitle: context?.userProfile.username,
+          headerTitleStyle: {
+            color: isDarkMode? 'white' : 'black',
+          },
           headerStyle: {
             // paddingTop: Platform.OS === "ios" ? 20 : 0, // Add paddingTop for iOS
             height: Platform.OS === "ios" ? 100 : 60,    // Adjust header height if necessary
-            backgroundColor: 'white',                  // Ensure consistent background
-
+            backgroundColor: isDarkMode? 'black' : 'white',                  // Ensure consistent background
+            
             // You can add more styling properties as needed
           },
           headerRight: () => (
@@ -1344,7 +1494,7 @@ const ProfileScreen: React.FC = () => {
                   ProfContext?.setRequestsOpen(!ProfContext?.requestsOpen);
                 }}
               >
-                <Ionicons name="notifications-outline" size={24} />
+                <Ionicons name="notifications-outline" size={24} color={isDarkMode? "white" : "black"} />
                 {ProfContext && ProfContext?.requestingFriends?.length > 0 ? (
                   <View style={styles.pendingFriend}></View>
                 ) : null}
@@ -1358,7 +1508,7 @@ const ProfileScreen: React.FC = () => {
               style={{ marginLeft: 15 }}
             >
               {/* Replace the View with a circle containing the user's profile picture */}
-              <Ionicons name="menu" size={24} />
+              <Ionicons name="menu" size={24} color={isDarkMode? "white" : "black"} />
             </TouchableOpacity>
           ),
         })}
@@ -1388,6 +1538,24 @@ const styles = StyleSheet.create({
   popup: {
     padding: 20,
     backgroundColor: '#fff',
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    zIndex: 5,
+    marginTop: 20,
+    position: 'absolute',
+    top: 0, // Adjust as needed
+    bottom: 0,
+    height: '30%',
+    width: '90%',
+    alignSelf: 'center',
+  },
+  darkPopup: {
+    padding: 20,
+    backgroundColor: '#222',
     borderRadius: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -1470,7 +1638,7 @@ const styles = StyleSheet.create({
     padding: 0,
   },
   pendingFriend: {
-    backgroundColor: 'red',
+    //backgroundColor: 'red',
     width: 10,
     height: 10,
     position: 'absolute',
@@ -1488,6 +1656,13 @@ const styles = StyleSheet.create({
     // borderTopWidth: 1,
     // borderTopColor: '#ddd',
   },
+  switchDrawerItem: {
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    paddingBottom: 10,
+    paddingLeft: 150,
+
+  },
   drawerItemText: {
     fontSize: 18,
     paddingLeft: 5,
@@ -1498,6 +1673,13 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
     paddingBottom: 10
+  },
+  switchDrawerItemTextContainer: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    paddingBottom: 10,
+    paddingLeft: 10,
+    paddingTop: 10
   },
   postsContainer: {
     flex: 1,
@@ -1514,6 +1696,11 @@ const styles = StyleSheet.create({
   postText: {
     fontSize: 16,
     marginBottom: 10,
+  },
+  darkPostText: {
+    fontSize: 16,
+    marginBottom: 10,
+    color:'white'
   },
   postFooter: {
     flexDirection: 'row',
@@ -1543,6 +1730,17 @@ const styles = StyleSheet.create({
     bottom: 0,
     right: 15,
   },
+  darkLikeCounter: {
+    color: 'white',
+    padding: 7,
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  darkDateText: {
+    bottom: 0,
+    right: 15,
+    color: '#666'
+  },
   avatarView: {
     height: '100%',
     justifyContent: 'center',
@@ -1551,7 +1749,7 @@ const styles = StyleSheet.create({
   emptyContainer: {
     alignItems: "center",
     marginTop: 50,
-    flex:1
+    flex:1,
   },
   emptyText: {
     fontSize: 20,
@@ -1594,11 +1792,26 @@ const styles = StyleSheet.create({
     borderRadius:10,
     flexDirection:"row",
   },
+  darkPostItem: {
+    marginBottom:10,
+    width:"90%",
+    minHeight:80,
+    backgroundColor:"#333333",
+    borderRadius:10,
+    flexDirection:"row",
+  },
   photosContainer: {
     flex: 1, // Allows FlatList to take up full height and be scrollable
     padding: 0,
     margin:0,
     // alignItems:'left',
+  },
+  darkPhotosContainer: {
+    flex: 1, // Allows FlatList to take up full height and be scrollable
+    padding: 0,
+    margin:0,
+    // alignItems:'left',
+    backgroundColor: 'black'
   },
   addPhotoButton: {
     position: "absolute",
@@ -1636,7 +1849,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#fff',
   },
+  darkTabContainer: {
+    flex: 1,
+    width: '100%',
+    alignItems: 'center',
+    backgroundColor: 'black',
+  },
   container: { backgroundColor: '#fff' },
+  darkContainer: { backgroundColor: 'black' },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -1650,8 +1870,12 @@ const styles = StyleSheet.create({
   title: { fontSize: 24, fontWeight: 'bold' },
   profileSection: { alignItems: 'center', marginTop: 20, },
   avatar: { width: 100, height: 100, borderRadius: 50 },
-  name: { fontSize: 20, fontWeight: 'bold', marginTop: 10 },
+  name: { fontSize: 20, fontWeight: 'bold', marginTop: 10, },
+  darkName: { fontSize: 20, fontWeight: 'bold', marginTop: 10, color: 'white'},
+
   bio: { fontSize: 13, marginTop: 3, textAlign: 'center' },
+  darkBio: { fontSize: 13, marginTop: 3, textAlign: 'center', color: '#888' },
+
   friendsContainer: { },
   friendsSection: { flexDirection: 'row', marginTop: 10},
   friendsLabel: { marginRight: 10, fontSize: 16, },
@@ -1668,19 +1892,31 @@ const styles = StyleSheet.create({
   },
 
   nav: { height:"10%", width:"100%", marginTop:5,marginBottom:5, backgroundColor:"#fff", flex:1},
+  darkNav: { height:"10%", width:"100%", marginTop:5,marginBottom:5, backgroundColor:"black", flex:1},
+
   moreFriendsText: { color: '#757575' },
   friendsList: {alignContent:'center'},
   calendar: { paddingTop: 20, paddingBottom:20, alignItems: 'center' , width:'100%', backgroundColor:"white", height:"100%"},
+  darkCalendar: { paddingTop: 20, paddingBottom:20, alignItems: 'center' , width:'100%', backgroundColor:"black", height:"100%"},
+
   calendarHeader: { flexDirection: 'row', alignItems: 'center' , paddingBottom:'2%'},
+  darkCalendarHeader: { flexDirection: 'row', alignItems: 'center' , paddingBottom:'2%', color: 'white'},
+
   minWidth: { minWidth:'50%', alignItems:'center'},
+  darkMonth: { marginHorizontal: 10, fontSize: 18, fontWeight: 'bold', color: 'white' },
 
   month: { marginHorizontal: 10, fontSize: 18, fontWeight: 'bold' },
   daysRow: {},
   calendarContainer: {
-    // backgroundColor:"red",
     alignItems: 'center',
     width: '90%',
     aspectRatio: 1.166,
+  },
+  darkCalendarContainer: {
+    alignItems: 'center',
+    width: '90%',
+    aspectRatio: 1.166,
+    backgroundColor: 'black'
   },
   daysContainer: {
     paddingLeft: '4%',
@@ -1691,6 +1927,18 @@ const styles = StyleSheet.create({
     height: 'auto',
     alignItems: 'center',
     aspectRatio: 1.1,
+    backgroundColor: 'white'
+  },
+  darkDaysContainer: {
+    paddingLeft: '4%',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-start',
+    width: '95%',
+    height: 'auto',
+    alignItems: 'center',
+    aspectRatio: 1.1,
+    backgroundColor: 'black'
   },
   day: { width: '11.42%', aspectRatio: 1, margin: 4, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   activeDay: { backgroundColor: '#63c782' },
@@ -1728,9 +1976,25 @@ const styles = StyleSheet.create({
     flex: 1, // Allows FlatList to take up full height and be scrollable
     padding: 0,
     margin: 0,
-    // backgroundColor:"#fff",
-    // alignItems:"center",
   },
+  darkPostView: {
+    backgroundColor: 'black',
+    flex: 1, // Allows FlatList to take up full height and be scrollable
+    padding: 0,
+    margin: 0,
+  },
+  logMoreButton: {
+    marginTop: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    backgroundColor: '#21BFBF',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 5,
+  },
+
 });
+
 
 export default ProfileScreen;

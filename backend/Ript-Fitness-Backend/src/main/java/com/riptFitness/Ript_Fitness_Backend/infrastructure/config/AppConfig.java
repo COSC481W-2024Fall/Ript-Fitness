@@ -27,4 +27,17 @@ public class AppConfig {
 	public PasswordEncoder passwordEncoder() {
 	    return new Argon2PasswordEncoder(16, 32, 1, 16, 32); 
 	}
+	
+	@Bean
+	public String usdaApiKey() {
+	    Dotenv dotenv = Dotenv.load();
+
+	    String apiKey = dotenv.get("USDA_API_KEY");
+	    if (apiKey == null || apiKey.isEmpty()) {
+	        apiKey = System.getenv("USDA_API_KEY"); // Check if available in system env
+	    }
+	    return apiKey;
+	}
+
+
 }

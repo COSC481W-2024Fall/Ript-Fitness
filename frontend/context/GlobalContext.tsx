@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useEffect, ReactNode, useContext } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { httpRequests } from '@/api/httpRequests';
@@ -73,20 +72,24 @@ export interface Workout {
 
 
 export interface Exercise {
-  exerciseId: number | null ;
+  exerciseId: number | null;
   nameOfExercise: string;
   sets: number;
   reps: number[];
   weight: number[];
   description: string;
   exerciseType: number;
+  accountReferenceId: number;
   isDeleted?: boolean;
 
 
 }
 
-
-interface GlobalContextType {
+/**
+ * Exported interface to define the structure of the GlobalContext.
+ * This is used across the app and in tests for type safety.
+ */
+export interface GlobalContextType {
   data: GlobalData;
   updateGlobalData: (updatedData: GlobalData) => void;
   isLoaded: boolean;
@@ -97,13 +100,13 @@ interface GlobalContextType {
   userProfile: ProfileObject;
   updateUserProfile: (newExampleObject: ProfileObject) => void;
   friends: FriendObject[];
-  setFriends: (newFriends : FriendObject[]) => void;
+  setFriends: (newFriends: FriendObject[]) => void;
   removeFriend: (friendId: string) => void;
   addFriend: (newFriend: FriendObject) => void;
   calendar: Calendar;
   calendarLoadTracker: CalendarLoadTracker;
   loadCalendarDays: (
-    dateRange: { startYear: number; startMonth: number; endYear: number; endMonth: number; }, 
+    dateRange: { startYear: number; startMonth: number; endYear: number; endMonth: number; },
     clear?: boolean
   ) => Promise<void>;
   clearCalendar: () => void;
@@ -114,8 +117,19 @@ interface GlobalContextType {
   fetchWorkouts: () => Promise<void>;
   addWorkout: (workout: Workout) => void;
   updateWorkout: (updatedWorkout: Workout) => void;
+  setWorkouts: (workouts: Workout[]) => void; 
   reloadFriends: () => void;
 
+  // Added by Team A 
+  isDarkMode: boolean;
+  toggleTheme: () => void;
+
+  // Add exerciseList，selectedExerciseObjects and related methods
+  exerciseList: Set<string>;
+  setExerciseList: (list: Set<string>) => void;
+  clearExerciseList: () => void;
+  selectedExerciseObjects: Exercise[];
+  setSelectedExerciseObjects: (exercises: Exercise[]) => void;
 }
 
 
@@ -152,11 +166,15 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
   const [additionalLoadingRequired, setAdditionalLoadingRequired] = useState(false);
   const [data, setData] = useState<GlobalData>({ token: '' });
   const [calendar, setCalendar] = useState<Calendar>({});
-  const [calendarLoadTracker, setCalendarLoadTracker] = useState<CalendarLoadTracker>({ startDate:"", endDate:""})
+  const [calendarLoadTracker, setCalendarLoadTracker] = useState<CalendarLoadTracker>({ startDate: "", endDate: "" })
   const [workouts, setWorkouts] = useState<Workout[]>([]);
+  const [selectedExerciseObjects, setSelectedExerciseObjects] = useState<Exercise[]>([]);
+  const updateSelectedExerciseObjects = (exercises: Exercise[]) => {
+    setSelectedExerciseObjects([...exercises]); 
+  };
 
-
-
+  // Add exerciseList state
+  const [exerciseList, setExerciseList] = useState<Set<string>>(new Set());
 
   const updateCalendarLoadTracker = (dateRange: { startDate: string; endDate: string }) => {
     setCalendarLoadTracker((prevTracker) => {
@@ -165,21 +183,21 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
         !prevTracker.startDate || new Date(dateRange.startDate) < new Date(prevTracker.startDate)
           ? dateRange.startDate
           : prevTracker.startDate;
-  
+
       // Compare and update the endDate
       const updatedEndDate =
         !prevTracker.endDate || new Date(dateRange.endDate) > new Date(prevTracker.endDate)
           ? dateRange.endDate
           : prevTracker.endDate;
-  
+
       return {
         startDate: updatedStartDate,
         endDate: updatedEndDate,
       };
     });
   };
-  
-  
+
+
   const defaultUserProfile: ProfileObject = {
     id: '',
     firstName: '',
@@ -202,66 +220,66 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
   const [privatePhotos, setPrivatePhotos] = useState<String[]>([]);
 
 
-    const [friends, setFriends] = useState<FriendObject[]>([]);
+  const [friends, setFriends] = useState<FriendObject[]>([]);
 
-    const updateUserProfile = (newProfile: ProfileObject) => {
-      setMyUserProfile((prevProfile) => ({
-        ...prevProfile,
-        ...newProfile,
-        profilePicture: (newProfile.profilePicture == undefined || newProfile.profilePicture == "") ? DEFAULT_PROFILE_PICTURE : newProfile.profilePicture,
-      }));
-    };
+  const updateUserProfile = (newProfile: ProfileObject) => {
+    setMyUserProfile((prevProfile) => ({
+      ...prevProfile,
+      ...newProfile,
+      profilePicture: (newProfile.profilePicture == undefined || newProfile.profilePicture == "") ? DEFAULT_PROFILE_PICTURE : newProfile.profilePicture,
+    }));
+  };
 
-    const updateFriends = (newFriends: FriendObject[]) => {
-      setFriends((prevFriends) => 
-        newFriends.map((newFriend, index) => {
-          const prevFriend = prevFriends[index] || {}; // Get the corresponding previous friend or an empty object
-          return {
-            ...prevFriend,
+  const updateFriends = (newFriends: FriendObject[]) => {
+    setFriends((prevFriends) =>
+      newFriends.map((newFriend, index) => {
+        const prevFriend = prevFriends[index] || {}; // Get the corresponding previous friend or an empty object
+        return {
+          ...prevFriend,
+          ...newFriend,
+          profilePicture: (newFriend.profilePicture == undefined || newFriend.profilePicture == "")
+            ? DEFAULT_PROFILE_PICTURE
+            : newFriend.profilePicture,
+        };
+      })
+    );
+  };
+
+  const addFriends = (newFriends: FriendObject[]) => {
+    setFriends((prevFriends) => {
+      const updatedFriends = [...prevFriends]; // Clone the current friends array
+
+      newFriends.forEach((newFriend) => {
+        // Check if the friend already exists
+        const existingIndex = updatedFriends.findIndex(
+          (friend) => friend.id === newFriend.id
+        );
+
+        if (existingIndex !== -1) {
+          // If the friend exists, update their information
+          updatedFriends[existingIndex] = {
+            ...updatedFriends[existingIndex],
             ...newFriend,
             profilePicture: (newFriend.profilePicture == undefined || newFriend.profilePicture == "")
               ? DEFAULT_PROFILE_PICTURE
               : newFriend.profilePicture,
           };
-        })
-      );
-    };
-
-    const addFriends = (newFriends: FriendObject[]) => {
-      setFriends((prevFriends) => {
-        const updatedFriends = [...prevFriends]; // Clone the current friends array
-    
-        newFriends.forEach((newFriend) => {
-          // Check if the friend already exists
-          const existingIndex = updatedFriends.findIndex(
-            (friend) => friend.id === newFriend.id
-          );
-    
-          if (existingIndex !== -1) {
-            // If the friend exists, update their information
-            updatedFriends[existingIndex] = {
-              ...updatedFriends[existingIndex],
-              ...newFriend,
-              profilePicture: (newFriend.profilePicture == undefined || newFriend.profilePicture == "")
-                ? DEFAULT_PROFILE_PICTURE
-                : newFriend.profilePicture,
-            };
-          } else {
-            // If the friend does not exist, add them
-            updatedFriends.push({
-              ...newFriend,
-              profilePicture: (newFriend.profilePicture == undefined || newFriend.profilePicture == "")
-                ? DEFAULT_PROFILE_PICTURE
-                : newFriend.profilePicture,
-            });
-          }
-        });
-    
-        return updatedFriends; // Return the new state
+        } else {
+          // If the friend does not exist, add them
+          updatedFriends.push({
+            ...newFriend,
+            profilePicture: (newFriend.profilePicture == undefined || newFriend.profilePicture == "")
+              ? DEFAULT_PROFILE_PICTURE
+              : newFriend.profilePicture,
+          });
+        }
       });
-    };
-    
-    
+
+      return updatedFriends; // Return the new state
+    });
+  };
+
+
 
   const removeFriend = (friendId: string) => {
     setFriends((prevFriends) =>
@@ -273,7 +291,7 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
     setFriends((prevFriends) => {
       // Check if the friend already exists based on `id`
       const friendExists = prevFriends.some((friend) => friend.id === newFriend.id);
-  
+
       // If the friend doesn't exist, add it to the list
       return friendExists ? prevFriends : [...prevFriends, newFriend];
     });
@@ -288,7 +306,7 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
       isDeleted: false,
     }));
   };*/
-  
+
   const updateGlobalData = (updatedData: GlobalData) => {
     setData(updatedData);
   };
@@ -297,11 +315,12 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
     setMyUserProfile(defaultUserProfile);
     setFriends([])
     clearCalendar();
+    clearExerciseList(); // Clear exerciseList when context is cleared
   };
 
-  const clearCalendar =() => {
+  const clearCalendar = () => {
     setCalendar({})
-    setCalendarLoadTracker({ startDate:"", endDate:""})
+    setCalendarLoadTracker({ startDate: "", endDate: "" })
   }
 
   const setToken = async (token: string) => {
@@ -342,12 +361,14 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
         throw new Error(`Failed to fetch workouts: ${response.statusText}`);
       }
 
+      const rawWorkouts = await response.json();
+      const mappedWorkouts: Workout[] = rawWorkouts.map((w: any) => ({
+        ...w,
+        id: w.workoutsId, // Map backend 'workoutsId' to 'id' expected in frontend
+      }));
+      console.log("Mapped workouts for frontend:", mappedWorkouts); // Optional for debugging
+      setWorkouts(mappedWorkouts);
 
-      const fetchedWorkouts: Workout[] = await response.json();
-      console.log("Fetched workouts:", fetchedWorkouts);
-
-
-      setWorkouts(fetchedWorkouts); // Update the state with fetched workouts
     } catch (error) {
       console.error("Error fetching workouts:", error);
     }
@@ -383,15 +404,15 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
   };
 
   const loadAdditionalData = async () => {
-      if (data.token != "") {
-        await Promise.all([
-          loadInitialBodyData(),
-          loadInitialProfileData(),
-          loadInitialSocialData(),
-          loadInitialWorkoutData(),
-        ]);
-        setIsLoaded(true);
-        setAdditionalLoadingRequired(false);
+    if (data.token != "") {
+      await Promise.all([
+        loadInitialBodyData(),
+        loadInitialProfileData(),
+        loadInitialSocialData(),
+        loadInitialWorkoutData(),
+      ]);
+      setIsLoaded(true);
+      setAdditionalLoadingRequired(false);
     }
     return false;
   };
@@ -411,23 +432,23 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
     }
 
     try {
-    const response = await fetch(`${httpRequests.getBaseURL()}/api/token/validate`, {
-      method: 'POST', // Set method to POST
-      headers: {
-        'Content-Type': 'application/json', // Set content type to JSON
-      },
-      body: `${storedToken}`, // Convert the data to a JSON string
-    }); // Use endpoint or replace with BASE_URL if needed
-    if (!response.ok) {
-      setToken("");
+      const response = await fetch(`${httpRequests.getBaseURL()}/api/token/validate`, {
+        method: 'POST', // Set method to POST
+        headers: {
+          'Content-Type': 'application/json', // Set content type to JSON
+        },
+        body: `${storedToken}`, // Convert the data to a JSON string
+      }); // Use endpoint or replace with BASE_URL if needed
+      if (!response.ok) {
+        setToken("");
+      }
+      //const json = await response.text() //.json(); // Parse the response as JSON;
+      //return json; // Return the JSON data directly
+    } catch (error) {
+
+      console.error('0001 GET request failed:', error);
+      throw error; // Throw the error for further handling if needed
     }
-    //const json = await response.text() //.json(); // Parse the response as JSON;
-    //return json; // Return the JSON data directly
-  } catch (error) {
-  
-    console.error('0001 GET request failed:', error);
-    throw error; // Throw the error for further handling if needed
-  }
 
   };
 
@@ -437,9 +458,9 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
   const loadInitialBodyData = async () => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
   };
-  
 
-  const loadCalendarDays = async (dateRange: { startYear:number, startMonth:number, endYear:number, endMonth:number }, clear?: boolean) => {
+
+  const loadCalendarDays = async (dateRange: { startYear: number, startMonth: number, endYear: number, endMonth: number }, clear?: boolean) => {
     try {
       const response = await fetch(`${httpRequests.getBaseURL()}/calendar/getMonth?startYear=${dateRange.startYear}&startMonth=${dateRange.startMonth}&endYear=${dateRange.endYear}&endMonth=${dateRange.endMonth}`, {
         method: 'GET', // Set method to POST
@@ -453,30 +474,30 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
         console.log("response not okay")
         //setToken("");
       }
-      
-     const json = await response.json()
 
-     const calendarData: Calendar = {};
-     json.forEach((day : CalendarDay) => {
-      day.date = TimeZone.convertToTimeZone(day.date, day.timeZoneWhenLogged).split(',')[0].trim()
-       calendarData[day.date] = day.activityType; 
-     });
-     console.log(calendarData)
-     if (clear) {
-      clearCalendar();
-     }
-    
-     setCalendar((prevCalendar) => ({
-      ...prevCalendar,
-      ...json.reduce((acc : any, day: CalendarDay) => {
-        acc[day.date] = day.activityType;
-        return acc;
-      }, {} as Calendar),
-    }));
+      const json = await response.json()
 
-    updateCalendarLoadTracker(getFormattedDateRange(dateRange))
+      const calendarData: Calendar = {};
+      json.forEach((day: CalendarDay) => {
+        day.date = TimeZone.convertToTimeZone(day.date, day.timeZoneWhenLogged).split(',')[0].trim()
+        calendarData[day.date] = day.activityType;
+      });
+      console.log(calendarData)
+      if (clear) {
+        clearCalendar();
+      }
+
+      setCalendar((prevCalendar) => ({
+        ...prevCalendar,
+        ...json.reduce((acc: any, day: CalendarDay) => {
+          acc[day.date] = day.activityType;
+          return acc;
+        }, {} as Calendar),
+      }));
+
+      updateCalendarLoadTracker(getFormattedDateRange(dateRange))
     } catch (error) {
-    
+
       console.error('0005 GET request failed:', error);
       throw error; // Throw the error for further handling if needed
     }
@@ -485,10 +506,10 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
   const getFormattedDateRange = (dateRange: { startYear: number; startMonth: number; endYear: number; endMonth: number }) => {
     // First day of the start month/year
     const firstDay = new Date(dateRange.startYear, dateRange.startMonth - 1, 1);
-  
+
     // Last day of the end month/year
     const lastDay = new Date(dateRange.endYear, dateRange.endMonth, 0); // Day 0 gives the last day of the previous month
-  
+
     // Helper function to format dates to year-month-day
     const formatDate = (date: Date): string => {
       const year = date.getFullYear();
@@ -496,7 +517,7 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
       const day = String(date.getDate()).padStart(2, '0');
       return `${year}-${month}-${day}`;
     };
-  
+
     return {
       startDate: formatDate(firstDay),
       endDate: formatDate(lastDay),
@@ -540,30 +561,30 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
         throw new Error(`Error: ${response.status}`);
       }
       const friendNames = await response.json()
-            try {
-  
-  
-              const response = await fetch(`${httpRequests.getBaseURL()}/userProfile/getUserProfilesFromList`, {
-                method: 'POST', // Set method to POST
-                headers: {
-                  'Content-Type': 'application/json', // Set content type to JSON
-                  "Authorization": `Bearer ${data.token}`,
-                },
-                body: JSON.stringify(friendNames), // Convert the data to a JSON string
-              }); // Use endpoint or replace with BASE_URL if needed
-              if (!response.ok) {
-                setToken("")
-                throw new Error(`Error: ${response.status}`);
-              }
-              const json = await response.json()
-              console.log("foo " + JSON.stringify(json))
-                updateFriends(json)
-          
-            } catch (error) {
-              console.error('0004 GET request failed:', error);
-              throw error; // Throw the error for further handling if needed
-            }
-  
+      try {
+
+
+        const response = await fetch(`${httpRequests.getBaseURL()}/userProfile/getUserProfilesFromList`, {
+          method: 'POST', // Set method to POST
+          headers: {
+            'Content-Type': 'application/json', // Set content type to JSON
+            "Authorization": `Bearer ${data.token}`,
+          },
+          body: JSON.stringify(friendNames), // Convert the data to a JSON string
+        }); // Use endpoint or replace with BASE_URL if needed
+        if (!response.ok) {
+          setToken("")
+          throw new Error(`Error: ${response.status}`);
+        }
+        const json = await response.json()
+        console.log("foo " + JSON.stringify(json))
+        updateFriends(json)
+
+      } catch (error) {
+        console.error('0004 GET request failed:', error);
+        throw error; // Throw the error for further handling if needed
+      }
+
     } catch (error) {
       console.error('0003 GET request failed:', error);
       throw error; // Throw the error for further handling if needed
@@ -571,7 +592,7 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
   }
 
   const loadInitialProfileData = async () => {
-      try {
+    try {
       const response = await fetch(`${httpRequests.getBaseURL()}/userProfile/getUserProfile`, {
         method: 'GET', // Set method to POST
         headers: {
@@ -594,8 +615,8 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
     }
     reloadFriends();
 
-  const dateRange = getDateRange();
-  await loadCalendarDays(dateRange)
+    const dateRange = getDateRange();
+    await loadCalendarDays(dateRange)
 
   };
 
@@ -607,6 +628,30 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
   };
 
+  const ThemeContext = createContext<any>(null);
+
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    const getTheme = async () => {
+      const storedTheme = await AsyncStorage.getItem('isDarkMode');
+      if (storedTheme !== null) {
+        setIsDarkMode(JSON.parse(storedTheme));
+      }
+    };
+    getTheme();
+  }, []);
+
+  const toggleTheme = async () => {
+    const newTheme = !isDarkMode;
+    setIsDarkMode(newTheme);
+    await AsyncStorage.setItem('isDarkMode', JSON.stringify(newTheme));
+  };
+
+// Add clearExerciseList method
+const clearExerciseList = () => {
+  setExerciseList(new Set());
+};
 
   return (
 
@@ -634,9 +679,17 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
         fetchWorkouts,
         addWorkout,
         updateWorkout,
+        setWorkouts,
         reloadFriends,
         incrementRemovePending,
-        decrementRemovePending
+        decrementRemovePending,
+        isDarkMode,
+        toggleTheme,
+        exerciseList,
+        setExerciseList,
+        clearExerciseList,
+        selectedExerciseObjects,
+        setSelectedExerciseObjects: updateSelectedExerciseObjects,
       }}
     >
 
@@ -645,4 +698,3 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
     </GlobalContext.Provider>
   );
 };
-

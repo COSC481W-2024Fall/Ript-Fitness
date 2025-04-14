@@ -14,5 +14,9 @@ public interface ExerciseRepository extends JpaRepository <ExerciseModel, Long> 
 	@Query("SELECT e FROM ExerciseModel e WHERE e.account.id = :accountId AND e.isDeleted = false")
 	List<ExerciseModel> findByAccountIdAndNotDeleted(@Param("accountId") Long accountId);
 	
+	//Query to retrieve a list of exercises by type
+	@Query("SELECT e FROM ExerciseModel e WHERE e.exerciseType = :exerciseType")
+	List<ExerciseModel> findByExerciseType(@Param("exerciseType") int exerciseType);
+	
     
 }

@@ -1,8 +1,10 @@
 package com.riptFitness.Ript_Fitness_Backend.domain.model;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -12,6 +14,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 @Entity // Creates a database table with the name below and the columns equal to the variable
@@ -37,6 +40,15 @@ public class Workouts {
 	
 	public String name;
 	public boolean isDeleted = false;
+	
+	@Column(nullable=false)
+	private LocalDate workoutDate;
+	
+	@PrePersist void onCreate() {
+		if (workoutDate ==null) {
+			workoutDate = LocalDate.now();
+		}
+	}
 	
 	
     public AccountsModel getAccount() {
@@ -65,7 +77,13 @@ public class Workouts {
 	public void setName(String name) {
 		this.name = name;
 	}
-
 	
+	public LocalDate getWorkoutDate() {
+		return workoutDate;
+	}
+	
+	public void setWorkoutDate(LocalDate workoutDate) {
+		this.workoutDate = workoutDate;
+	}
 
 }

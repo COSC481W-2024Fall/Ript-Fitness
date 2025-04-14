@@ -5,9 +5,8 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { PortalProvider } from "@gorhom/portal";
 import "react-native-gesture-handler";
 import React, { useContext, useState } from "react";
-import { Provider as PaperProvider } from "react-native-paper";
 import { MenuProvider } from "react-native-popup-menu";
-import { NavigationContainer } from "@react-navigation/native";
+import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
 import {
   createStackNavigator,
   StackNavigationProp,
@@ -25,6 +24,8 @@ import SplashScreen from "@/app/screens/SplashScreen";
 import WelcomeScreen from "@/app/screens/welcome/WelcomeScreen";
 import LoginScreen from "@/app/screens/welcome/LoginScreen";
 import SignupScreen from "@/app/screens/welcome/SignupScreen";
+import TimerScreen from "./app/screens/timer/TimerScreen"; // Import the TimerScreen component
+import MyWorkoutsScreen from '@/app/screens/workout/MyWorkoutsScreen'; // Import the MyWorkoutsScreen component
 
 import { SocialFeedProvider } from "./context/SocialFeedContext";
 
@@ -38,6 +39,7 @@ import {
 
 import { WorkoutProvider } from "./context/WorkoutContext";
 import FoodLogScreen from "./app/screens/foodlog/FoodLog";
+import { AuthProvider } from "./context/AuthContext"; 
 
 // Suppress specific Reanimated warnings using LogBox
 LogBox.ignoreLogs([
@@ -50,6 +52,7 @@ configureReanimatedLogger({
   level: ReanimatedLogLevel.error, // Only show errors, suppress warnings
   strict: false, // Disable strict mode to reduce warnings
 });
+
 
 // Define types for the navigation stack
 export type RootStackParamList = {
@@ -64,19 +67,27 @@ const Stack = createStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
 
 function MainApp() {
+  
   const context = useContext(GlobalContext);
+  const theme = context?.isDarkMode;
 
   if (context?.additionalLoadingRequired) {
     return <SplashScreen />;
   }
+
+  const activeTintColor = theme  ? "#ffffff" : "#0D0D0D";
+  const inactiveTintColor = theme ? "#73726F" : "#A4A4A4";
+  const tabBarBackgroundColor = theme ? "#1F1F1F" : "#ffffff";
 
   return (
     <Tab.Navigator
       initialRouteName="Social"
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: "#0D0D0D",
-        tabBarInactiveTintColor: "#73726F",
+        tabBarActiveTintColor: activeTintColor,
+        tabBarInactiveTintColor: inactiveTintColor,
+        tabBarStyle: {backgroundColor: tabBarBackgroundColor},
+        
       }}
     >
       <Tab.Screen
@@ -107,6 +118,23 @@ function MainApp() {
         }}
       />
 
+      {/*Defines the Timer screen in the bottom tab navigator with 
+    an icon that changes based on focus state.*/} 
+      {/* Timer Screen */} 
+      <Tab.Screen
+        name="Timer"
+        component={TimerScreen}
+        options={{
+          tabBarIcon: ({ focused, size, color }) => (
+            <Ionicons
+              name={focused ? "timer" : "timer-outline"}
+              size={size}
+              color={color}
+            />
+          ),
+        }}
+      />
+
       <Tab.Screen
         name="Food"
         component={BodyStack}
@@ -134,9 +162,12 @@ function MainApp() {
           ),
         }}
       />
+
+    
     </Tab.Navigator>
   );
 }
+
 
 function RootNavigator() {
   const context = useContext(GlobalContext);
@@ -186,25 +217,27 @@ function RootNavigator() {
 }
 
 export default function App() {
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <MenuProvider>
         <NavigationContainer>
           <PortalProvider>
+           <AuthProvider>  {/* add AuthProvider */}
             <GlobalProvider>
               <StreakProvider>
                 <NotesProvider>
+                
                   <SocialFeedProvider>
                     <WorkoutProvider>
-                      <>
-                        <StatusBar barStyle="default" />
+                        <StatusBar barStyle= "default" />
                         <RootNavigator />
-                      </>
                     </WorkoutProvider>
                   </SocialFeedProvider>
                 </NotesProvider>
               </StreakProvider>
             </GlobalProvider>
+            </AuthProvider>
           </PortalProvider>
         </NavigationContainer>
       </MenuProvider>

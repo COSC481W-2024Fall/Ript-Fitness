@@ -13,6 +13,7 @@ type MacroButtonProps = {
   fontSize?: number;
   onPress?: () => void;
   underlineOnPress?: boolean;
+  containerStyle?: ViewStyle;  // ✅ 新增 `containerStyle` 允许外部覆盖样式
 };
 
 const MacroButton: React.FC<MacroButtonProps> = ({ title, backgroundColor, borderColor, borderWidth, width, textColor, fontSize, total, label}) => {
@@ -45,7 +46,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center', // Center the text vertically
     alignItems: 'center', // Center the text horizontally
     marginRight: 10,
-    marginLeft: 10,
+    marginLeft: 0,//adjust value from 10 to 0
     marginTop: 3,
   },
   buttonText: {

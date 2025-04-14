@@ -37,6 +37,7 @@ export interface SocialPost {
   comments: SocialPostComment[];
   socialPostComments: SocialPostComment[];
   isDeleted: boolean;
+  isPublic: boolean; //DeepSeek
   numberOfLikes: number;
   userIDsOfLikes: string[];
   userProfile: {
@@ -220,6 +221,7 @@ export function SocialFeedProvider({ children }: { children: ReactNode }) {
                     TimeZone.get()
                   ),
                   isDeleted: comment.isDeleted || false,
+                  isPublic: post.isPublic || false, // DeepSeek
                 }))
               : [],
             socialPostComments: Array.isArray(post.socialPostComments)
@@ -289,23 +291,26 @@ export function SocialFeedProvider({ children }: { children: ReactNode }) {
 
   // Add post
   const addPost = useCallback(
-    async (content: string) => {
+    async (content: string, isPublic: boolean = false) => {  // Add isPublic parameter with default false (DeepSeek)
       if (!token) {
         console.error("No token available for adding a post.");
         setError("Authentication token is missing.");
         return;
       }
-
+  
       setLoadingState("isAddingPost", true);
       try {
         const response = await retry(() =>
-          httpRequests.post("/socialPost/addPost", token, { content })
+          httpRequests.post("/socialPost/addPost", token, { 
+            content, 
+            isPublic  // Include isPublic in the request body (DeepSeek)
+          })
         );
-
+  
         if (!response.ok) {
           throw new Error("Failed to add post");
         }
-
+  
         const newPost = await response.json();
         const formattedPost: SocialPost = {
           ...newPost,
@@ -320,8 +325,9 @@ export function SocialFeedProvider({ children }: { children: ReactNode }) {
             newPost.dateTimeCreated,
             TimeZone.get()
           ),
+          isPublic: newPost.isPublic  // DeepSeek
         };
-
+  
         setPosts((prevPosts) => [formattedPost, ...prevPosts]);
         clearError();
       } catch (err: any) {
@@ -333,7 +339,6 @@ export function SocialFeedProvider({ children }: { children: ReactNode }) {
     },
     [token, clearError]
   );
-
   // Delete post
   const deletePost = useCallback(
     async (postId: string) => {

@@ -42,6 +42,16 @@ public class SocialPost {
     
     public boolean isDeleted = false;
     
+    public boolean isDeleted() {
+		return isDeleted;
+	}
+
+	public void setDeleted(boolean isDeleted) {
+		this.isDeleted = isDeleted;
+	}
+
+	public boolean isPublic = false; 
+    
     @Column(name = "created_date", updatable = false)
     public LocalDateTime dateTimeCreated;
     
@@ -49,4 +59,46 @@ public class SocialPost {
     protected void onCreate() {
     	dateTimeCreated = LocalDateTime.now();
     }
+    
+    public boolean isPublic() {
+        return isPublic;
+    }
+
+    public void setPublic(boolean isPublic) {
+        this.isPublic = isPublic;
+    }
+    
+    //added for debugging below
+    public Long getId() {
+        return id;
+    }
+
+    public AccountsModel getAccount() {
+        return account;
+    }
+
+    public UserProfile getUserProfile() {
+        return userProfile;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public int getNumberOfLikes() {
+        return numberOfLikes;
+    }
+
+    public List<Long> getUserIDsOfLikes() {
+        return userIDsOfLikes;
+    }
+
+    public List<SocialPostComment> getSocialPostComments() {
+        return socialPostComments;
+    }
+
+    public LocalDateTime getDateTimeCreated() {
+        return dateTimeCreated;
+    }
+
 }

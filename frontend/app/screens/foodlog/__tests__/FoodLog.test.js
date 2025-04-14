@@ -54,6 +54,15 @@ describe('FoodLogScreen', () => {
       expect(screen.getByText('Protein')).toBeTruthy();
       expect(screen.getByText('Carbs')).toBeTruthy();
       expect(screen.getByText('Fat')).toBeTruthy();
+      expect(screen.getByText('Cholesterol')).toBeTruthy();
+      expect(screen.getByText('SaturatedFat')).toBeTruthy();
+      expect(screen.getByText('TransFat')).toBeTruthy();
+      expect(screen.getByText('Sodium')).toBeTruthy();
+      expect(screen.getByText('Fiber')).toBeTruthy();
+      expect(screen.getByText('Sugars')).toBeTruthy();
+      expect(screen.getByText('Calcium')).toBeTruthy();
+      expect(screen.getByText('Iron')).toBeTruthy();
+      expect(screen.getByText('Potassium')).toBeTruthy();
       expect(screen.getByText('Water')).toBeTruthy();
     });
   });

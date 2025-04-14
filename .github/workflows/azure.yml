@@ -47,11 +47,14 @@ jobs:
         echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> backend/Ript-Fitness-Backend/.env
         echo "BLOB_CONNECTION_STRING=${{ secrets.BLOB_CONNECTION_STRING }}" >> backend/Ript-Fitness-Backend/.env
         echo "BLOB_CONTAINER_NAME=${{ secrets.BLOB_CONTAINER_NAME }}" >> backend/Ript-Fitness-Backend/.env
+        echo "USDA_API_KEY=${{ secrets.USDA_API_KEY }}" >> backend/Ript-Fitness-Backend/.env
         
         
     # Build the Spring Boot application
     - name: Build Spring Boot Application
       working-directory: ./backend/Ript-Fitness-Backend
+      env:
+        USDA_API_KEY: ${{ secrets.USDA_API_KEY }}
       run: ./mvnw clean package
 
     # Log in to Azure Container Registry (ACR)
@@ -86,4 +89,14 @@ jobs:
         login-server: riptcontainerb3
         username: ${{ secrets.ACR_USERNAME }}
         password: ${{ secrets.ACR_PASSWORD }}
+
+     # Set environment variables in Azure App Service
+    - name: Set Azure Web App Environment Variables
+      uses: azure/appservice-settings@v1
+      with:
+        app-name: Ript-Fitness   # Your Azure Web App name
+        app-settings-json: >
+          [
+            {"name": "USDA_API_KEY", "value": "${{ secrets.USDA_API_KEY }}", "slotSetting": false}
+          ]
 

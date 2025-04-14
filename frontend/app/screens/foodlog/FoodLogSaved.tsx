@@ -17,11 +17,22 @@ interface Food {
     protein: number;
     carbs: number;
     fat: number;
-    multiplier: number;
+    cholesterol: number;
+    saturatedFat: number;
+    transFat: number;
+    sodium: number;
+    fiber: number;
+    sugars: number;
+    calcium: number;
+    iron: number;
+    potassium: number;
+    serving: number;
     isDeleted: boolean;
 }
 
 const FoodItem: React.FC<{ food: Food; saveFoodChanges: (food: Food) => void; logFoodToDay: (food: Food) => void}> =  ({ food, saveFoodChanges, logFoodToDay}) => {    
+    const context = useContext(GlobalContext);
+    const isDarkMode = context?.isDarkMode;
     return(
         <LogFoodButton 
             id={food.id}
@@ -30,7 +41,16 @@ const FoodItem: React.FC<{ food: Food; saveFoodChanges: (food: Food) => void; lo
             protein={food.protein}
             carbs={food.carbs}
             fat={food.fat}
-            multiplier={food.multiplier}
+            cholesterol={food.cholesterol} 
+            saturatedFat={food.saturatedFat} 
+            transFat={food.transFat} 
+            sodium={food.sodium} 
+            fiber={food.fiber} 
+            sugars={food.sugars} 
+            calcium={food.calcium} 
+            iron={food.iron} 
+            potassium={food.potassium} 
+            serving={food.serving}
             saveFoodChanges={(updatedFood) => saveFoodChanges(updatedFood)}
             logFoodToDay={(updatedFood) => logFoodToDay(updatedFood)}
             textColor="black"
@@ -53,6 +73,8 @@ const FoodLogSavedPage = () => {
     const [day, setDay] = useState();
     const context = useContext(GlobalContext);
     const { width } = Dimensions.get("window");
+    const isDarkMode = context?.isDarkMode;
+
 
 
      // Prefix all keys with user ID (assuming it's stored in context)
@@ -121,8 +143,7 @@ const FoodLogSavedPage = () => {
           }
           
           // Specify the desired order of keys
-          const keysOrder = ["name", "calories", "protein", "carbs", "fat", "multiplier", "isDeleted"];
-          
+          const keysOrder = ["name", "calories", "protein", "carbs", "fat", "cholesterol", "saturatedFat", "transFat", "sodium", "fiber", "sugars", "calcium", "iron", "potassium", "serving", "isDeleted"];          
           // Serialize updatedFood with the desired key order
           const body = customJSONStringify(updatedFood, keysOrder);
 
@@ -276,7 +297,7 @@ const FoodLogSavedPage = () => {
 
 
     return cached ? (
-        <View style={styles.bottomContainer}>
+        <View style={[isDarkMode? styles.darkBottomContainer : styles.bottomContainer]}>
             <View style={styles.searchContainer}>
                 <Ionicons
                 name="search-outline"
@@ -309,7 +330,7 @@ const FoodLogSavedPage = () => {
             />
         </View>
     ) : loading ? (
-        <View style={styles.bottomContainer}>
+        <View style={[isDarkMode ? styles.darkBottomContainer : styles.bottomContainer]}>
            <View style={styles.searchContainer}>
                 <Ionicons
                 name="search-outline"
@@ -335,7 +356,7 @@ const FoodLogSavedPage = () => {
             <Text style={styles.message}>Loading...</Text>
        </View>
     ) : foodDetails.length === 0 ? (
-        <View style={styles.bottomContainer}>
+        <View style={[isDarkMode? styles.darkBottomContainer : styles.bottomContainer]}>
            <View style={styles.searchContainer}>
                 <Ionicons
                 name="search-outline"
@@ -358,10 +379,10 @@ const FoodLogSavedPage = () => {
                 }}
         />
         </View>
-            <Text style={styles.message}>No food items logged.</Text>
+            <Text style={isDarkMode? styles.darkMessage:styles.message}>No food items logged.</Text>
         </View>
     ) : (
-        <View style={styles.bottomContainer}>
+        <View style={[isDarkMode ? styles.darkBottomContainer : styles.bottomContainer]}>
             <View style={{alignContent: 'center'}}>
           <View style={styles.searchContainer}>
                 <Ionicons
@@ -418,7 +439,7 @@ const styles = StyleSheet.create({
         paddingBottom: 20, 
     }, 
     foodItemContainer: {
-        padding: 30, 
+        padding: 40, 
         backgroundColor: 'white', 
         borderBottomWidth: 1, 
         borderColor: 'black',
@@ -427,13 +448,13 @@ const styles = StyleSheet.create({
     }, 
     foodName: {
         position: 'absolute',
-        fontSize: 16,
+        fontSize: 20,
         fontWeight: 'bold',
         left: 10, 
     },
     foodTextRight: {
         position: 'absolute',
-        fontSize: 16, 
+        fontSize: 20, 
         right: 10, 
     },
     bottomContainer: {
@@ -441,11 +462,22 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         // alignItems: 'center',
     }, 
+    darkBottomContainer: {
+        height: '100%',
+        backgroundColor: 'black',
+    }, 
     message: {
         textAlign: 'center', 
         fontWeight: 'bold', 
         fontSize: 20,
         padding: 30,
+    }, 
+    darkMessage: {
+        textAlign: 'center', 
+        fontWeight: 'bold', 
+        fontSize: 20,
+        padding: 30,
+        color: 'white'
     }, 
     swipeDeleteButton: {
         backgroundColor: 'red',

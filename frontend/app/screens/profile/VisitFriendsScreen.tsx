@@ -17,6 +17,8 @@ const profContext = useContext(ProfileContext)
 const context = useContext(GlobalContext)
   const [search, setSearch] = useState('');
   const [adding, setAdding] = useState<number[]>([])
+  
+  const isDarkMode = context?.isDarkMode; 
 
   const filteredFriends = friends.filter((friend: any) =>
     friend.username.toLowerCase().includes(search.toLowerCase())
@@ -69,7 +71,7 @@ console.log("FEE: " , profContext)
       <TouchableOpacity style={{flex:1, flexDirection:'row', alignItems: 'center'}} onPress={() => {navigation.navigate("VisitProfileScreen", {item})}}>
         <Image source={{ uri: `data:image/png;base64,${item.profilePicture}` }} style={styles.profileImage} />
         <View style={{flex:1}}>
-        <Text style={styles.friendName}>{item.displayname}</Text>
+        <Text style={isDarkMode?styles.darkFriendName:styles.friendName}>{item.displayname}</Text>
         <Text style={styles.friendUserName}>@{item.username}</Text>
       </View>
       </TouchableOpacity>
@@ -107,13 +109,13 @@ console.log("FEE: " , profContext)
   return (
     <View style={[styles.container, {paddingTop: Platform.OS === "ios" ? 30 : 0, // Add paddingTop for iOS
       height: Platform.OS === "ios" ? 80 : 60,    // Adjust header height if necessary
-      backgroundColor: 'white', }]}>
+      backgroundColor: isDarkMode? 'black':'white', }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={isDarkMode?styles.darkHeader:styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="black" />
+          <Ionicons name="arrow-back" size={24} color={isDarkMode?"white":"black"} />
         </TouchableOpacity>
-        <Text style={styles.title}>Friends</Text>
+        <Text style={isDarkMode?styles.darkTitle:styles.title}>Friends</Text>
         <View style={{paddingRight:20}}></View>
       </View>
 
@@ -152,7 +154,15 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
   },
+  darkHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    backgroundColor: 'black'
+  },
   title: { fontSize: 20, fontWeight: 'bold' },
+  darkTitle: { fontSize: 20, fontWeight: 'bold', color:'white' },
   addButton: {
     backgroundColor: '#21BFBF',
     paddingHorizontal: 12,
@@ -171,12 +181,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
+    borderBottomColor: '#333',
   },
   profileImage: { width: 40, height: 40, borderRadius: 20, marginRight: 12 },
   friendName: {
     fontSize: 16,
     fontWeight: 'bold', 
+},
+darkFriendName: {
+  fontSize: 16,
+  fontWeight: 'bold', 
+  color: 'white'
 },
 
   friendUserName: {     

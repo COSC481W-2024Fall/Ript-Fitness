@@ -1,0 +1,91 @@
+name: CI/CD for Azure Web App
+
+on:
+  push:
+    branches:
+      - main  # You can change this to whatever branch you want to trigger the workflow
+
+  #workflow_dispatch:
+    #inputs:
+      #branch:
+        #description: 'Which branch to push to the Azure Server'
+        #default: 'main'
+        #required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        # Determine the branch to use based on the event type
+        ref: ${{ github.event.inputs.branch || github.ref_name }}
+
+    # Set up JDK 17 for building Spring Boot application
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'  # Specify the Java distribution you want to use (temurin is a common choice)
+
+    # Make the mvnw script executable
+    - name: Make mvnw executable
+      working-directory: ./backend/Ript-Fitness-Backend
+      run: chmod +x mvnw
+
+    - name: Create .env file for dotenv
+      run: |
+        echo "MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}" > backend/Ript-Fitness-Backend/.env
+        echo "MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}" >> backend/Ript-Fitness-Backend/.env
+        echo "PORT=${{ secrets.PORT }}" >> backend/Ript-Fitness-Backend/.env
+        echo "SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }}" >> backend/Ript-Fitness-Backend/.env
+        echo "SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }}" >> backend/Ript-Fitness-Backend/.env
+        echo "SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }}" >> backend/Ript-Fitness-Backend/.env
+        echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> backend/Ript-Fitness-Backend/.env
+        echo "BLOB_CONNECTION_STRING=${{ secrets.BLOB_CONNECTION_STRING }}" >> backend/Ript-Fitness-Backend/.env
+        echo "BLOB_CONTAINER_NAME=${{ secrets.BLOB_CONTAINER_NAME }}" >> backend/Ript-Fitness-Backend/.env
+        echo "USDA_API_KEY=${{ secrets.USDA_API_KEY }}" >> backend/Ript-Fitness-Backend/.env
+        
+        
+    # Build the Spring Boot application
+    - name: Build Spring Boot Application
+      working-directory: ./backend/Ript-Fitness-Backend
+      env:
+        USDA_API_KEY: ${{ secrets.USDA_API_KEY }}
+      run: ./mvnw clean package
+
+    # Log in to Azure Container Registry (ACR)
+    - name: Log in to Azure Container Registry
+      uses: azure/docker-login@v1
+      with:
+        login-server: riptcontainerb3.azurecr.io  # Replace with your ACR login server
+        username: ${{ secrets.ACR_USERNAME }}  # Set up as a secret in your GitHub repo
+        password: ${{ secrets.ACR_PASSWORD }}  # Set up as a secret in your GitHub repo
+
+    # Build and tag the Docker image
+    - name: Build Docker image
+      run: docker build -t riptcontainerb3.azurecr.io/ript-fitness:latest .
+      working-directory: ./backend/Ript-Fitness-Backend
+
+    # Push the Docker image to ACR
+    - name: Push Docker image to ACR
+      run: docker push riptcontainerb3.azurecr.io/ript-fitness:latest
+
+    # Log in to Azure (mandatory for deployment)
+    - name: Log in to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}  # Secret containing the Azure credentials in JSON format
+      
+    # Deploy the new image to Azure Web App
+    - name: Deploy to Azure Web App
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: Ript-Fitness   # Replace with your Azure Web App name
+        images: riptcontainerb3.azurecr.io/ript-fitness:latest
+        login-server: riptcontainerb3
+        username: ${{ secrets.ACR_USERNAME }}
+        password: ${{ secrets.ACR_PASSWORD }}

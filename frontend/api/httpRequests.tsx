@@ -1,9 +1,16 @@
 import { GlobalContext } from "@/context/GlobalContext";
 import { USE_LOCAL, LOCAL_IP } from "@env";
 import { useContext } from "react";
+console.warn(`\n==============================\n ENV CHECK: USE_LOCAL=${USE_LOCAL}, LOCAL_IP=${LOCAL_IP}\n`);
+/*
+To force the front end to use the backend api, replace the BASE_URL with your hardcoded local IP address.
+Remember to switch it back when done testing
+const BASE_URL = "http://172.22.0.1:8080";
+*/
 
 const Azure_URL = "https://ript-fitness.azurewebsites.net";
 const BASE_URL = USE_LOCAL === "true" ? `http://${LOCAL_IP}` : Azure_URL;
+
 
 export class httpRequests {
   static getBaseURL() {
@@ -64,35 +71,25 @@ export class httpRequests {
   static async put(
     endpoint: string,
     token: string,
-    data: Record<string, any>
-  ): Promise<any> {
+    data?: Record<string, any>
+  ): Promise<Response> {
     try {
-      let response;
-      console.log("rthrth" + token);
-      if (token != "") {
-        response = await fetch(`${BASE_URL}${endpoint}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(data),
-        });
-      } else {
-        response = await fetch(`${BASE_URL}${endpoint}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
-        });
-      }
-      return response;
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (token) headers.Authorization = `Bearer ${token}`;
+      const response = await fetch(`${BASE_URL}${endpoint}`, {
+        method: "PUT",
+        headers,
+        ...(data ? { body: JSON.stringify(data) } : {}),
+      });
+      return response; 
     } catch (error) {
       console.error("PUT request failed:", error);
       throw error;
     }
   }
+  
 
   // Method to handle DELETE requests and return JSON
   static async delete(

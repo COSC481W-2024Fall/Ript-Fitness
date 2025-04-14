@@ -15,7 +15,7 @@ function HomeScreen() {
 
 function ProfileScreen() {
   return (
-    <ThemedView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+    <ThemedView style={{ flex: 1, justifyContent: 'center', alignItems: 'center'}}>
       <ThemedText>Profile Screen</ThemedText>
     </ThemedView>
   );

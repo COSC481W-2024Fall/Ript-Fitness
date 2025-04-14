@@ -12,7 +12,9 @@ const ChangePasswordScreen = ({ navigation } : any) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^])[A-Za-z\d@$!%*?&#^]{8,}$/;
-const context = useContext(GlobalContext)
+  const context = useContext(GlobalContext);
+  const isDarkMode = context?.isDarkMode;
+
 
     const setNewPasswordWithWarning = (value : string) => {
         setNewPassword(value)
@@ -81,12 +83,12 @@ const context = useContext(GlobalContext)
     }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <View style={[isDarkMode? styles.darkContainer : styles.container]}>
+      <View style={isDarkMode?styles.darkHeader:styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="black" />
+          <Ionicons name="arrow-back" size={24} color={isDarkMode ? "white" : "black"} />
         </TouchableOpacity>
-        <Text style={styles.title}>Change Password</Text>
+        <Text style={[isDarkMode? styles.darkTitle : styles.title]}>Change Password</Text>
         <TouchableOpacity style={styles.saveButton} onPress={ savePassword}>
           <Text style={styles.saveButtonText}>Save</Text>
         </TouchableOpacity>
@@ -97,22 +99,25 @@ const context = useContext(GlobalContext)
       </Text>
 
       <TextInput
-        style={styles.input}
+        style={isDarkMode?styles.darkInput:styles.input}
         placeholder="Current password"
+        placeholderTextColor={'#999'}
         secureTextEntry
         value={currentPassword}
         onChangeText={setCurrentPassword}
       />
       <TextInput
-        style={styles.input}
+        style={isDarkMode?styles.darkInput:styles.input}
         placeholder="New password"
+        placeholderTextColor={'#999'}
         secureTextEntry
         value={newPassword}
         onChangeText={setNewPasswordWithWarning}
       />
       <TextInput
-        style={styles.input}
+        style={isDarkMode?styles.darkInput:styles.input}
         placeholder="Confirm password"
+        placeholderTextColor={'#999'}
         secureTextEntry
         value={confirmPassword}
         onChangeText={setNewConfirmPasswordWithWarning}
@@ -137,6 +142,7 @@ const styles = StyleSheet.create({
       borderRadius: 8, // Add rounded corners
       alignItems: 'flex-start', // Center the text horizontally
     },
+    darkContainer: { flex: 1, backgroundColor: 'black', },
     container: { flex: 1, backgroundColor: '#fff', },
     center: {
       alignContent: 'center',
@@ -152,7 +158,15 @@ const styles = StyleSheet.create({
       borderBottomColor: '#ddd',
       marginTop: Platform.OS === "ios" ? '10%' : 0
     },
+    darkHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: 16,
+      marginTop: Platform.OS === "ios" ? '10%' : 0
+    },
     title: { fontSize: 18, fontWeight: 'bold' },
+    darkTitle: { fontSize: 18, fontWeight: 'bold', color: 'white' },
     saveButton: {
       backgroundColor: '#21BFBF',
       paddingHorizontal: 16,
@@ -167,6 +181,13 @@ const styles = StyleSheet.create({
     },
     input: {
       backgroundColor: '#f2f2f2',
+      padding: 12,
+      marginHorizontal: 16,
+      marginVertical: 8,
+      borderRadius: 8,
+    },
+    darkInput: {
+      backgroundColor: '#555',
       padding: 12,
       marginHorizontal: 16,
       marginVertical: 8,

@@ -1,6 +1,7 @@
 import React, {
   useRef,
   useState,
+  useContext,
   useCallback,
   forwardRef,
   useImperativeHandle,
@@ -16,10 +17,12 @@ import {
   Keyboard,
 } from "react-native";
 import BottomSheet, { BottomSheetTextInput } from "@gorhom/bottom-sheet";
-import { MaterialIcons } from "@expo/vector-icons";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useSocialFeed } from "@/context/SocialFeedContext";
 import ProfileImage from "../../../assets/images/profile/Profile.png";
 import { TextInput } from "react-native";
+import { GlobalContext } from "@/context/GlobalContext";
+
 
 export interface CreatePostSheetRef {
   snapToIndex: (index: number) => void;
@@ -37,6 +40,12 @@ const CreatePostSheet = forwardRef<CreatePostSheetRef, CreatePostSheetProps>(
     const bottomSheetRef = useRef<BottomSheet>(null);
     const inputRef = useRef<any>(null);
     const snapPoints = React.useMemo(() => ["100%"], []);
+
+    const context = useContext(GlobalContext);
+    const isDarkMode = context?.isDarkMode;
+
+    const [isPublic, setIsPublic] = useState(false); //from DeepSeek
+
 
     // Handle sheet state changes
     const handleSheetChange = useCallback((index: number) => {
@@ -66,13 +75,26 @@ const CreatePostSheet = forwardRef<CreatePostSheetRef, CreatePostSheetProps>(
         bottomSheetRef.current?.close();
       },
     }));
-
+    //adjusted handlePost by DeepSeek to try to fix the issue of add post page not 
+    //completely disapearing after saving a post
     const handlePost = async () => {
-      if (postText.trim()) {
-        await addPost(postText);
-        setPostText("");
-        Keyboard.dismiss();
+      if (!postText.trim()) return;
+    
+      try {
+        // Immediately close the sheet while the post is being submitted
         bottomSheetRef.current?.close();
+        
+        // Reset UI state
+        setPostText("");
+        setIsPublic(false);
+        Keyboard.dismiss();
+        
+        // Submit the post after closing the sheet
+        await addPost(postText, isPublic);
+      } catch (error) {
+        console.error("Failed to post:", error);
+        // Optionally re-open the sheet if posting fails
+        bottomSheetRef.current?.snapToIndex(0);
       }
     };
 
@@ -86,16 +108,23 @@ const CreatePostSheet = forwardRef<CreatePostSheetRef, CreatePostSheetProps>(
         keyboardBehavior="interactive"
         keyboardBlurBehavior="none"
         android_keyboardInputMode="adjustResize"
+        handleStyle={{
+          backgroundColor: isDarkMode?'#21BFBF' : 'white',
+          height: 25,
+          borderTopLeftRadius: 10,
+          borderTopRightRadius: 10,
+
+        }}
       >
-        <View style={styles.container}>
+        <View style={isDarkMode? styles.darkContainer : styles.container} testID="create-post-sheet">
           <View style={styles.header}>
             <TouchableOpacity
               style={styles.cancelButton}
               onPress={handleCancel}
             >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
+              <Text style={isDarkMode? styles.darkCancelButtonText : styles.cancelButtonText}>Cancel</Text>
             </TouchableOpacity>
-            <Text style={styles.title}>New Post</Text>
+            <Text style={isDarkMode? styles.darkTitle : styles.title}>New Post</Text>
             <TouchableOpacity
               style={[
                 styles.shareButton,
@@ -127,9 +156,10 @@ const CreatePostSheet = forwardRef<CreatePostSheetRef, CreatePostSheetProps>(
               />
               <BottomSheetTextInput
                 ref={inputRef}
-                style={styles.input}
+                style={isDarkMode? styles.darkInput : styles.input}
                 multiline
                 placeholder="What's happening?"
+                placeholderTextColor={isDarkMode? 'lightgray' : 'darkgray'}
                 value={postText}
                 onChangeText={setPostText}
                 autoFocus={false}
@@ -137,6 +167,23 @@ const CreatePostSheet = forwardRef<CreatePostSheetRef, CreatePostSheetProps>(
                 onSubmitEditing={handlePost}
               />
             </View>
+          </View>
+          {/* For the public/private toggle from DeepSeek */}
+          <View style={styles.visibilityContainer}>
+            <Text style={isDarkMode ? styles.darkVisibilityText : styles.visibilityText}>
+              {isPublic ? '🌍 Public' : '🔒 Private (Friends Only)'}
+            </Text>
+            <TouchableOpacity 
+              onPress={() => setIsPublic(!isPublic)}
+              testID="visibility-toggle"  // DeepSeek - for test
+              style={styles.toggleButton}
+            >
+              <Ionicons 
+                name={isPublic ? "toggle" : "toggle-outline"} 
+                size={24} 
+                color={isDarkMode ? "#21BFBF" : "#21BFBF"} 
+              />
+            </TouchableOpacity>
           </View>
           {/* remove {display: "none"} to see the media buttons again (to be implemented) */}
           <View style={(styles.mediaButtonsContainer, { display: "none" })}>
@@ -161,6 +208,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "white",
   },
+  darkContainer: {
+    flex: 1,
+    backgroundColor: "black",
+  },
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -177,6 +228,13 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 30,
   },
+  darkTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    flex: 1,
+    marginHorizontal: 30,
+    color: 'white'
+  },
   cancelButton: {
     width: 80,
     padding: 4,
@@ -185,6 +243,10 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     fontSize: 16,
     color: "#000",
+  },
+  darkCancelButtonText: {
+    fontSize: 16,
+    color: "white",
   },
   shareButton: {
     width: "20%",
@@ -228,6 +290,14 @@ const styles = StyleSheet.create({
     minHeight: 230,
     maxHeight: 230,
   },
+  darkInput: {
+    flex: 1,
+    fontSize: 16,
+    paddingTop: 0,
+    minHeight: 230,
+    maxHeight: 230,
+    color: 'white'
+  },
   mediaButtonsContainer: {
     flexDirection: "row",
     padding: 8,
@@ -251,6 +321,27 @@ const styles = StyleSheet.create({
     backgroundColor: "#f5f5f5",
     justifyContent: "center",
     alignItems: "center",
+  },
+  //from DeepSeek for private/public toggle
+  visibilityContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+  },
+  visibilityText: {
+    fontSize: 16,
+    color: '#000',
+  },
+  darkVisibilityText: {
+    fontSize: 16,
+    color: 'white',
+  },
+  toggleButton: {
+    padding: 8,
   },
 });
 

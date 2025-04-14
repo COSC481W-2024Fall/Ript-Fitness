@@ -37,7 +37,7 @@ public class FriendRequestService {
 	public ArrayList<FriendRequestDto> sendNewRequest(FriendRequestDto friendRequestDto) {
 		Long currentlyLoggedInUserId = accountsService.getLoggedInUserId();
 		
-		if(currentlyLoggedInUserId == friendRequestDto.accountIdOfToAccount)
+		if(currentlyLoggedInUserId.equals(friendRequestDto.accountIdOfToAccount))
 			throw new RuntimeException("The ID in the DTO body object can't be the same as the currently logged in user.");
 		
 		AccountsModel currentlyLoggedInUser = accountsRepository.findById(currentlyLoggedInUserId).get();
@@ -74,7 +74,7 @@ public class FriendRequestService {
 	public String getStatus(Long toAccountId) {
 		Long currentlyLoggedInUserId = accountsService.getLoggedInUserId();
 		
-		if(currentlyLoggedInUserId == toAccountId)
+		if(currentlyLoggedInUserId.equals( toAccountId))
 			throw new RuntimeException("The ID in the path can't be the same as the currently logged in user.");
 		
 		Optional<AccountsModel> optionalToAccountUser = accountsRepository.findById(toAccountId);
@@ -119,7 +119,7 @@ public class FriendRequestService {
 	public ArrayList<FriendRequestDto> sendRequest(FriendRequestDto friendRequestDto) {
 		Long currentlyLoggedInUserId = accountsService.getLoggedInUserId();
 		
-		if(currentlyLoggedInUserId == friendRequestDto.accountIdOfToAccount)
+		if(currentlyLoggedInUserId.equals(friendRequestDto.accountIdOfToAccount))
 			throw new RuntimeException("The ID in the DTO body object can't be the same as the currently logged in user.");
 		
 		Long toAccountId = friendRequestDto.accountIdOfToAccount;

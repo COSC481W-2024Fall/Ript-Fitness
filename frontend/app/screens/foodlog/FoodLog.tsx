@@ -13,11 +13,18 @@ import { ProfileScreenNavigationProp } from "@/app/(tabs)/ProfileStack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { TouchableOpacity } from "react-native";
 
+// Importing the navigation prop type from BodyStack,
+// which defines the type structure for navigation in this stack.
+import { BodyScreenNavigationProp } from "@/app/(tabs)/BodyStack"; 
+                                                                    
 
 
 export default function FoodLogScreen() {
-
-    const navigation = useNavigation<ProfileScreenNavigationProp>();
+    
+    // Initializing the navigation object with the BodyScreenNavigationProp type,
+    // ensuring type safety when navigating between screens within BodyStack.
+    const navigation = useNavigation<BodyScreenNavigationProp>();
+    
     const [selectedPage, setSelectedPage] = useState("Logged"); // Track selected page
     const [totalCalories, setTotalCalories] = useState(0);
     const [totalFat, setTotalFat] = useState(0);
@@ -25,9 +32,20 @@ export default function FoodLogScreen() {
     const [totalProtein, setTotalProtein] = useState(0);
     const [totalWater, setTotalWater] = useState(0);
     const [dayIndex, setDayIndex] = useState(0);
+    const [totalCholesterol, setTotalCholesterol] = useState(0);
+    const [totalSaturatedFat, setTotalSaturatedFat] = useState(0);
+    const [totalTransFat, setTotalTransFat] = useState(0);
+    const [totalSodium, setTotalSodium] = useState(0);
+    const [totalFiber, setTotalFiber] = useState(0);
+    const [totalSugars, setTotalSugars] = useState(0);
+    const [totalCalcium, setTotalCalcium] = useState(0);
+    const [totalIron, setTotalIron] = useState(0);
+    const [totalPotassium, setTotalPotassium] = useState(0);
     const [day, setDay] = useState<number | null>(null);
     const context = useContext(GlobalContext);
     const [cached, setCached] = useState(false);
+    const [isPressed, setIsPressed] = useState(false);
+
 
      // Prefix all keys with user ID (assuming it's stored in context)
      const userID = context?.data.token; 
@@ -36,6 +54,9 @@ export default function FoodLogScreen() {
      const foodTodayKey = `${userID}_foodTodayDetails`;
      const dayKey = `${userID}_day`;
      const fullDayKey = `${userID}_fullDay`;
+
+     
+    const isDarkMode = context?.isDarkMode;
 
     
     const newDay = async () => {
@@ -71,6 +92,15 @@ export default function FoodLogScreen() {
         setTotalCarbs(0);
         setTotalFat(0); 
         setTotalWater(0);
+        setTotalCholesterol(0);
+        setTotalSaturatedFat(0);
+        setTotalTransFat(0);
+        setTotalSodium(0);
+        setTotalFiber(0);
+        setTotalSugars(0);
+        setTotalCalcium(0);
+        setTotalIron(0);
+        setTotalPotassium(0);
     };
 
     const setTotalForDay = async () => {
@@ -102,6 +132,15 @@ export default function FoodLogScreen() {
                 setTotalProtein(dayData.totalProtein);
                 setTotalFat(dayData.totalFat);
                 // setTotalWater(dayData.totalWaterConsumed);
+                setTotalCholesterol(dayData.totalCholesterol);
+                setTotalSaturatedFat(dayData.totalSaturatedFat);
+                setTotalTransFat(dayData.totalTransFat);
+                setTotalSodium(dayData.totalSodium);
+                setTotalFiber(dayData.totalFiber);
+                setTotalSugars(dayData.totalSugars);
+                setTotalCalcium(dayData.totalCalcium);
+                setTotalIron(dayData.totalIron);
+                setTotalPotassium(dayData.totalPotassium);
                 setCached(true);
 
                 await AsyncStorage.setItem(dayKey, JSON.stringify(dayData.id));
@@ -150,6 +189,15 @@ export default function FoodLogScreen() {
         setTotalCarbs(totalCarbs);
         setTotalProtein(totalProtein);
         setTotalWater(totalWater);
+        setTotalCholesterol(totalCholesterol);
+        setTotalSaturatedFat(totalSaturatedFat);
+        setTotalTransFat(totalTransFat);
+        setTotalSodium(totalSodium);
+        setTotalFiber(totalFiber);
+        setTotalSugars(totalSugars);
+        setTotalCalcium(totalCalcium);
+        setTotalIron(totalIron);
+        setTotalPotassium(totalPotassium);
     };
 
 
@@ -221,7 +269,7 @@ const updateWater = async () => {
         return (context?.userProfile.username);
     }
     return (
-        <SafeAreaView style={styles.flexContainer}>
+        <SafeAreaView style={[isDarkMode? styles.darkFlexContainer : styles.flexContainer]}>
             <View>
                 
              {/* Navbar for Logged, Saved, Add */}
@@ -235,8 +283,10 @@ const updateWater = async () => {
                         // onPress={() => changeDayBackWard()}
                 />
                      <Ionicons name={"calendar-clear-outline"} size={24} color={"white"}></Ionicons> */}
+                    
                     <Text style={styles.whiteText}>Food Log</Text>
                     <Text style={styles.newDayButton} onPress={() => newDay()}>Start New Day</Text>
+                    
                     {/* <Ionicons color="white" name="add-circle-outline"size={35} style={styles.plusButton} onPress={() => newDay()}></Ionicons> */}
                     {/* <Ionicons 
                         name={"chevron-forward-outline"} 
@@ -280,7 +330,28 @@ const updateWater = async () => {
                         width={100} 
                     ></MacroButton>
                 </View>
+            
                 <View style={styles.macroRow}>
+                <TouchableOpacity 
+                        style={[
+                            styles.trendButton, 
+                            isPressed && { backgroundColor: "rgba(21, 160, 160, 1)" },{ opacity: 1 }
+                        ]}
+                        activeOpacity={1}  // Ensure the button does not become transparent when pressed
+                        disabled={false}   // Ensure the button is enabled
+                        onPress={() => navigation.navigate("NutritionTrendScreen")} // Navigate on press
+                        onPressIn={() => setIsPressed(true)}
+                        onPressOut={() => setIsPressed(false)}
+                        >
+                         {/* Add an upward trend Icon 📈 */}
+                        <Ionicons name="trending-up" size={24} color="white" style={{ marginTop: -9 }} />
+                        {/* Wrap Text with View and adjust marginTop */}
+                        <View style={{ marginTop: -1, alignItems: 'center' }}> 
+                            <Text style={styles.trendButtonText}>Nutrition</Text>
+                            <Text style={styles.trendButtonText}>Trend</Text>
+                        </View> 
+                    </TouchableOpacity>
+                    
                     <MacroButton
                         title="Fat" 
                         label="g"
@@ -290,30 +361,31 @@ const updateWater = async () => {
                         borderWidth={5}
                         fontSize={16}
                         width={100} 
-                    ></MacroButton>
+                    ></MacroButton>              
                     <MacroButton
                         title="Water" 
                         label="oz"
                         total={totalWater}
-                        textColor="black"
-                        borderColor="black"
+                        textColor= { isDarkMode? "white" : "black"}
+                        borderColor= { isDarkMode? "white" : "black"}
                         borderWidth={5}
                         fontSize={16}
                         width={100} 
                     ></MacroButton>
                     <View style={styles.plusMinus}>
-                        <Ionicons name="add-circle-outline" size={30} style={styles.waterButton} onPress={() => addWater()}></Ionicons>
-                        <Ionicons name="remove-circle-outline"size={30} style={styles.waterButton} onPress={() => minusWater()}></Ionicons>
+                        <Ionicons name="add-circle-outline" size={30} style={[isDarkMode? styles.darkWaterButton : styles.waterButton]} onPress={() => addWater()}></Ionicons>
+                        <Ionicons name="remove-circle-outline"size={30} style={[isDarkMode? styles.darkWaterButton : styles.waterButton]}  onPress={() => minusWater()}></Ionicons>
                     </View>
                 </View>
+                
             </View> 
-             
+        
             <View style={styles.dataBar}>
                 {/* <View style={styles.align}>
                     <Ionicons name="today-outline" size={30} onPress={() => addWater()}></Ionicons>
                     <Text style={styles.text}>Start new day log</Text>
                 </View> */}
-                <View style={[styles.box, selectedPage === "Logged" && styles.selectedBox]}>
+                <View style={[isDarkMode? styles.darkBox : styles.box, selectedPage === "Logged" && styles.selectedBox]}>
                     <Text 
                         style={[styles.text, selectedPage === "Logged" && styles.selectedText]} 
                         onPress={() => setSelectedPage("Logged")}
@@ -321,7 +393,7 @@ const updateWater = async () => {
                         Logged
                     </Text>
                 </View>
-                <View style={[styles.box, selectedPage === "Saved" && styles.selectedBox]}>
+                <View style={[isDarkMode? styles.darkBox : styles.box, selectedPage === "Saved" && styles.selectedBox]}>
                     <Text 
                         style={[styles.text, selectedPage === "Saved" && styles.selectedText]} 
                         onPress={() => setSelectedPage("Saved")}
@@ -329,7 +401,7 @@ const updateWater = async () => {
                         Saved
                     </Text>
                 </View>
-                <View style={[styles.box, selectedPage === "Add" && styles.selectedBox]}>
+                <View style={[isDarkMode? styles.darkBox : styles.box, selectedPage === "Add" && styles.selectedBox]}>
                     <Text 
                         style={[styles.text, selectedPage === "Add" && styles.selectedText]} 
                         onPress={() => setSelectedPage("Add")}
@@ -351,6 +423,11 @@ const updateWater = async () => {
 const styles = StyleSheet.create({
     flexContainer: {
         flexGrow: 1, 
+        //backgroundColor: 'black',
+    },
+    darkFlexContainer: {
+        flexGrow: 1, 
+        backgroundColor: 'black',
     },
     pageContainer: {
         flex: 1, 
@@ -380,8 +457,8 @@ const styles = StyleSheet.create({
         elevation: 5,
         shadowColor: "#000",
         shadowOffset: {
-          width: 0,
-          height: 2,
+            width: 0,
+            height: 2,
         },
         shadowOpacity: 0.25,
         shadowRadius: 3.84,
@@ -410,7 +487,10 @@ const styles = StyleSheet.create({
     }, 
     macroRow: {
         flexDirection: 'row',
-        justifyContent: 'center', 
+        justifyContent: 'space-evenly', 
+        alignItems:"center",
+        width: "90%",
+        alignSelf: "center",    
     }, 
     dataBar: {
         width: '100%', 
@@ -435,6 +515,13 @@ const styles = StyleSheet.create({
         padding: 5,
     },
 
+    darkBox: {
+        width: '34%',
+        alignItems: 'center',
+        backgroundColor: 'black',
+        padding: 5,
+    },
+
     align: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -453,16 +540,51 @@ const styles = StyleSheet.create({
     plusMinus: {
       paddingTop: 20,
       position: 'absolute',
-      right: 50,
+      right: -12,
     }, 
     waterButton: {
       paddingBottom: 10,
+      // color: 'white',
     }, 
+    darkWaterButton: {
+        paddingBottom: 10,
+        color: 'white',
+      }, 
     contentContainer: {
         flexGrow: 1,
     },
     startDayButton: {
         alignContent: 'center',
-    }
+    },
 
+    trendButton: {
+        marginLeft: 1,  
+        paddingVertical: 30,
+        paddingHorizontal: 15,
+        backgroundColor: "rgba(8, 228, 228, 0.4)", 
+        borderWidth: 4, 
+        borderColor: "rgba(33, 191, 191, 0.55)",
+        elevation: 5,  // Android shadow
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        width: 100,
+        height:100,
+        borderRadius: 50,
+        marginTop:5,
+        justifyContent: "center",
+        alignItems: "center",
+        marginHorizontal: 10, 
+    },
+    
+    trendButtonText: {
+        color: "rgba(0, 51, 102, 1)", 
+        fontSize: 14, 
+        fontWeight: "bold",
+        textAlign: "center",
+        textShadowColor: "rgba(0, 0, 0, 0.1)", 
+        textShadowOffset: { width: 1, height: 1 },
+        textShadowRadius: 2,
+    }
 })

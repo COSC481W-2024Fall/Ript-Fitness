@@ -48,6 +48,7 @@ type PostItemType = {
 
 type ItemProps = {
   item: PostItemType;
+  isPublic: boolean; // DeepSeek
   liked: boolean;
   onLikePress: () => void;
   onCommentPress: () => void;
@@ -75,8 +76,9 @@ const formatTimestamp = (dateTimeCreated: string): string => {
 
 const PostItem = ({ item, liked, onLikePress, onCommentPress }: ItemProps) => {
   const navigation = useNavigation<NavigationProp<any>>();
-  const context = useContext(GlobalContext);
   const { deletePost } = useSocialFeed();
+  const context = useContext(GlobalContext);
+  const isDarkMode = context?.isDarkMode;
 
   const currentUserID = context?.userProfile.id;
   const isOwner = currentUserID === item.userProfile?.id;
@@ -123,11 +125,11 @@ const PostItem = ({ item, liked, onLikePress, onCommentPress }: ItemProps) => {
   };
 
   return (
-    <View style={styles.item}>
+    <View style={isDarkMode? styles.darkItem:styles.item}>
       <View style={styles.headerContainer}>
         <TouchableOpacity onPress={handleUsernamePress} style={styles.header}>
           <Image style={styles.profile} source={item.user.profilePicture} />
-          <Text style={styles.username}>{item.user.name}</Text>
+          <Text style={isDarkMode? styles.darkUsername:styles.username}>{item.user.name}</Text>
         </TouchableOpacity>
         {/* MENU SECTION - Moved to top right */}
         <View style={styles.menuContainer}>
@@ -135,7 +137,7 @@ const PostItem = ({ item, liked, onLikePress, onCommentPress }: ItemProps) => {
             <MenuTrigger customStyles={menuTriggerStyles}>
               <MaterialCommunityIcons
                 name="dots-horizontal"
-                color="#B1B6C0"
+                color={isDarkMode? 'lightgray':"#B1B6C0"}
                 size={23}
               />
             </MenuTrigger>
@@ -159,7 +161,7 @@ const PostItem = ({ item, liked, onLikePress, onCommentPress }: ItemProps) => {
 
       {/* Rest of the post content */}
       {item.type === "text" && item.content && (
-        <Text style={styles.contentText}>{item.content}</Text>
+        <Text style={isDarkMode? styles.darkContentText:styles.contentText}>{item.content}</Text>
       )}
       {item.type === "image" && item.imageUrl && (
         <TouchableOpacity onPress={handlePostPress}>
@@ -184,7 +186,7 @@ const PostItem = ({ item, liked, onLikePress, onCommentPress }: ItemProps) => {
               color={liked ? "#FF3B30" : "#B1B6C0"}
             />
           </TouchableOpacity>
-          <Text style={styles.likeCounter}>{item.numberOfLikes}</Text>
+          <Text style={isDarkMode? styles.darkLikeCounter:styles.likeCounter}>{item.numberOfLikes}</Text>
 
           <TouchableOpacity
             onPress={onCommentPress}
@@ -194,7 +196,7 @@ const PostItem = ({ item, liked, onLikePress, onCommentPress }: ItemProps) => {
           >
             <Ionicons name="chatbubble" color="#B1B6C0" size={23} />
           </TouchableOpacity>
-          <Text style={styles.commentCounter}>
+          <Text style={isDarkMode? styles.darkCommentCounter:styles.commentCounter}>
             {item.comments.filter((comment) => !comment.isDeleted).length}
           </Text>
         </View>
@@ -251,6 +253,14 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     borderRadius: 12,
   },
+  darkItem: {
+    backgroundColor: "#333333",
+    borderWidth: 1,
+    padding: 15,
+    marginVertical: 8,
+    marginHorizontal: 16,
+    borderRadius: 12,
+  },
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -268,6 +278,14 @@ const styles = StyleSheet.create({
     textAlign: "left",
     marginLeft: 7,
   },
+  darkUsername: {
+    flex: 1,
+    fontSize: 17,
+    fontWeight: "bold",
+    textAlign: "left",
+    marginLeft: 7,
+    color: 'white'
+  },
   headerContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -278,6 +296,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 5,
     lineHeight: 22,
+  },
+  darkContentText: {
+    fontSize: 16,
+    marginTop: 5,
+    lineHeight: 22,
+    color: 'white'
   },
   postImage: {
     width: "100%",
@@ -323,8 +347,21 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     minWidth: 30,
   },
+  darkLikeCounter: {
+    color: "white",
+    padding: 7,
+    fontSize: 16,
+    fontWeight: "bold",
+    minWidth: 30,
+  },
   commentCounter: {
     color: "black",
+    padding: 7,
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  darkCommentCounter: {
+    color: "white",
     padding: 7,
     fontSize: 16,
     fontWeight: "bold",
@@ -336,6 +373,16 @@ const styles = StyleSheet.create({
   },
   menuContainer: {
     marginRight: -10, // Adjust this value to fine-tune
+  },
+  //from DeepSeek
+  visibilityBadge: {
+    position: 'absolute',
+    right: 0,
+    bottom: 0,
+  },
+  visibilityText: {
+    fontSize: 12,
+    color: '#999',
   },
 });
 

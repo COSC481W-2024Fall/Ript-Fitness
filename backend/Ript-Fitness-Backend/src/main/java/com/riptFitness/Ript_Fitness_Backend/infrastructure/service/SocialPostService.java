@@ -142,17 +142,22 @@ public class SocialPostService {
 		
 		AccountsModel currentlyLoggedInAccount = accountsRepository.findById(currentUsersAccountId).get();
 		
-		List<AccountsModel> currentUsersFriendsList = currentlyLoggedInAccount.getFriends();
+		List<AccountsModel> myFriends = currentlyLoggedInAccount.getFriends();
+		ArrayList<Long> mutualFriendIds = new ArrayList<>();
+
+		for (AccountsModel friend : myFriends) {
+		    // Check if they also have ME in their friend list
+		    if (friend.getFriends().contains(currentlyLoggedInAccount)) {
+		        mutualFriendIds.add(friend.getId());
+		    }
 		
-		ArrayList<Long> currentUsersFriendsIds = new ArrayList<>();
+}
+		System.out.println("Logged-in user ID: " + currentUsersAccountId);
+		System.out.println("Friends + Self: " + mutualFriendIds);
 		
-		for(AccountsModel account : currentUsersFriendsList) {
-			currentUsersFriendsIds.add(account.getId());
-		}
-		
-		currentUsersFriendsIds.add(currentUsersAccountId);	//getSocialFeed should also include Social Posts from the currently logged in user
+		mutualFriendIds.add(currentUsersAccountId);	//getSocialFeed should also include Social Posts from the currently logged in user
 			
-		Optional<List<SocialPost>> optionalSocialFeedList = accountsRepository.getSocialFeed(currentUsersFriendsIds);
+		Optional<List<SocialPost>> optionalSocialFeedList = accountsRepository.getSocialFeed(mutualFriendIds);
 		
 		if(optionalSocialFeedList.isEmpty())
 			return new ArrayList<SocialPostDto>();
@@ -160,7 +165,19 @@ public class SocialPostService {
 		List<SocialPost> socialFeedList = optionalSocialFeedList.get();
 		
 		ArrayList<SocialPost> socialFeed = new ArrayList<>(socialFeedList);
-		
+		System.out.println("Logged-in user ID: " + currentUsersAccountId);
+		System.out.println("Visible accountIds: " + mutualFriendIds);
+
+		for (SocialPost post : socialFeedList) {
+		    System.out.printf(
+		        "Post ID: %d | From Account: %d | isPublic: %b | Should be visible: %b%n",
+		        post.getId(),
+		        post.getAccount().getId(),
+		        post.isPublic(),
+		        post.isPublic() || mutualFriendIds.contains(post.getAccount().getId())
+		    );
+		}
+
 		int start = socialFeed.size() - startIndex - 1;
 		int end = socialFeed.size() - endIndex - 1;
 		
@@ -178,7 +195,7 @@ public class SocialPostService {
 		for(int i = start; i >= end; i--){
 			returnedSocialFeedList.add(SocialPostMapper.INSTANCE.toSocialPostDto(socialFeed.get(i)));
 		}
-		
+
 		return returnedSocialFeedList;
 	}
 	

@@ -1,9 +1,11 @@
 import { ThemedView } from "@/components/ThemedView";
 import { Ionicons } from "@expo/vector-icons";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { View, StyleSheet, TouchableOpacity, Text, Platform, Image, SafeAreaView } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
+import { GlobalContext } from '@/context/GlobalContext';
+
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -13,55 +15,55 @@ const data = [
     id: 1,
     name: "Evan Snowgold",
     imageSrc: require('@/assets/images/team_photos/evan.jpg'),
-    title: "Lead Developer"
+    title: "Lead Frontend Developer"
   },
   {
     id: 2,
     name: "Rob Hewison",
     imageSrc: require('@/assets/images/team_photos/rob.jpg'),
-    title: "Developer"
+    title: "Frontend Developer"
   },
   {
     id: 3,
     name: "Natalie Hoang",
     imageSrc: require('@/assets/images/team_photos/natalie.jpg'),
-    title: "Developer"
+    title: "Frontend Developer"
   },
   {
     id: 4,
     name: "Michael Shahine",
     imageSrc: require('@/assets/images/team_photos/michael.jpg'),
-    title: "Developer"
+    title: "Frontend Developer"
   },
   {
     id: 5,
     name: "Ciara Wheeler",
     imageSrc: require('@/assets/images/team_photos/ciara.jpg'),
-    title: "Developer"
+    title: "Frontend Developer"
   },
   {
     id: 6,
     name: "Christopher Pichler",
     imageSrc: require('@/assets/images/team_photos/christopher_p.png'),
-    title: "Lead Developer"
+    title: "Lead Backend Developer"
   },
   {
     id: 7,
     name: "Tom Van den Bulck",
     imageSrc: require('@/assets/images/team_photos/tom.jpg'),
-    title: "Co-Lead Developer"
+    title: "Co-Lead Backend Developer"
   },
   {
     id: 8,
     name: "Nathan Halash",
     imageSrc: require('@/assets/images/team_photos/nathan.jpg'),
-    title: "Developer"
+    title: "Backend Developer"
   },
   {
     id: 9,
     name: "Christopher Martus",
     imageSrc: require('@/assets/images/team_photos/christopher_m.jpg'),
-    title: "Developer"
+    title: "Backend Developer"
   },
   {
     id: 10,
@@ -69,6 +71,36 @@ const data = [
     imageSrc: require('@/assets/images/team_photos/tina.jpg'),
     title: "Database Developer"
   },
+  {
+    id: 11,
+    name: "Jaison Eccleston",
+    imageSrc: require('@/assets/images/team_photos/Jaison.jpeg'),
+    title: "Lead Database Developer"
+  },
+  {
+    id: 12,
+    name: "Brianna Smith",
+    imageSrc: require('@/assets/images/team_photos/brianna.jpg'),
+    title: "Frontend Developer"
+  },
+  {
+    id: 13,
+    name: "Maryam Judeh",
+    imageSrc: require('@/assets/images/team_photos/placeholder.png'),
+    title: "Backend Developer"
+  },
+  {
+    id: 14,
+    name: "Rong Hu",
+    imageSrc: require('@/assets/images/team_photos/ronghu.jpg'),
+    title: "Frontend Developer"
+  },
+  {
+    id: 15,
+    name: "Jake Phaydavong",
+    imageSrc: require('@/assets/images/team_photos/placeholder.png'),
+    title: "Frontend Developer"
+  }
 ];
 
 interface TeamMember {
@@ -85,8 +117,11 @@ interface TeamScreenProps {
 
 function TeamScreen({ filteredData }: TeamScreenProps) {
 
+  const context = useContext(GlobalContext);
+  const isDarkMode = context?.isDarkMode;
+  
   return (
-    <ThemedView style={{ flex: 1 }}>
+    <ThemedView style={{ flex: 1, backgroundColor: isDarkMode? "black" : "white"}}>
       <SafeAreaView style={{ flex: 1 }} />
       <FlatList
         data={filteredData} // Pass filtered data
@@ -99,8 +134,8 @@ function TeamScreen({ filteredData }: TeamScreenProps) {
               source={item.imageSrc} 
               style={{ height: 150, width: 150, borderRadius: 100 }}
             />
-            <Text style={{marginTop: 3, fontWeight: 'bold', fontSize: 15}}>{item.name}</Text>
-            <Text style={{fontSize: 13}}>{item.title}</Text>
+            <Text style={{marginTop: 3, fontWeight: 'bold', fontSize: 15, color: isDarkMode? "white" : "black"}}>{item.name}</Text>
+            <Text style={{fontSize: 13, color: isDarkMode? "white" : "black"}}>{item.title}</Text>
           </View>
         )}
       />
@@ -109,54 +144,70 @@ function TeamScreen({ filteredData }: TeamScreenProps) {
 }
 
 
-function FrontendScreen() {
-  const frontendMembers = data.filter((item) => item.id <= 5);
+function FallScreen() {
+  const fallMembers = data.filter((item) => item.id <= 10);
 
   return (
-    <TeamScreen filteredData={frontendMembers} />
+    <TeamScreen filteredData={fallMembers} />
   );
 }
 
-function BackendScreen() {
-  const backendMembers = data.filter((item) => item.id > 5);
+function WinterScreen() {
+  const winterMembers = data.filter((item) => item.id > 10);
 
   return (
-    <TeamScreen filteredData={backendMembers} />
+    <TeamScreen filteredData={winterMembers} />
   );
 }
 
 const RiptTeamScreen = ({ navigation }: any) => {
+  const context = useContext(GlobalContext);  
+  const isDarkMode = context?.isDarkMode;
+
+  const [activeTab, setActiveTab] = useState("Fall");
+
   return (
-    <View style={{flex: 1,}}>
-      <View style={styles.entireContainer}>
-        {/* Header */}
-        {/* <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back" size={24} color="black" />
-          </TouchableOpacity>
-        </View> */}
-        {/* Top half */}
+    <View style={{ flex: 1 }}>
+      <View style={[isDarkMode ? styles.darkEntireContainer : styles.entireContainer]}>
+        
+        {/* Top Section */}
         <View style={styles.topContainer}>
-            <View style={{width: '100%', paddingHorizontal: 12,}}>
-              <TouchableOpacity onPress={() => navigation.goBack()}>
-                <Ionicons name="arrow-back" size={24} color="black" />
-              </TouchableOpacity>
-              <Text style={styles.heading}>Ript Fitness Team</Text>
-            </View>
-            <Image
-              style={styles.mainImage} 
-              source={require('@/assets/images/team-photo-1.jpg')}/>
+          <View style={{ width: '100%', paddingHorizontal: 12 }}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+              <Ionicons name="arrow-back" size={24} color={isDarkMode ? "white" : "black"} />
+            </TouchableOpacity>
+            <Text style={styles.heading}>Ript Fitness Team</Text>
+          </View>
+
+          {/* Conditional image based on tab */}
+          <Image
+            style={styles.mainImage}
+            source={
+              activeTab === "Fall"
+                ? require('@/assets/images/team-photo-1.jpg')
+                : require('@/assets/images/Team-photo-2.jpg') 
+            }
+          />
         </View>
+
+        {/* Tabs */}
         <View style={{ height: 500 }}>
           <Tab.Navigator
             screenOptions={{
-              tabBarLabelStyle: { fontSize: 14, fontWeight: 'bold', color: 'black' },
-              tabBarStyle: { backgroundColor: '#fff' },
-              tabBarIndicatorStyle: { backgroundColor: '#21BFBF', height: 3, },
+              tabBarLabelStyle: { fontSize: 14, fontWeight: 'bold', color: isDarkMode ? 'white' : 'black' },
+              tabBarStyle: { backgroundColor: isDarkMode ? 'black' : '#fff' },
+              tabBarIndicatorStyle: { backgroundColor: '#21BFBF', height: 3 },
+            }}
+            screenListeners={{
+              state: (e) => {
+                const index = e.data.state.index;
+                const tabName = e.data.state.routeNames[index];
+                setActiveTab(tabName);
+              },
             }}
           >
-            <Tab.Screen name="Front-end" component={FrontendScreen} />
-            <Tab.Screen name="Back-end" component={BackendScreen} />
+            <Tab.Screen name="Fall" component={FallScreen} />
+            <Tab.Screen name="Winter" component={WinterScreen} />
           </Tab.Navigator>
         </View>
       </View>
@@ -170,6 +221,10 @@ const styles = StyleSheet.create({
   entireContainer: {
     flex: 1,
     // backgroundColor: 'blue',
+  },
+  darkEntireContainer: {
+    flex: 1,
+    backgroundColor: 'black',
   },
   header: {
     flexDirection: 'row',
@@ -196,7 +251,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     textAlign: 'center',
-    // color: '#21BFBF',
+    color: '#21BFBF',
     paddingBottom: 15,
   },
   mainImage: {

@@ -1,6 +1,8 @@
 package com.riptFitness.Ript_Fitness_Backend.infrastructure.service;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
+
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -26,23 +28,23 @@ public class ExerciseService {
 		this.accountsService = accountsService;
 		this.accountsRepository = accountsRepository;
 	}
-	
+
 	// Method to get a list of all excersises from logged in user:
 	public List<ExerciseDto> getExercisesFromCurrentUser(int nMostRecent) {
 		Long currentUserId = accountsService.getLoggedInUserId();
 		List<ExerciseModel> listOfExercises = exerciseRepository.findByAccountIdAndNotDeleted(currentUserId);
-		
+
 		List<ExerciseDto> listOfExercises2 = new ArrayList<>();
-		for(ExerciseModel exercise : listOfExercises) {
+		for (ExerciseModel exercise : listOfExercises) {
 			ExerciseDto exercise2 = ExerciseMapper.INSTANCE.convertToDto(exercise);
 			listOfExercises2.add(exercise2);
 		}
-		
+
 		// Ensure nMostRecent does not exceed the size of the list
-	    int safeLimit = Math.min(nMostRecent, listOfExercises2.size());
-		
+		int safeLimit = Math.min(nMostRecent, listOfExercises2.size());
+
 		List<ExerciseDto> nMostRecentExercises = new ArrayList<>();
-		for(int i = safeLimit - 1; i >= 0; i--) {
+		for (int i = safeLimit - 1; i >= 0; i--) {
 			nMostRecentExercises.add(listOfExercises2.get(i));
 		}
 		return nMostRecentExercises;
@@ -99,7 +101,7 @@ public class ExerciseService {
 			throw new RuntimeException(
 					"Exercise not found for the current user, or the exercises has already been deleted.");
 		}
-		
+
 		return ExerciseMapper.INSTANCE.convertToDto(deletedExercise);
 	}
 
@@ -134,7 +136,7 @@ public class ExerciseService {
 		ExerciseDto editedExercise = ExerciseMapper.INSTANCE.convertToDto(exerciseToEditSets);
 		return editedExercise;
 	}
-	
+
 	// Method to edit exercise name:
 	public ExerciseDto editExerciseName(Long exerciseId, String newExerciseName) {
 		// Find the exercise:
@@ -148,109 +150,111 @@ public class ExerciseService {
 		ExerciseDto editedExercise = ExerciseMapper.INSTANCE.convertToDto(exerciseToEditName);
 		return editedExercise;
 	}
-	
+
 	// Method to edit weights for an exercise
 	public ExerciseDto editWeight(Long exerciseId, int setNumber, int newWeight) {
-	    // Retrieve the exercise by ID
-	    ExerciseModel exerciseToEditWeight = exerciseRepository.findById(exerciseId)
-	            .orElseThrow(() -> new RuntimeException("Exercise not found"));
+		// Retrieve the exercise by ID
+		ExerciseModel exerciseToEditWeight = exerciseRepository.findById(exerciseId)
+				.orElseThrow(() -> new RuntimeException("Exercise not found"));
 
-	    // Check if the set number is within the current range of sets
-	    if (setNumber > exerciseToEditWeight.getSets()) {
-	        throw new RuntimeException("The set that you are attempting to edit does not exist");
-	    }
+		// Check if the set number is within the current range of sets
+		if (setNumber > exerciseToEditWeight.getSets()) {
+			throw new RuntimeException("The set that you are attempting to edit does not exist");
+		}
 
-	    // Retrieve the current weight list and adjust it
-	    List<Integer> weightCopy = exerciseToEditWeight.getWeight();
+		// Retrieve the current weight list and adjust it
+		List<Integer> weightCopy = exerciseToEditWeight.getWeight();
 
-	    // Ensure the weight list is the same size as the number of sets
-	    while (weightCopy.size() < exerciseToEditWeight.getSets()) {
-	        weightCopy.add(0); // Initialize missing weights with a default value, such as 0
-	    }
-	    while (weightCopy.size() > exerciseToEditWeight.getSets()) {
-	        weightCopy.remove(weightCopy.size() - 1); // Remove excess weights
-	    }
+		// Ensure the weight list is the same size as the number of sets
+		while (weightCopy.size() < exerciseToEditWeight.getSets()) {
+			weightCopy.add(0); // Initialize missing weights with a default value, such as 0
+		}
+		while (weightCopy.size() > exerciseToEditWeight.getSets()) {
+			weightCopy.remove(weightCopy.size() - 1); // Remove excess weights
+		}
 
-	    // Update the weight for the specific set
-	    weightCopy.set(setNumber - 1, newWeight);
-	    exerciseToEditWeight.setWeight(weightCopy);
+		// Update the weight for the specific set
+		weightCopy.set(setNumber - 1, newWeight);
+		exerciseToEditWeight.setWeight(weightCopy);
 
-	    // Save the updated exercise to the database
-	    exerciseRepository.save(exerciseToEditWeight);
+		// Save the updated exercise to the database
+		exerciseRepository.save(exerciseToEditWeight);
 
-	    // Convert to DTO and return the updated exercise
-	    return ExerciseMapper.INSTANCE.convertToDto(exerciseToEditWeight);
+		// Convert to DTO and return the updated exercise
+		return ExerciseMapper.INSTANCE.convertToDto(exerciseToEditWeight);
 	}
 
-	// New update method that takes in a ExerciseDto and updates it via the body that is received:
+	// New update method that takes in a ExerciseDto and updates it via the body
+	// that is received:
 	public ExerciseDto updateExercise(ExerciseDto exerciseDto) {
-	    // Find the existing exercise by ID
-	    ExerciseModel existingExercise = exerciseRepository.findById(exerciseDto.getExerciseId())
-	            .orElseThrow(() -> new RuntimeException("Exercise not found"));
+		// Find the existing exercise by ID
+		ExerciseModel existingExercise = exerciseRepository.findById(exerciseDto.getExerciseId())
+				.orElseThrow(() -> new RuntimeException("Exercise not found"));
 
-	    // Update fields if present in the incoming DTO
-	    if (exerciseDto.getNameOfExercise() != null) {
-	        existingExercise.setNameOfExercise(exerciseDto.getNameOfExercise());
-	    }
-	    //Update descrption:
-	    if(exerciseDto.getDescription() != null) {
-	    	existingExercise.setDescription(exerciseDto.getDescription());
-	    }
-	    // Update exercise type:
-	    if(exerciseDto.getExerciseType() > -1) {
-	    	existingExercise.setExerciseType(exerciseDto.getExerciseType());
-	    }
-	    // Update Reps
-	    if (exerciseDto.getReps() != null && !exerciseDto.getReps().isEmpty()) {
-	        existingExercise.setReps(new ArrayList<>(exerciseDto.getReps())); // Ensure it's mutable
-	    }
-	    // Update Sets
-	    if (exerciseDto.getSets() > -1) {
-	        existingExercise.setSets(exerciseDto.getSets());
+		// Update fields if present in the incoming DTO
+		if (exerciseDto.getNameOfExercise() != null) {
+			existingExercise.setNameOfExercise(exerciseDto.getNameOfExercise());
+		}
+		// Update descrption:
+		if (exerciseDto.getDescription() != null) {
+			existingExercise.setDescription(exerciseDto.getDescription());
+		}
+		// Update exercise type:
+		if (exerciseDto.getExerciseType() > -1) {
+			existingExercise.setExerciseType(exerciseDto.getExerciseType());
+		}
+		// Update Reps
+		if (exerciseDto.getReps() != null && !exerciseDto.getReps().isEmpty()) {
+			existingExercise.setReps(new ArrayList<>(exerciseDto.getReps())); // Ensure it's mutable
+		}
+		// Update Sets
+		if (exerciseDto.getSets() > -1) {
+			existingExercise.setSets(exerciseDto.getSets());
 
-	        // Adjust reps size if sets size changes
-	        List<Integer> reps = new ArrayList<>(existingExercise.getReps()); // Ensure it's mutable
-	        while (reps.size() < exerciseDto.getSets()) {
-	            reps.add(0); // Initialize new reps with default value
-	        }
-	        while (reps.size() > exerciseDto.getSets()) {
-	            reps.remove(reps.size() - 1); // Trim excess reps
-	        }
-	        existingExercise.setReps(reps);
-	    }
-	    // Update Weight
-	    if (exerciseDto.getWeight() != null && !exerciseDto.getWeight().isEmpty()) {
-	        List<Integer> weight = new ArrayList<>(existingExercise.getWeight()); // Ensure it's mutable
-	        while (weight.size() < exerciseDto.getWeight().size()) {
-	            weight.add(0); // Initialize new weights with default value
-	        }
-	        while (weight.size() > exerciseDto.getWeight().size()) {
-	            weight.remove(weight.size() - 1); // Trim excess weights
-	        }
-	        for (int i = 0; i < exerciseDto.getWeight().size(); i++) {
-	            weight.set(i, exerciseDto.getWeight().get(i));
-	        }
-	        existingExercise.setWeight(weight);
-	    }
+			// Adjust reps size if sets size changes
+			List<Integer> reps = new ArrayList<>(existingExercise.getReps()); // Ensure it's mutable
+			while (reps.size() < exerciseDto.getSets()) {
+				reps.add(0); // Initialize new reps with default value
+			}
+			while (reps.size() > exerciseDto.getSets()) {
+				reps.remove(reps.size() - 1); // Trim excess reps
+			}
+			existingExercise.setReps(reps);
+		}
+		// Update Weight
+		if (exerciseDto.getWeight() != null && !exerciseDto.getWeight().isEmpty()) {
+			List<Integer> weight = new ArrayList<>(existingExercise.getWeight()); // Ensure it's mutable
+			while (weight.size() < exerciseDto.getWeight().size()) {
+				weight.add(0); // Initialize new weights with default value
+			}
+			while (weight.size() > exerciseDto.getWeight().size()) {
+				weight.remove(weight.size() - 1); // Trim excess weights
+			}
+			for (int i = 0; i < exerciseDto.getWeight().size(); i++) {
+				weight.set(i, exerciseDto.getWeight().get(i));
+			}
+			existingExercise.setWeight(weight);
+		}
 
-	    // Save the updated exercise in the database
-	    exerciseRepository.save(existingExercise);
+		// Save the updated exercise in the database
+		exerciseRepository.save(existingExercise);
 
-	    // Convert the updated model to DTO and return
-	    return ExerciseMapper.INSTANCE.convertToDto(existingExercise);
+		// Convert the updated model to DTO and return
+		return ExerciseMapper.INSTANCE.convertToDto(existingExercise);
 	}
 
- 
 	public List<ExerciseDto> findByKeyword(String keyword) {
 		// Get the currently logged in user ID:
 		Long currentUser = accountsService.getLoggedInUserId();
 		// Get a list of exercises from that ID:
 		List<ExerciseModel> exercises = exerciseRepository.findByAccountIdAndNotDeleted(currentUser);
-		// For each loop that iterates through a list of exercises that have account_id reference that matches above ID:
+		// For each loop that iterates through a list of exercises that have account_id
+		// reference that matches above ID:
 		List<ExerciseDto> similarExercises = new ArrayList<>();
-		for(ExerciseModel exercise : exercises) {
-			// if the exercise name has a substring of keyword in it; append it to the similar list
-			if(exercise.getNameOfExercise().toLowerCase().contains(keyword.toLowerCase())) {
+		for (ExerciseModel exercise : exercises) {
+			// if the exercise name has a substring of keyword in it; append it to the
+			// similar list
+			if (exercise.getNameOfExercise().toLowerCase().contains(keyword.toLowerCase())) {
 				// Convert to DTO:
 				ExerciseDto exercisesDto = ExerciseMapper.INSTANCE.convertToDto(exercise);
 				similarExercises.add(exercisesDto);
@@ -259,4 +263,16 @@ public class ExerciseService {
 		// Return the list of similar exercises:
 		return similarExercises;
 	}
+
+	public List<ExerciseDto> getExercisesByType(int exerciseType) {
+	    List<ExerciseModel> exercises = exerciseRepository.findByExerciseType(exerciseType);
+	    List<ExerciseDto> exerciseDtos = new ArrayList<>();
+	    
+	    for (ExerciseModel exercise : exercises) {
+	        exerciseDtos.add(ExerciseMapper.INSTANCE.convertToDto(exercise));
+	    }
+
+	    return exerciseDtos;
+	}
+
 }

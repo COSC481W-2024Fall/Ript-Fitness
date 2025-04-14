@@ -7,6 +7,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { WorkoutStackParamList } from '@/app/(tabs)/WorkoutStack';
 import { RouteProp } from '@react-navigation/native';
 import { ScrollView } from 'react-native-gesture-handler';
+import { Ionicons } from "@expo/vector-icons";
 
 type EditNoteRouteProp = RouteProp<WorkoutStackParamList, 'EditNoteScreen'>;
 
@@ -121,10 +122,11 @@ const EditNoteScreen = () => {
         </TouchableOpacity>
         {isEditing && (
         <TouchableOpacity 
-          style={[styles.button, {marginLeft: 10}]}  
+          /*https://reactnative.dev/docs/layout-props for marginBottom to center the button with the trash can */
+          style={[styles.trashCan, {marginLeft: 23, marginBottom: 30}]}  
           onPress={handleDelete} 
         >
-          <Text style={styles.buttonText}>Delete</Text>
+        <Ionicons name="trash-outline" size={75} color="#F2505D"></Ionicons>
         </TouchableOpacity>
       )}
       </View>
@@ -163,6 +165,10 @@ const styles = StyleSheet.create({
     height: '75%',
     textAlignVertical: 'top',
   },
+  trashCan: {
+    borderRadius: 8,
+    alignItems: "center", 
+    },
 });
 
 export default EditNoteScreen;

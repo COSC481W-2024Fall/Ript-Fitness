@@ -100,6 +100,8 @@ const CommentItem = ({ comment, onReply }: CommentItemProps) => {
   const currentUserID = context?.userProfile.id;
   const isCommentOwner = comment.userProfile?.id === currentUserID;
 
+  const isDarkMode = context?.isDarkMode;
+
   const handleDeleteComment = () => {
     Alert.alert(
       "Delete Comment",
@@ -121,14 +123,14 @@ const CommentItem = ({ comment, onReply }: CommentItemProps) => {
       <Image source={commentProfileImageSource} style={styles.commentAvatar} />
       <View style={styles.commentContent}>
         <View style={styles.commentHeader}>
-          <Text style={styles.commentUsername}>
+          <Text style={isDarkMode?styles.darkCommentUsername:styles.commentUsername}>
             {comment.displayname || comment.accountId}
           </Text>
-          <Text style={styles.commentTime}>
+          <Text style={isDarkMode? styles.darkCommentTime:styles.commentTime}>
             {formatCommentTime(comment.dateTimeCreated)}
           </Text>
         </View>
-        <Text style={styles.commentText}>{comment.content}</Text>
+        <Text style={isDarkMode? styles.darkCommentText:styles.commentText}>{comment.content}</Text>
         {onReply && (
           <TouchableOpacity style={styles.replyButton} onPress={onReply}>
             <Text style={styles.replyButtonText}>Reply</Text>
@@ -139,7 +141,7 @@ const CommentItem = ({ comment, onReply }: CommentItemProps) => {
             style={styles.deleteButton}
             onPress={handleDeleteComment}
           >
-            <Ionicons name="trash-outline" size={18} color="#666" />
+            <Ionicons name="trash-outline" size={18} color={isDarkMode? 'lightgray' : "#666"} />
           </TouchableOpacity>
         )}
       </View>
@@ -169,7 +171,10 @@ const CommentsSheet = forwardRef<CommentsSheetRef, CommentsSheetProps>(
     // Get current post and it's comments
     const currentPost = posts.find((post) => post.id === currentPostId);
     const comments =
-      currentPost?.comments.filter((comment) => !comment.isDeleted) || [];
+    currentPost?.comments.filter((comment) => !comment.isDeleted) || [];
+
+    const context = useContext(GlobalContext);
+    const isDarkMode = context?.isDarkMode;
 
     // Expose methods for external control
     useImperativeHandle(ref, () => ({
@@ -252,15 +257,22 @@ const CommentsSheet = forwardRef<CommentsSheetRef, CommentsSheetProps>(
         keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"
         android_keyboardInputMode="adjustResize"
+        handleStyle={{
+          backgroundColor: isDarkMode?'#21BFBF' : 'white',
+          height: 25,
+          borderTopLeftRadius: 10,
+          borderTopRightRadius: 10,
+
+        }}
       >
         <KeyboardAvoidingView
           style={styles.keyboardAvoidingView}
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
         >
-          <View style={styles.container}>
+          <View style={isDarkMode? styles.darkContainer:styles.container}>
             <View style={styles.header}>
-              <Text style={styles.title}>Comments</Text>
+              <Text style={isDarkMode? styles.darkTitle:styles.title}>Comments</Text>
             </View>
 
             {/* Comments list */}
@@ -331,6 +343,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "white",
   },
+  darkContainer: {
+    flex: 1,
+    backgroundColor: "black",
+  },
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -342,6 +358,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: "600",
+  },
+  darkTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: 'white'
   },
   commentsList: {
     paddingHorizontal: 16,
@@ -366,10 +387,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 4,
+    
   },
   commentUsername: {
     fontWeight: "600",
     marginRight: 8,
+    
   },
   commentTime: {
     color: "#666",
@@ -379,11 +402,29 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
   },
+  darkCommentUsername: {
+    fontWeight: "600",
+    marginRight: 8,
+    color: 'white'
+  },
+  darkCommentTime: {
+    fontSize: 12,
+    color: 'lightgray'
+  },
+  darkCommentText: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: 'white'
+  },
   replyButton: {
     marginTop: 4,
   },
   replyButtonText: {
     color: "#666",
+    fontSize: 12,
+  },
+  darkReplyButtonText: {
+    color: "lightgray",
     fontSize: 12,
   },
   inputContainer: {

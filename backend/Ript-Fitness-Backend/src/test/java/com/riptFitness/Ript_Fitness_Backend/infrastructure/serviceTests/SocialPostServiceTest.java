@@ -67,6 +67,7 @@ public class SocialPostServiceTest {
 		socialPost = new SocialPostDto();
 		socialPost.content = "Just benched 500 pounds, my name is Chris and I'm so strong!!";
 		socialPost.numberOfLikes = 2;
+		socialPost.isPublic = true;
 		socialPost.userIDsOfLikes = new ArrayList<>();
 		socialPost.userIDsOfLikes.add(2L);
 		socialPost.userIDsOfLikes.add(3L);
@@ -110,6 +111,7 @@ public class SocialPostServiceTest {
 		
 		assertNotNull(result);
 		assertEquals(2, result.numberOfLikes);
+		assertEquals(true, result.isPublic);
 		assertEquals("Just benched 500 pounds, my name is Chris and I'm so strong!!", result.content);
 	}
 	

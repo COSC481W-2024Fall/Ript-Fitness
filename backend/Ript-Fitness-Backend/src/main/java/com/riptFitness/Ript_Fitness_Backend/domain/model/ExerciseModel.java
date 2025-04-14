@@ -28,6 +28,18 @@ public class ExerciseModel {
     private boolean isDeleted = false; // False to start because true means the exercise is deleted
     private List<Integer> weight = new ArrayList<>();
     private String description;
+    
+    /*Exercise types:
+     * 1: Arms
+     * 2: Shoulders
+     * 3: Chest
+     * 4: Core
+     * 5: Legs
+     * 6: Upper Back
+     * 7: Lower Back
+     * 8: Cardio
+     * 9: Uncategorized
+     */
     private int exerciseType;
 
     // Reference to the user's account (to get the ID of the account)

@@ -10,10 +10,19 @@ public class DayDto {
 	public Long id;
 	public List<FoodDto> foodsEatenInDay = new ArrayList<>();	
 	public LocalDate date;
-	public double calories;
-	public double totalCarbs;
-	public double totalProtein;
-	public double totalFat;
+	public Double calories;
+	public Double totalCarbs;
+	public Double totalProtein;
+	public Double totalFat;
+	public Double totalCholesterol;
+	public Double totalSaturatedFat;
+	public Double totalTransFat;
+	public Double totalSodium;
+	public Double totalFiber;
+	public Double totalSugars;
+	public Double totalCalcium;
+	public Double totalIron;
+	public Double totalPotassium;
 	public int totalWaterConsumed;
 	public boolean isDeleted = false;
 }

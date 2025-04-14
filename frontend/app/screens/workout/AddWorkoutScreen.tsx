@@ -50,9 +50,10 @@ export function AddWorkoutScreen() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [exerciseName, setExerciseName] = useState('');
   const [typeOfExercise, setTypeOfExercise] = useState<number | null>(null);
-  const [sets, setSets] = useState<{ setNumber: number; reps: string}[]>([{ setNumber: 1, reps: ''}]);
+  const [sets, setSets] = useState<{ setNumber: number; reps: string; weight: string}[]>([{ setNumber: 1, reps: '', weight: ''}]);
   const [exerciseToEdit, setExerciseToEdit] = useState<Exercise | null>(null);
   const [editing, setEditing] = useState(-1);
+
 
   useEffect(() => {
     console.log('Exercises changed:', exercises);
@@ -62,7 +63,7 @@ export function AddWorkoutScreen() {
   const handleAddSet = () => {
     setSets((prevSets) => [
       ...prevSets,
-      {setNumber: prevSets.length + 1, reps: ''},
+      {setNumber: prevSets.length + 1, reps: '', weight: ''},
     ]);
   };
   const handleRemoveSet = () => {
@@ -81,7 +82,13 @@ export function AddWorkoutScreen() {
       )
     );
   };
-
+  const handleWeightChange = (index: number, value: string) => {
+    setSets((prevSets) =>
+      prevSets.map((set, i) =>
+        i ===index ? {...set, weight: value} : set
+      )
+    );
+  };
   const removeExercise = (delExercise : Exercise) => {
   const updatedExercises = exercises.filter(exercise => exercise !== delExercise);
   setExercises(updatedExercises);
@@ -113,6 +120,7 @@ export function AddWorkoutScreen() {
       Array.from({ length: exerciseToEdit.sets }, (_, index) => ({
         setNumber: index + 1,
         reps: exerciseToEdit.reps[index]?.toString() || "",
+        weight: exerciseToEdit.weight[index]?.toString() || "",
       }))
     );
     //setModalRefresh(1)
@@ -134,6 +142,14 @@ export function AddWorkoutScreen() {
    const submitWorkout = async () => {
     try {
     setSubmitting(true)
+
+    //I was trying to put the check in places throughout the code, but ChatGPT recommended putting it here
+    if(text.trim() === ''){
+      Alert.alert("Error", "Workout Name cannot be empty");
+      //these two lines are specifically from ChatGPT
+      setSubmitting(false);
+      return;
+    }
     let WorkoutExercises = [];
     for (let i =0; i<exercises.length; i++) {
       const currentExercise = {
@@ -203,15 +219,17 @@ const viewWorkoutDetails = (id : any) => {
 }
 const [listID, setlistID] = useState(0);
 const [exerciseID, setexerciseID] = useState(0);
+const isDarkMode = gblContext?.isDarkMode;
 
 const addExercise = () => {
+
   // User has to enter exercise name and choose the type
   if (!exerciseName || typeOfExercise === null) {
     alert("Exercise name and exercise type are required fields.");
     return;
   }        
   const repNumbers = sets.map((set) => Number(set.reps));
-  const weightNumbers = sets.map(() => 0);  //setting weight to 0 for each set
+  const weightNumbers = sets.map((set) => Number(set.weight));  //changing this so that it's not 0
   console.log("ree1234: " , editing)
   if (editing == -1) {
     setlistID(listID + 1)
@@ -254,7 +272,7 @@ const addExercise = () => {
   context?.setVisible(false)
   //setAddModalVisible(false);
   setExerciseName('');
-  setSets([{ setNumber: 1, reps: '' }]);
+  setSets([{ setNumber: 1, reps: '', weight: '' }]);
   setTypeOfExercise(null);
 }
 
@@ -268,7 +286,7 @@ const addExercise = () => {
       onRequestClose={() => {
         context?.setVisible(false)/*setAddModalVisible(false)*/
         setExerciseName('');
-        setSets([{ setNumber: 1, reps: '' }]);
+        setSets([{ setNumber: 1, reps: '', weight: '' }]);
         setTypeOfExercise(null);
         setExerciseToEdit(null); // Reset editing state
       }}
@@ -281,10 +299,10 @@ const addExercise = () => {
           keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}  
         >
 
-          <View style={styles.modalContent}>
+          <View style={isDarkMode?styles.darkModalContent:styles.modalContent}>
             {/* Title and close modal icon */}
             <View style={{ flexDirection: 'row' }}>
-              <TextInput style={{fontSize: 18, fontWeight: '500', flex:1 }}
+              <TextInput style={{fontSize: 18, fontWeight: '500', flex:1 , color:isDarkMode?'white':'black'}}
                 placeholder='Exercise Name'
                 placeholderTextColor={'#B6B6B6'}
                 maxLength={20}
@@ -292,6 +310,7 @@ const addExercise = () => {
                 autoCapitalize='words'
                 defaultValue={exerciseName}
                 onChangeText={setExerciseName}
+                
               />
               {/* Close/ x button */}
               <TouchableOpacity 
@@ -299,7 +318,7 @@ const addExercise = () => {
                 onPress={() => {
                   context?.setVisible(false)
                   //setAddModalVisible(false);
-                  setSets([{ setNumber: 1, reps: '' }]);
+                  setSets([{ setNumber: 1, reps: '', weight: '' }]);
                   setExerciseName('');
                   setEditing(-1)
                   setTypeOfExercise(null);
@@ -325,8 +344,9 @@ const addExercise = () => {
                   alignSelf: 'center', 
                 }}
               >
-                <Text style={styles.modalLabels}>Set</Text>
-                <Text style={styles.modalLabels}>Reps</Text>
+                <Text style={isDarkMode?styles.setDarkModalLabels:styles.setModalLabels}>Set</Text>
+                <Text style={isDarkMode?styles.repDarkModalLabels:styles.repModalLabels}>Reps</Text>
+                <Text style={isDarkMode?styles.weightDarkModalLabels:styles.weightModalLabels}>Weight</Text>
               </View>
 
               {sets.map((set, index) => (
@@ -341,13 +361,21 @@ const addExercise = () => {
                 >
                   {/* Row for Set Number and Input */}
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Text style={{ fontSize: 16, marginLeft: 10 }}>{set.setNumber}</Text>
+                    <Text style={{ fontSize: 16, marginLeft: 10, color:isDarkMode?'white':'black' }}>{set.setNumber}</Text>
                     <TextInput 
                       style={styles.repInput}
                       maxLength={3}
                       keyboardType='numeric'
                       value={set.reps}
                       onChangeText={(value) => handleRepChange(index, value)}
+                    />
+                    <TextInput 
+                      testID="weight-input" // recommended by DeepSeek for testing
+                      style={styles.weightInput}
+                      maxLength={6}
+                      keyboardType='numeric'
+                      value={set.weight}
+                      onChangeText={(value) => handleWeightChange(index, value)}
                     />
                   </View>
 
@@ -484,8 +512,9 @@ const addExercise = () => {
         >  
         {item.reps.map((rep : any, index : any) => (
           <View key={index} style={styles.rowItem}>
-            <ThemedText style={styles.floatLeft}>{rep}</ThemedText>
-            <ThemedText style={styles.floatRight}>{"Reps"}</ThemedText>
+            {/* Next 2 lines were recommended by ChatGPT, adjusted previous code that was only for reps */}
+            <ThemedText style={styles.floatRight}>{rep} Reps</ThemedText>
+            <ThemedText style={styles.floatLeft}>{item.weight[index]} lbs</ThemedText>
           </View>
         ))}
         </ExerciseButton>
@@ -502,7 +531,7 @@ const addExercise = () => {
   }
 
   return (    
-    <View style={styles.totalView}>
+    <View style={[isDarkMode ? styles.darkTotalView : styles.totalView]}>
       {/* Workout Name Input */}
       <View style={{marginTop:10, alignSelf:"center", }}>
         <View style={styles.workoutNameContainer}>
@@ -510,7 +539,7 @@ const addExercise = () => {
             placeholder="Workout Name"
             placeholderTextColor={'#B6B6B6'}
             autoCapitalize='words'
-            style={styles.inputStyle}
+            style={[isDarkMode? styles.darkInputStyle : styles.inputStyle]}
             onChangeText={setText}
             onBlur={Keyboard.dismiss}
             autoFocus={true}
@@ -603,6 +632,12 @@ const styles = StyleSheet.create({
     fontSize: 25,
     fontWeight: 'bold',
   },
+  darkInputStyle: {
+    flex: 1, // Ensures the input takes up the remaining space
+    color: 'white',
+    fontSize: 25,
+    fontWeight: 'bold',
+  },
   dragOverlay: {
     position: 'absolute',
     top: 0,
@@ -617,10 +652,10 @@ const styles = StyleSheet.create({
     borderRadius:15,
     
   },
-test: {
-  paddingRight:'5%',
-  paddingLeft:'5%',
-},
+  test: {
+    paddingRight:'5%',
+    paddingLeft:'5%',
+  },
   overlayText: {
     color: 'white',
     fontSize: 18,
@@ -672,6 +707,13 @@ test: {
     flex:1,
     justifyContent: 'space-between',
     backgroundColor: '#fff', // main background e2e2e2 or f6f6f6
+  },
+  darkTotalView: {
+    // height:'50%',
+    alignItems:'center',
+    flex:1,
+    justifyContent: 'space-between',
+    backgroundColor: 'black', 
   },
   rowItem:{
     borderTopColor:'grey',
@@ -778,20 +820,72 @@ test: {
     padding: 20,
     borderRadius: 10,
   },
+  darkModalContent: {
+    width: '85%',
+    backgroundColor: '#333',
+    padding: 20,
+    borderRadius: 10,
+  },
+  
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
   },
-  modalLabels: {
+  setModalLabels: {
     fontSize: 16,
     fontWeight: '500'
+  },
+  repModalLabels: {
+    fontSize: 16,
+    width: '15.5%',
+    fontWeight: '500'
+  },
+  weightModalLabels: {
+    fontSize: 16,
+    width: '19.3%',
+    fontWeight: '500'
+  },
+  darkModalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color:'white'
+  },
+  setDarkModalLabels: {
+    fontSize: 16,
+    fontWeight: '500',
+    color:'white'
+  },
+  repDarkModalLabels: {
+    fontSize: 16,
+    fontWeight: '500',
+    width: '15.5%',
+    color:'white'
+  },
+  weightDarkModalLabels: {
+    fontSize: 16,
+    fontWeight: '500',
+    width: '19.3%',
+    color:'white'
   },
   repInput: {
     fontSize: 16,
     // fontSize: Platform.OS === "ios" ? 16 : 14,
     backgroundColor: '#D9D9D9',
     width: '15%',
+    borderRadius: 5,
+    textAlign: 'center',
+    maxHeight: 30,
+    textAlignVertical: 'center', 
+    paddingVertical: 0,
+
+  },
+  weightInput: {
+    fontSize: 16,
+    // fontSize: Platform.OS === "ios" ? 16 : 14,
+    backgroundColor: '#D9D9D9',
+    width: '20%',
     borderRadius: 5,
     textAlign: 'center',
     maxHeight: 30,

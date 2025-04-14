@@ -93,5 +93,14 @@ public class ExercisesController {
 		return new ResponseEntity<>(updatedExercise, HttpStatus.OK);
 	}
 
+	// Endpoint for retrieving exercises by type
+	@GetMapping("/getByType/{exerciseType}")
+	public ResponseEntity<List<ExerciseDto>> getExercisesByType(@PathVariable int exerciseType) {
+	    List<ExerciseDto> exercises = exerciseService.getExercisesByType(exerciseType);
+	    return new ResponseEntity<>(exercises, HttpStatus.OK);
+	}
+	
+	
+
 	
 }

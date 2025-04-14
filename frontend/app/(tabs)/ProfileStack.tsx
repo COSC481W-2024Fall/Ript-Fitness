@@ -1,4 +1,7 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import React, { useContext, useState } from 'react';
+import { GlobalContext } from '@/context/GlobalContext';
+
 
 
 import { createStackNavigator, StackNavigationProp } from '@react-navigation/stack';
@@ -41,6 +44,8 @@ export type ProfileScreenNavigationProp =
 const Stack = createStackNavigator();
 
 export default function ProfileStack(props: any) {
+  const context = useContext(GlobalContext);
+  const isDarkMode = context?.isDarkMode;
   return (
     <ProfileProvider>
     <Stack.Navigator initialRouteName="ProfileScreen" screenOptions={{ headerShown: false }}>
@@ -76,27 +81,31 @@ export default function ProfileStack(props: any) {
 */
 
 const styles = StyleSheet.create({
+  lightMode: {
+      backgroundColor: '#ffffff', 
+      color: '#000000'
+  },
+  darkMode: {
+      backgroundColor: 'black', 
+      color: 'white', 
+  },
   scrollView: {
     backgroundColor: "#005500",
     padding: 0,
     margin: 0,
     width: "100%",
   },
-
   centerContentContainer: {
     alignItems: "center",
   },
   SafeAreaView: {
-    //alignItems: 'center',
     backgroundColor: "#0ffff0",
     height: "100%",
     width: "100%",
-    //overflow:'scroll',
     paddingTop: 20,
     justifyContent: "flex-start",
     flexDirection: "column",
   },
-
   sectionContainer: {
     marginTop: 32,
     paddingHorizontal: 24,
@@ -113,7 +122,6 @@ const styles = StyleSheet.create({
   highlight: {
     fontWeight: "700",
   },
-
   size40x40: {
     height: 40,
     width: 40,

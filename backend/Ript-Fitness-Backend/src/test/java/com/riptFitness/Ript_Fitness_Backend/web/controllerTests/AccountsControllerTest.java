@@ -78,7 +78,7 @@ public class AccountsControllerTest {
 
         mockMvc.perform(put("/accounts/changePassword/{currentPassword}/{newPassword}", wrongPassword, newPassword))
                 .andExpect(status().isInternalServerError()) // Verify status is 500 Internal Server Error
-                .andExpect(content().string("An unexpected error has occured. Message: Current password does not match"));
+                .andExpect(content().string("An unexpected error has occurred. Message: Current password does not match"));
 
         // Test 3: New password is the same as the current password
         when(accountsService.changePassword(currentPassword, samePassword))
@@ -86,7 +86,7 @@ public class AccountsControllerTest {
 
         mockMvc.perform(put("/accounts/changePassword/{currentPassword}/{newPassword}", currentPassword, samePassword))
                 .andExpect(status().isInternalServerError()) // Verify status is 500 Internal Server Error
-                .andExpect(content().string("An unexpected error has occured. Message: New password cannot be the same as the current password"));
+                .andExpect(content().string("An unexpected error has occurred. Message: New password cannot be the same as the current password"));
     }
 
 
@@ -115,7 +115,7 @@ public class AccountsControllerTest {
                 .andExpect(status().isInternalServerError())
                 // Expecting the prefixed error message
                 .andExpect(content().string(
-                        "An unexpected error has occured. Message: The username: 'testUser' already has an account associated with it"));
+                        "An unexpected error has occurred. Message: The username: 'testUser' already has an account associated with it"));
     }
 
     // Test for login - successful login
@@ -155,7 +155,7 @@ public class AccountsControllerTest {
                 .andExpect(status().isInternalServerError())
                 // Expecting the prefixed error message
                 .andExpect(content().string(
-                        "An unexpected error has occured. Message: The password: 'wrongPassword' is incorrect"));
+                        "An unexpected error has occurred. Message: The password: 'wrongPassword' is incorrect"));
     }
 
     // Test for login - username does not exist
@@ -175,6 +175,6 @@ public class AccountsControllerTest {
                 .andExpect(status().isInternalServerError())
                 // Expecting the prefixed error message
                 .andExpect(content().string(
-                        "An unexpected error has occured. Message: Account with username: 'nonExistingUser' does not exist"));
+                        "An unexpected error has occurred. Message: Account with username: 'nonExistingUser' does not exist"));
     }
 }

@@ -42,8 +42,13 @@ public interface AccountsRepository extends JpaRepository <AccountsModel, Long> 
     Optional<AccountsModel> findByUsername(String username);  // Method to find account by username
     
     // Search the SocialPost table and returns all SocialPosts with accountId = any accountIds in the input parameter ArrayList
-    @Query("SELECT s from SocialPost s WHERE s.account.id IN :accountIds")
-    Optional<List<SocialPost>> getSocialFeed(@Param("accountIds") List<Long> accountIds);
+    //This query was adapted by DeepSeek and then slightly adjusted to get all the public posts as well
+    @Query("""
+    	    SELECT s FROM SocialPost s 
+    	    WHERE (s.account.id IN :accountIds OR s.isPublic = true) 
+    	    AND s.isDeleted = false
+    	    """)
+    	Optional<List<SocialPost>> getSocialFeed(@Param("accountIds") List<Long> accountIds);
     
     // Given the logged in users ID; fetch the email:
     @Query("SELECT a.email FROM AccountsModel a WHERE a.id = :currentUserId")

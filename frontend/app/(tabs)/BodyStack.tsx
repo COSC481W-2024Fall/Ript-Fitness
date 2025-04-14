@@ -10,26 +10,33 @@ import ApiScreen from '@/app/screens/ApiScreen';
 import { useContext } from 'react';
 import { GlobalContext } from '@/context/GlobalContext';
 import GraphScreen from '../screens/profile/GraphScreen';
-import foodLog from '@/app/screens/foodlog/FoodLog';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
+import NutritionTrendScreen from '@/app/screens/foodlog/NutritionTrendScreen';
+import FoodLogScreen from '@/app/screens/foodlog/FoodLog';
 
 
 
 const Stack = createStackNavigator();
 
+// Define the parameter list for the Body stack navigator 
+// to ensure type safety and navigation routing
 export type BodyStackParamList = {
   ApiScreen: {};
+  FoodLog: undefined;
+  NutritionTrendScreen: undefined;
 }
 
 export type BodyScreenNavigationProp = StackNavigationProp<BodyStackParamList>;
 
 export default function BodyStack(props : any) {
   const navigation = useNavigation<BodyScreenNavigationProp >();
+
+  
   return (
     <BodyProvider>
     <Stack.Navigator initialRouteName="Food Log" screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Food Log" component={foodLog} 
+      <Stack.Screen name="Food Log" component={FoodLogScreen} 
       // options={{
       //   headerRight:() => (
       //     <TouchableOpacity
@@ -42,6 +49,32 @@ export default function BodyStack(props : any) {
       {/* Put any additional screens for your tab here. This allows us to use a stack.
         A stack allows us to easily navigate back a page when we're in a secondary screen on a certain tab.
       */}
+
+{/*Configure the NutritionTrendScreen with a custom header 
+    including a back button and styled title*/}
+      <Stack.Screen 
+        name="NutritionTrendScreen" 
+        component={NutritionTrendScreen} 
+        options={ ({ navigation }) => ( {
+          headerShown: true,
+          headerBackTitleVisible: false, 
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() =>  navigation.goBack()}
+              style={[styles.rightButton, styles.button, styles.buttonSize]}
+            >
+              <Ionicons 
+              name="arrow-back-outline"  
+              size={30} 
+              color="#454343"
+        />
+            </TouchableOpacity>
+          ),
+          headerTitle: "Nutrition Trend",
+          headerStyle: { backgroundColor: '#f8f8f8' },
+          
+        })}
+      />
     </Stack.Navigator>
     </BodyProvider>
   );
@@ -102,4 +135,23 @@ const styles = StyleSheet.create({
         height:40,
         width:40,
       },
+    
+      leftButton: {
+        paddingLeft: 10,
+      },
+      buttonSize: {
+        height: '100%',
+        aspectRatio: 1,
+      },
+      rightButton: {
+        paddingRight: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      button: {
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+  
+      
     });
