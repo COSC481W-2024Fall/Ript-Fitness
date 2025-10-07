@@ -69,6 +69,9 @@ public class AccountsModel {
     
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Graph> graphs;
+    
+    @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PlateCalculator> plateCalculations;
 
     @ManyToMany
     @JoinTable(
@@ -246,6 +249,11 @@ public class AccountsModel {
 		this.graphs = graphs;
 	}
 
-	
-	
+	public List<PlateCalculator> getPlateCalculations() {
+		return plateCalculations;
+	}
+
+	public void setPlateCalculations(List<PlateCalculator> plateCalculations) {
+		this.plateCalculations = plateCalculations;
+	}
 }
