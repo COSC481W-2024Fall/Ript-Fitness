@@ -21,8 +21,9 @@ public class PlateCount {
 	public double plateWeight;
 	public int numberOfPlates;
 	
-	public PlateCount(double plateWeight, int numberOfPlates) {
+	public PlateCount(double plateWeight, int numberOfPlates, PlateCalculator plateCalculator) {
 		this.plateWeight = plateWeight;
 		this.numberOfPlates = numberOfPlates;
+		this.plateCalculator = plateCalculator;
 	}
 }
