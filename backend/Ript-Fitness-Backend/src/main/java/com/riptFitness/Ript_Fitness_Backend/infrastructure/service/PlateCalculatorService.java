@@ -1,9 +1,14 @@
 package com.riptFitness.Ript_Fitness_Backend.infrastructure.service;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+
 import org.springframework.stereotype.Service;
 
 import com.riptFitness.Ript_Fitness_Backend.domain.mapper.PlateCalculatorMapper;
 import com.riptFitness.Ript_Fitness_Backend.domain.model.PlateCalculator;
+import com.riptFitness.Ript_Fitness_Backend.domain.model.PlateCount;
 import com.riptFitness.Ript_Fitness_Backend.domain.repository.AccountsRepository;
 import com.riptFitness.Ript_Fitness_Backend.domain.repository.PlateCalculatorRepository;
 import com.riptFitness.Ript_Fitness_Backend.web.dto.PlateCalculatorDto;
@@ -23,7 +28,8 @@ public class PlateCalculatorService {
 		this.accountsRepository = accountsRepository;
 	}
 	
-	public int[] addPlateCalculation(PlateCalculatorDto plateCalculatorDto) {
+	public PlateCalculatorDto addPlateCalculation(PlateCalculatorDto plateCalculatorDto) {
+		Arrays.sort(plateCalculatorDto.platesAvailable);
 		PlateCalculator plateCalculatorToBeAdded = PlateCalculatorMapper.INSTANCE.toPlateCalculator(plateCalculatorDto);
 		double totalWeight = plateCalculatorDto.totalWeight;
 		totalWeight -= plateCalculatorDto.weightOfBar;
@@ -31,6 +37,8 @@ public class PlateCalculatorService {
 		if (totalWeight < 0)
 			throw new RuntimeException("The weight of the bar cannot be heavier than the total weight!");
 		
+		int[] numberOfPlatesPerWeightOnBar = calculateNumberOfPlatesPerWeightOnBar(plateCalculatorDto, totalWeight);
+		/*
 		double[] availablePlatesAccountingForBothSidesOfBar = new double[plateCalculatorDto.platesAvailable.length];
 		
 		for (int i = 0; i < availablePlatesAccountingForBothSidesOfBar.length; i++) {
@@ -38,14 +46,42 @@ public class PlateCalculatorService {
 		}
 		
 		double[] numberOfPlatesPerWeightOnEachSide = new double[availablePlatesAccountingForBothSidesOfBar.length];
-		int indexOfNumberOfPlatesArray = 0;
 		
 		for (int i = availablePlatesAccountingForBothSidesOfBar.length - 1; i >= 0; i--) {
 			double weightOfNextPlate = availablePlatesAccountingForBothSidesOfBar[i];
 			int numberOfPlatesUsedForNextPlate = (int) (totalWeight / weightOfNextPlate);
 			totalWeight = totalWeight % weightOfNextPlate;
-			numberOfPlatesPerWeightOnEachSide[indexOfNumberOfPlatesArray] = numberOfPlatesUsedForNextPlate;
-			indexOfNumberOfPlatesArray++;
+			numberOfPlatesPerWeightOnEachSide[i] = numberOfPlatesUsedForNextPlate;
+		}
+		
+		if (totalWeight != 0)
+			throw new RuntimeException("The total weight desired is not possible with the given plate weights.");
+		
+		int[] numberOfPlatesPerWeightOnBar = new int[numberOfPlatesPerWeightOnEachSide.length];
+		
+		for (int i = 0; i < numberOfPlatesPerWeightOnBar.length; i++) {
+			numberOfPlatesPerWeightOnBar[i] = (int) (numberOfPlatesPerWeightOnEachSide[i] * 2);
+		}
+		*/
+		mapIntegerArrayOfPlateCountsToListOfPlateCounts(numberOfPlatesPerWeightOnBar, plateCalculatorToBeAdded);
+		
+		return PlateCalculatorMapper.INSTANCE.toPlateCalculatorDto(plateCalculatorToBeAdded);
+	}
+	
+	private static int[] calculateNumberOfPlatesPerWeightOnBar(PlateCalculatorDto plateCalculatorDto, double totalWeight) {
+		double[] availablePlatesAccountingForBothSidesOfBar = new double[plateCalculatorDto.platesAvailable.length];
+		
+		for (int i = 0; i < availablePlatesAccountingForBothSidesOfBar.length; i++) {
+			availablePlatesAccountingForBothSidesOfBar[i] = plateCalculatorDto.platesAvailable[i] * 2;
+		}
+		
+		double[] numberOfPlatesPerWeightOnEachSide = new double[availablePlatesAccountingForBothSidesOfBar.length];
+		
+		for (int i = availablePlatesAccountingForBothSidesOfBar.length - 1; i >= 0; i--) {
+			double weightOfNextPlate = availablePlatesAccountingForBothSidesOfBar[i];
+			int numberOfPlatesUsedForNextPlate = (int) (totalWeight / weightOfNextPlate);
+			totalWeight = totalWeight % weightOfNextPlate;
+			numberOfPlatesPerWeightOnEachSide[i] = numberOfPlatesUsedForNextPlate;
 		}
 		
 		if (totalWeight != 0)
@@ -58,5 +94,16 @@ public class PlateCalculatorService {
 		}
 		
 		return numberOfPlatesPerWeightOnBar;
+	}
+	
+	private static void mapIntegerArrayOfPlateCountsToListOfPlateCounts(int[] plateCounts, PlateCalculator plateCalculator) {
+		ArrayList<PlateCount> listOfPlateCounts = new ArrayList<>();
+		double[] platesAvailable = plateCalculator.platesAvailable;
+		
+		for (int i = 0; i < plateCounts.length; i++) {
+			listOfPlateCounts.add(new PlateCount(platesAvailable[i], plateCounts[i]));
+		}
+		
+		plateCalculator.plateCounts = listOfPlateCounts;
 	}
 }

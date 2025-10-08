@@ -21,8 +21,8 @@ public class PlateCalculatorController {
 	}
 	
 	@PostMapping("/addPlateCalculation")
-	public ResponseEntity<int[]> addPlateCalculation(@RequestBody PlateCalculatorDto plateCalculatorDto) {
-		int[] savedPlateCalculation = plateCalculatorService.addPlateCalculation(plateCalculatorDto);
+	public ResponseEntity<PlateCalculatorDto> addPlateCalculation(@RequestBody PlateCalculatorDto plateCalculatorDto) {
+		PlateCalculatorDto savedPlateCalculation = plateCalculatorService.addPlateCalculation(plateCalculatorDto);
 		return new ResponseEntity<>(savedPlateCalculation, HttpStatus.CREATED);
 	}
 }
