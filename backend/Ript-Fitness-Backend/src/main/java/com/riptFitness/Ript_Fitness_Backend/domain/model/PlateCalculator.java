@@ -26,6 +26,6 @@ public class PlateCalculator {
 	public List<PlateCount> plateCounts;
 	
 	public double totalWeight;
-	public double[] platesAvailable;
+	public String platesAvailable;	// This is an array of doubles in the DTO that is mapped to a String in order to be readable in the database window
 	public int weightOfBar;
 }

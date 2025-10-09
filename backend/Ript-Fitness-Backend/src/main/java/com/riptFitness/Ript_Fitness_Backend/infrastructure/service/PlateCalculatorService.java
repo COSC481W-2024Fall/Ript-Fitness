@@ -2,10 +2,11 @@ package com.riptFitness.Ript_Fitness_Backend.infrastructure.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.riptFitness.Ript_Fitness_Backend.domain.mapper.PlateCalculatorMapper;
 import com.riptFitness.Ript_Fitness_Backend.domain.model.AccountsModel;
 import com.riptFitness.Ript_Fitness_Backend.domain.model.PlateCalculator;
@@ -29,6 +30,10 @@ public class PlateCalculatorService {
 		this.accountsRepository = accountsRepository;
 	}
 	
+	/*
+	To do: Change double[] in model to a string and save it as text (ObjectMapper object)
+	 */
+	
 	public PlateCalculatorDto addPlateCalculation(PlateCalculatorDto plateCalculatorDto) {
 		Arrays.sort(plateCalculatorDto.platesAvailable);
 		PlateCalculator plateCalculatorToBeAdded = PlateCalculatorMapper.INSTANCE.toPlateCalculator(plateCalculatorDto);
@@ -38,18 +43,22 @@ public class PlateCalculatorService {
 		if (totalWeight < 0)
 			throw new RuntimeException("The weight of the bar cannot be heavier than the total weight!");
 		
-		int[] numberOfPlatesPerWeightOnBar = calculateNumberOfPlatesPerWeightOnBar(plateCalculatorToBeAdded, totalWeight);
+		int[] numberOfPlatesPerWeightOnBar = calculateNumberOfPlatesPerWeightOnBar(plateCalculatorToBeAdded, totalWeight, plateCalculatorDto.platesAvailable);
 
-		mapIntegerArrayOfPlateCountsToListOfPlateCounts(numberOfPlatesPerWeightOnBar, plateCalculatorToBeAdded);
+		mapIntegerArrayOfPlateCountsToListOfPlateCounts(numberOfPlatesPerWeightOnBar, plateCalculatorToBeAdded, plateCalculatorDto.platesAvailable);
 		
-		return savePlateCalculatorToDatabase(plateCalculatorToBeAdded);
+		PlateCalculatorDto returnedDto = savePlateCalculatorToDatabase(plateCalculatorToBeAdded, plateCalculatorDto.platesAvailable);
+		
+		returnedDto.platesAvailable = plateCalculatorDto.platesAvailable;
+		
+		return returnedDto;
 	}
 	
-	private static int[] calculateNumberOfPlatesPerWeightOnBar(PlateCalculator plateCalculator, double totalWeight) {
-		double[] availablePlatesAccountingForBothSidesOfBar = new double[plateCalculator.platesAvailable.length];
+	private static int[] calculateNumberOfPlatesPerWeightOnBar(PlateCalculator plateCalculator, double totalWeight, double[] platesAvailable) {
+		double[] availablePlatesAccountingForBothSidesOfBar = new double[platesAvailable.length];
 		
 		for (int i = 0; i < availablePlatesAccountingForBothSidesOfBar.length; i++) {
-			availablePlatesAccountingForBothSidesOfBar[i] = plateCalculator.platesAvailable[i] * 2;
+			availablePlatesAccountingForBothSidesOfBar[i] = platesAvailable[i] * 2;
 		}
 		
 		double[] numberOfPlatesPerWeightOnEachSide = new double[availablePlatesAccountingForBothSidesOfBar.length];
@@ -73,9 +82,8 @@ public class PlateCalculatorService {
 		return numberOfPlatesPerWeightOnBar;
 	}
 	
-	private static void mapIntegerArrayOfPlateCountsToListOfPlateCounts(int[] plateCounts, PlateCalculator plateCalculator) {
+	private static void mapIntegerArrayOfPlateCountsToListOfPlateCounts(int[] plateCounts, PlateCalculator plateCalculator, double[] platesAvailable) {
 		ArrayList<PlateCount> listOfPlateCounts = new ArrayList<>();
-		double[] platesAvailable = plateCalculator.platesAvailable;
 		
 		for (int i = 0; i < plateCounts.length; i++) {
 			listOfPlateCounts.add(new PlateCount(platesAvailable[i], plateCounts[i], plateCalculator));
@@ -84,11 +92,22 @@ public class PlateCalculatorService {
 		plateCalculator.plateCounts = listOfPlateCounts;
 	}
 	
-	private PlateCalculatorDto savePlateCalculatorToDatabase(PlateCalculator plateCalculator) {
+	private PlateCalculatorDto savePlateCalculatorToDatabase(PlateCalculator plateCalculator, double[] platesAvailable) {
 		Long currentlyLoggedInUserId = accountsService.getLoggedInUserId();
 		AccountsModel currentlyLoggedInAccount = accountsRepository.findById(currentlyLoggedInUserId).get();
 		plateCalculator.account = currentlyLoggedInAccount;
+		plateCalculator.platesAvailable = mapDoubleArrayToString(platesAvailable);
 		plateCalculator = plateCalculatorRepository.save(plateCalculator);
 		return PlateCalculatorMapper.INSTANCE.toPlateCalculatorDto(plateCalculator);
+	}
+	
+	private String mapDoubleArrayToString(double[] array) {
+		ObjectMapper mapper = new ObjectMapper();
+		
+		try {
+			return mapper.writeValueAsString(array);
+		} catch (JsonProcessingException ex) {
+			throw new RuntimeException("There was an error converting the platesAvailable array to a String in the mapDoubleArrayToString method.");
+		}
 	}
 }
