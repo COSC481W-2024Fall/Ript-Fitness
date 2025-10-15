@@ -30,10 +30,6 @@ public class PlateCalculatorService {
 		this.accountsRepository = accountsRepository;
 	}
 	
-	/*
-	To do: Change double[] in model to a string and save it as text (ObjectMapper object)
-	 */
-	
 	public PlateCalculatorDto addPlateCalculation(PlateCalculatorDto plateCalculatorDto) {
 		Arrays.sort(plateCalculatorDto.platesAvailable);
 		PlateCalculator plateCalculatorToBeAdded = PlateCalculatorMapper.INSTANCE.toPlateCalculator(plateCalculatorDto);
