@@ -28,4 +28,5 @@ public class PlateCalculator {
 	public double totalWeight;
 	public String platesAvailable;	// This is an array of doubles in the DTO that is mapped to a String in order to be readable in the database window
 	public int weightOfBar;
+	public boolean isDeleted = false;
 }

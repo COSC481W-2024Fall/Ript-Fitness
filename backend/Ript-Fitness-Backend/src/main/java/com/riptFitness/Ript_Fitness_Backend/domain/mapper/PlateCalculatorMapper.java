@@ -1,5 +1,7 @@
 package com.riptFitness.Ript_Fitness_Backend.domain.mapper;
 
+import java.util.List;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
@@ -16,4 +18,6 @@ public interface PlateCalculatorMapper {
 	
 	@Mapping(target = "platesAvailable", ignore = true)
 	PlateCalculator toPlateCalculator(PlateCalculatorDto plateCalculatorDto);
+	
+	List<PlateCalculatorDto> toPlateCalculatorDtoList(List<PlateCalculator> plateCalculators);
 }

@@ -2,6 +2,7 @@ package com.riptFitness.Ript_Fitness_Backend.infrastructure.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 
@@ -50,6 +51,12 @@ public class PlateCalculatorService {
 		return returnedDto;
 	}
 	
+	public List<PlateCalculatorDto> getAllPlateCalculationsForUser() {
+		AccountsModel currentlyLoggedInUser = getCurrentlyLoggedInUser();
+		ArrayList<PlateCalculator> plateCalcualationsForUserInDatabase = plateCalculatorRepository.getFoodsFromAccountId(currentlyLoggedInUser.getId()).get();
+		return PlateCalculatorMapper.INSTANCE.toPlateCalculatorDtoList(plateCalcualationsForUserInDatabase);	
+	}
+	
 	private static int[] calculateNumberOfPlatesPerWeightOnBar(PlateCalculator plateCalculator, double totalWeight, double[] platesAvailable) {
 		double[] availablePlatesAccountingForBothSidesOfBar = new double[platesAvailable.length];
 		
@@ -89,12 +96,16 @@ public class PlateCalculatorService {
 	}
 	
 	private PlateCalculatorDto savePlateCalculatorToDatabase(PlateCalculator plateCalculator, double[] platesAvailable) {
-		Long currentlyLoggedInUserId = accountsService.getLoggedInUserId();
-		AccountsModel currentlyLoggedInAccount = accountsRepository.findById(currentlyLoggedInUserId).get();
+		AccountsModel currentlyLoggedInAccount = getCurrentlyLoggedInUser();
 		plateCalculator.account = currentlyLoggedInAccount;
 		plateCalculator.platesAvailable = mapDoubleArrayToString(platesAvailable);
-		plateCalculator = plateCalculatorRepository.save(plateCalculator);
+		plateCalculatorRepository.save(plateCalculator);
 		return PlateCalculatorMapper.INSTANCE.toPlateCalculatorDto(plateCalculator);
+	}
+	
+	private AccountsModel getCurrentlyLoggedInUser() {
+		Long currentlyLoggedInUserId = accountsService.getLoggedInUserId();
+		return accountsRepository.findById(currentlyLoggedInUserId).get();
 	}
 	
 	private String mapDoubleArrayToString(double[] array) {
