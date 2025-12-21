@@ -114,6 +114,20 @@ public class PlateCalculatorServiceTest {
 		assertEquals("The total weight desired is not possible with the given plate weights.", exception.getMessage());
 	}
 	
+	@Test
+	void testGetAllPlateCalculationsForUser() {
+		ArrayList<PlateCalculator> returnedListOfPlateCalcualtors = new ArrayList<>(List.of(plateCalculator));
+		
+		when(accountsService.getLoggedInUserId()).thenReturn(1L);
+		when(accountsRepository.findById(1L)).thenReturn(Optional.of(account));		
+		when(plateCalculatorRepository.getFoodsFromAccountId(1L)).thenReturn(Optional.of(returnedListOfPlateCalcualtors));
+		
+		List<PlateCalculatorDto> result = plateCalculatorService.getAllPlateCalculationsForUser();
+		
+		assertNotNull(result);
+		assertEquals(1, result.size());
+	}
+	
 	private void buildPlateCalculatorDto(PlateCalculatorDto plateCalculatorDto, double totalWeight, double[] platesAvailable, int weightOfBar) {
 		plateCalculatorDto.totalWeight = totalWeight;
 		plateCalculatorDto.platesAvailable = platesAvailable;

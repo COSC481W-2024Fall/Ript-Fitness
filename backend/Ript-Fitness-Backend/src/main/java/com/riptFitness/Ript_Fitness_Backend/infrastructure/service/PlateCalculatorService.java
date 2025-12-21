@@ -3,6 +3,7 @@ package com.riptFitness.Ript_Fitness_Backend.infrastructure.service;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -55,6 +56,52 @@ public class PlateCalculatorService {
 		AccountsModel currentlyLoggedInUser = getCurrentlyLoggedInUser();
 		ArrayList<PlateCalculator> plateCalcualationsForUserInDatabase = plateCalculatorRepository.getFoodsFromAccountId(currentlyLoggedInUser.getId()).get();
 		return PlateCalculatorMapper.INSTANCE.toPlateCalculatorDtoList(plateCalcualationsForUserInDatabase);	
+	}
+	
+	public PlateCalculatorDto getPlateCalculationById(Long id) {
+		PlateCalculator plateCalculatorReturnedFromDatabase = plateCalculatorRepository.findById(id).get();
+		return PlateCalculatorMapper.INSTANCE.toPlateCalculatorDto(plateCalculatorReturnedFromDatabase);
+	}
+	
+	public PlateCalculatorDto editPlateCalculation(Long id, PlateCalculatorDto plateCalculatorDto) {
+		Optional<PlateCalculator> optionalPlateCalculatorCurrentlyInDatabase = plateCalculatorRepository.findById(id);
+		
+		if (optionalPlateCalculatorCurrentlyInDatabase.isEmpty())
+			throw new RuntimeException("Plate Calculator object not found in database with ID = " + id);
+		
+		PlateCalculator plateCalculatorToBeEdited = optionalPlateCalculatorCurrentlyInDatabase.get();
+		
+		PlateCalculatorMapper.INSTANCE.updatePlateCalculatorRowFromDto(plateCalculatorDto, plateCalculatorToBeEdited);
+		
+		AccountsModel currentlyLoggedInUser = getCurrentlyLoggedInUser();
+		plateCalculatorToBeEdited.account = currentlyLoggedInUser;
+		
+		Arrays.sort(plateCalculatorDto.platesAvailable);
+		PlateCalculator plateCalculator = PlateCalculatorMapper.INSTANCE.toPlateCalculator(plateCalculatorDto);
+		double totalWeight = plateCalculator.totalWeight;
+		totalWeight -= plateCalculator.weightOfBar;
+		
+		if (totalWeight < 0)
+			throw new RuntimeException("The weight of the bar cannot be heavier than the total weight!");
+		
+		int[] numberOfPlatesPerWeightOnBar = calculateNumberOfPlatesPerWeightOnBar(plateCalculator, totalWeight, plateCalculatorDto.platesAvailable);
+
+		mapIntegerArrayOfPlateCountsToListOfPlateCounts(numberOfPlatesPerWeightOnBar, plateCalculator, plateCalculatorDto.platesAvailable);
+		
+		plateCalculatorToBeEdited.plateCounts.clear();
+		plateCalculatorToBeEdited.plateCounts.addAll(plateCalculator.plateCounts);
+		
+		for (PlateCount plateCount : plateCalculatorToBeEdited.plateCounts) {
+			plateCount.plateCalculator = plateCalculatorToBeEdited;
+		}
+		
+		/*
+		TO DO: Add helper method that calculates PlateCounts for me for both POST and PUT endpoints
+		 */
+		
+		plateCalculatorRepository.save(plateCalculatorToBeEdited);
+		
+		return PlateCalculatorMapper.INSTANCE.toPlateCalculatorDto(plateCalculatorToBeEdited);
 	}
 	
 	private static int[] calculateNumberOfPlatesPerWeightOnBar(PlateCalculator plateCalculator, double totalWeight, double[] platesAvailable) {

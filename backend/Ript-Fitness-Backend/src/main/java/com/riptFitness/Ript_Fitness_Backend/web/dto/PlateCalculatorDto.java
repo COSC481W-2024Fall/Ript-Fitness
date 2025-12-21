@@ -4,8 +4,10 @@ import java.util.List;
 
 public class PlateCalculatorDto {
 	
+	public Long id;
 	public double totalWeight;
 	public double[] platesAvailable;
 	public int weightOfBar;
 	public List<PlateCountDto> plateCounts;
+	public boolean isDeleted;
 }
