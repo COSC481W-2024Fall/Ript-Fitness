@@ -33,17 +33,7 @@ public class PlateCalculatorService {
 	}
 	
 	public PlateCalculatorDto addPlateCalculation(PlateCalculatorDto plateCalculatorDto) {
-		Arrays.sort(plateCalculatorDto.platesAvailable);
-		PlateCalculator plateCalculatorToBeAdded = PlateCalculatorMapper.INSTANCE.toPlateCalculator(plateCalculatorDto);
-		double totalWeight = plateCalculatorToBeAdded.totalWeight;
-		totalWeight -= plateCalculatorToBeAdded.weightOfBar;
-		
-		if (totalWeight < 0)
-			throw new RuntimeException("The weight of the bar cannot be heavier than the total weight!");
-		
-		int[] numberOfPlatesPerWeightOnBar = calculateNumberOfPlatesPerWeightOnBar(plateCalculatorToBeAdded, totalWeight, plateCalculatorDto.platesAvailable);
-
-		mapIntegerArrayOfPlateCountsToListOfPlateCounts(numberOfPlatesPerWeightOnBar, plateCalculatorToBeAdded, plateCalculatorDto.platesAvailable);
+		PlateCalculator plateCalculatorToBeAdded = calculatePlateCountsFromDto(plateCalculatorDto);
 		
 		PlateCalculatorDto returnedDto = savePlateCalculatorToDatabase(plateCalculatorToBeAdded, plateCalculatorDto.platesAvailable);
 		
@@ -54,28 +44,49 @@ public class PlateCalculatorService {
 	
 	public List<PlateCalculatorDto> getAllPlateCalculationsForUser() {
 		AccountsModel currentlyLoggedInUser = getCurrentlyLoggedInUser();
-		ArrayList<PlateCalculator> plateCalcualationsForUserInDatabase = plateCalculatorRepository.getFoodsFromAccountId(currentlyLoggedInUser.getId()).get();
+		ArrayList<PlateCalculator> plateCalcualationsForUserInDatabase = plateCalculatorRepository.getPlateCalculatorsFromAccountId(currentlyLoggedInUser.getId()).get();
 		return PlateCalculatorMapper.INSTANCE.toPlateCalculatorDtoList(plateCalcualationsForUserInDatabase);	
 	}
 	
 	public PlateCalculatorDto getPlateCalculationById(Long id) {
-		PlateCalculator plateCalculatorReturnedFromDatabase = plateCalculatorRepository.findById(id).get();
+		PlateCalculator plateCalculatorReturnedFromDatabase = getPlateCalculatorFromDatabaseAndCheckItIsNotDeleted(id);
+		
 		return PlateCalculatorMapper.INSTANCE.toPlateCalculatorDto(plateCalculatorReturnedFromDatabase);
 	}
 	
 	public PlateCalculatorDto editPlateCalculation(Long id, PlateCalculatorDto plateCalculatorDto) {
-		Optional<PlateCalculator> optionalPlateCalculatorCurrentlyInDatabase = plateCalculatorRepository.findById(id);
-		
-		if (optionalPlateCalculatorCurrentlyInDatabase.isEmpty())
-			throw new RuntimeException("Plate Calculator object not found in database with ID = " + id);
-		
-		PlateCalculator plateCalculatorToBeEdited = optionalPlateCalculatorCurrentlyInDatabase.get();
+		PlateCalculator plateCalculatorToBeEdited = getPlateCalculatorFromDatabaseAndCheckItIsNotDeleted(id);
 		
 		PlateCalculatorMapper.INSTANCE.updatePlateCalculatorRowFromDto(plateCalculatorDto, plateCalculatorToBeEdited);
 		
 		AccountsModel currentlyLoggedInUser = getCurrentlyLoggedInUser();
 		plateCalculatorToBeEdited.account = currentlyLoggedInUser;
 		
+		PlateCalculator plateCalculatorModelWithCorrectPlateCounts = calculatePlateCountsFromDto(plateCalculatorDto);
+		
+		plateCalculatorToBeEdited.plateCounts.clear();
+		plateCalculatorToBeEdited.plateCounts.addAll(plateCalculatorModelWithCorrectPlateCounts.plateCounts);
+		
+		for (PlateCount plateCount : plateCalculatorToBeEdited.plateCounts) {
+			plateCount.plateCalculator = plateCalculatorToBeEdited;
+		}
+		
+		plateCalculatorRepository.save(plateCalculatorToBeEdited);
+		
+		return PlateCalculatorMapper.INSTANCE.toPlateCalculatorDto(plateCalculatorToBeEdited);
+	}
+	
+	public PlateCalculatorDto deletePlateCalculation(Long id) {
+		PlateCalculator plateCalculatorToBeDeleted = getPlateCalculatorFromDatabaseAndCheckItIsNotDeleted(id);
+		
+		plateCalculatorToBeDeleted.isDeleted = true;
+		
+		plateCalculatorRepository.save(plateCalculatorToBeDeleted);
+		
+		return PlateCalculatorMapper.INSTANCE.toPlateCalculatorDto(plateCalculatorToBeDeleted);
+	}
+	
+	private static PlateCalculator calculatePlateCountsFromDto(PlateCalculatorDto plateCalculatorDto) {
 		Arrays.sort(plateCalculatorDto.platesAvailable);
 		PlateCalculator plateCalculator = PlateCalculatorMapper.INSTANCE.toPlateCalculator(plateCalculatorDto);
 		double totalWeight = plateCalculator.totalWeight;
@@ -88,20 +99,7 @@ public class PlateCalculatorService {
 
 		mapIntegerArrayOfPlateCountsToListOfPlateCounts(numberOfPlatesPerWeightOnBar, plateCalculator, plateCalculatorDto.platesAvailable);
 		
-		plateCalculatorToBeEdited.plateCounts.clear();
-		plateCalculatorToBeEdited.plateCounts.addAll(plateCalculator.plateCounts);
-		
-		for (PlateCount plateCount : plateCalculatorToBeEdited.plateCounts) {
-			plateCount.plateCalculator = plateCalculatorToBeEdited;
-		}
-		
-		/*
-		TO DO: Add helper method that calculates PlateCounts for me for both POST and PUT endpoints
-		 */
-		
-		plateCalculatorRepository.save(plateCalculatorToBeEdited);
-		
-		return PlateCalculatorMapper.INSTANCE.toPlateCalculatorDto(plateCalculatorToBeEdited);
+		return plateCalculator;
 	}
 	
 	private static int[] calculateNumberOfPlatesPerWeightOnBar(PlateCalculator plateCalculator, double totalWeight, double[] platesAvailable) {
@@ -140,6 +138,15 @@ public class PlateCalculatorService {
 		}
 		
 		plateCalculator.plateCounts = listOfPlateCounts;
+	}
+	
+	private PlateCalculator getPlateCalculatorFromDatabaseAndCheckItIsNotDeleted(Long id) {
+		Optional<PlateCalculator> optionalPlateCalculatorCurrentlyInDatabase = plateCalculatorRepository.findByIdAndIsDeletedFalse(id);
+		
+		if (optionalPlateCalculatorCurrentlyInDatabase.isEmpty())
+			throw new RuntimeException("Plate Calculator object not found in database with ID = " + id);
+		
+		return optionalPlateCalculatorCurrentlyInDatabase.get();
 	}
 	
 	private PlateCalculatorDto savePlateCalculatorToDatabase(PlateCalculator plateCalculator, double[] platesAvailable) {

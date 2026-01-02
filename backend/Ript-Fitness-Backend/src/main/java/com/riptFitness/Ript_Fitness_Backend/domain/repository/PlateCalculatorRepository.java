@@ -11,5 +11,7 @@ import com.riptFitness.Ript_Fitness_Backend.domain.model.PlateCalculator;
 
 public interface PlateCalculatorRepository extends JpaRepository<PlateCalculator, Long> {
 	@Query("SELECT p FROM PlateCalculator p WHERE p.account.id = :accountId AND p.isDeleted = false")
-	Optional<ArrayList<PlateCalculator>> getFoodsFromAccountId(@Param("accountId") Long accountId);
+	Optional<ArrayList<PlateCalculator>> getPlateCalculatorsFromAccountId(@Param("accountId") Long accountId);
+	
+	Optional<PlateCalculator> findByIdAndIsDeletedFalse(Long id);
 }

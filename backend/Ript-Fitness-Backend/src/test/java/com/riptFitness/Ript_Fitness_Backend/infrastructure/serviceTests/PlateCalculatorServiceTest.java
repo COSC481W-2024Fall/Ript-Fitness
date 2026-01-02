@@ -120,7 +120,7 @@ public class PlateCalculatorServiceTest {
 		
 		when(accountsService.getLoggedInUserId()).thenReturn(1L);
 		when(accountsRepository.findById(1L)).thenReturn(Optional.of(account));		
-		when(plateCalculatorRepository.getFoodsFromAccountId(1L)).thenReturn(Optional.of(returnedListOfPlateCalcualtors));
+		when(plateCalculatorRepository.getPlateCalculatorsFromAccountId(1L)).thenReturn(Optional.of(returnedListOfPlateCalcualtors));
 		
 		List<PlateCalculatorDto> result = plateCalculatorService.getAllPlateCalculationsForUser();
 		

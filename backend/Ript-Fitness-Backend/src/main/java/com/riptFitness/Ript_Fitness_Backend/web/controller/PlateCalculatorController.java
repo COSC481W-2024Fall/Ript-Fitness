@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -47,5 +48,11 @@ public class PlateCalculatorController {
 	public ResponseEntity<PlateCalculatorDto> editPlateCalculation(@PathVariable Long id, @RequestBody PlateCalculatorDto plateCalculator) {
 		PlateCalculatorDto editedPlateCalculation = plateCalculatorService.editPlateCalculation(id, plateCalculator);
 		return new ResponseEntity<>(editedPlateCalculation, HttpStatus.OK);
+	}
+	
+	@DeleteMapping("/deletePlateCalculation/{id}")
+	public ResponseEntity<PlateCalculatorDto> deletePlateCalculation(@PathVariable Long id) {
+		PlateCalculatorDto deletedPlateCalculation = plateCalculatorService.deletePlateCalculation(id);
+		return new ResponseEntity<>(deletedPlateCalculation, HttpStatus.OK);
 	}
 }
